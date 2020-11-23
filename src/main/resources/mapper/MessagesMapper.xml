@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.iguigui.qqbot.dao.MessagesMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.iguigui.qqbot.entity.Messages">
+        <id column="id" property="id" />
+        <result column="create_time" property="createTime" />
+        <result column="creator" property="creator" />
+        <result column="modify_time" property="modifyTime" />
+        <result column="modifier" property="modifier" />
+        <result column="message_type" property="messageType" />
+        <result column="sender_id" property="senderId" />
+        <result column="receiver_id" property="receiverId" />
+        <result column="group_id" property="groupId" />
+        <result column="sender_name" property="senderName" />
+        <result column="receiver_name" property="receiverName" />
+        <result column="group_name" property="groupName" />
+        <result column="message_detail" property="messageDetail" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, create_time, creator, modify_time, modifier, message_type, sender_id, receiver_id, group_id, sender_name, receiver_name, group_name, message_detail
+    </sql>
+
+</mapper>
