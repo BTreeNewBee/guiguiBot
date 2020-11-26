@@ -6,6 +6,7 @@ import org.apache.commons.logging.LogFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
+import java.time.LocalDateTime
 
 @Component
 class DailyGroupMessageCount {
@@ -18,9 +19,14 @@ class DailyGroupMessageCount {
     @Autowired
     lateinit var messageService: MessageService
 
-    @Scheduled(cron = "0 0 * * * *")
+    @Scheduled(cron = "5 0 0 * * ?")
     fun dailyGroupMessageCount() {
         messageService.dailyGroupMessageCount()
     }
+
+//    @Scheduled(fixedDelay = 1000L)
+//    fun testSchedule() {
+//        println("test at ${LocalDateTime.now()}")
+//    }
 
 }
