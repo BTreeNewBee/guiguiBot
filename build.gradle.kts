@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
 	id("org.springframework.boot") version "2.4.0-SNAPSHOT"
 	id("io.spring.dependency-management") version "1.0.10.RELEASE"
-	id("io.vertx.vertx-plugin") version "0.3.1"
+//	id("io.vertx.vertx-plugin") version "0.3.1"
 	kotlin("jvm") version "1.4.10"
 	kotlin("plugin.spring") version "1.4.10"
 }
@@ -35,9 +35,9 @@ repositories {
 
 dependencies {
 
-	implementation(kotlin("stdlib-jdk8"))
-	implementation("io.vertx:vertx-core")
-	implementation("io.vertx:vertx-lang-kotlin")
+//	implementation(kotlin("stdlib-jdk8"))
+//	implementation("io.vertx:vertx-core")
+//	implementation("io.vertx:vertx-lang-kotlin")
 	implementation("org.koin:koin-core:1.0.2")
 	implementation("org.slf4j:jcl-over-slf4j:1.7.20")
 	implementation("ch.qos.logback:logback-classic:1.1.7")
@@ -60,9 +60,9 @@ dependencies {
 }
 
 
-vertx {
-	mainVerticle = "io.vertx.koin.example.BootstrapVerticle"
-}
+//vertx {
+//	mainVerticle = "io.vertx.koin.example.BootstrapVerticle"
+//}
 
 tasks.withType<Test> {
 	useJUnitPlatform()

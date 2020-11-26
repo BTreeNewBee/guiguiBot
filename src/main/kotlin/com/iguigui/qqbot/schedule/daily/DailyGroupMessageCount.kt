@@ -14,13 +14,13 @@ class DailyGroupMessageCount {
 
     @Autowired
     lateinit var bot: Bot
-//
-//    @Autowired
-//    lateinit var messageService: MessageService
-//
-//    @Scheduled(cron = "0 0 * * * *")
-//    fun dailyGroupMessageCount() {
-//        messageService.dailyGroupMessageCount()
-//    }
+
+    @Autowired
+    lateinit var messageService: MessageService
+
+    @Scheduled(cron = "0 0 * * * *")
+    fun dailyGroupMessageCount() {
+        messageService.dailyGroupMessageCount()
+    }
 
 }

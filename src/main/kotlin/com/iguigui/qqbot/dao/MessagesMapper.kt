@@ -24,4 +24,9 @@ interface MessagesMapper : BaseMapper<Messages> {
                                   @Param("endTime") endTime: String,
                                   @Param("groupId") groupId: Long): List<GroupMessageCountEntity>
 
+    @Select("select count(*) as count from messages where create_time between #{startTime} and #{endTime} and group_id = #{groupId}")
+    fun getDailyGroupMessageSum(@Param("startTime")startTime: String,
+                                @Param("endTime") endTime: String,
+                                @Param("groupId") groupId: Long): Int
+
 }

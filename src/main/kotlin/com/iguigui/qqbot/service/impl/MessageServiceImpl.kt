@@ -10,13 +10,16 @@ import com.iguigui.qqbot.entity.Messages
 import com.iguigui.qqbot.entity.QqUser
 import com.iguigui.qqbot.service.MessageService
 import kotlinx.coroutines.runBlocking
+import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.ContactList
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.nameCardOrNick
 import net.mamoe.mirai.message.FriendMessageEvent
 import net.mamoe.mirai.message.GroupMessageEvent
+import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.MessageChainBuilder
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -39,6 +42,9 @@ class MessageServiceImpl : MessageService {
 
     @Autowired
     lateinit var messagesMapper: MessagesMapper
+
+    @Autowired
+    lateinit var bot: Bot
 
     @Transactional
     override fun processMessage(event: GroupMessageEvent) {
@@ -86,15 +92,27 @@ class MessageServiceImpl : MessageService {
 
 
     override fun dailyGroupMessageCount() {
-        val startTime = 1 days ago at 0 hour 0 minute 0 second time
-        val endTime = 1 days ago at 23 hour 59 minute 59 second time
-        val dailyGroupMessageCount = messagesMapper.getDailyGroupMessageCount(startTime.toString(), endTime.toString(), 1001342116)
-        println("统计起止时间：$startTime ~ $endTime")
-        var index = 1
-        dailyGroupMessageCount.forEach {
-            val groupHasQqUser = groupHasQqUserMapper.selectByGroupIdAndQqUserId(1001342116, it.qqUserId!!)
-            println("发言排行榜第$index 名：${groupHasQqUser.nameCard},昨天累计发言${it.messageCount}")
-            index ++
+        val yesterday = 1 days ago
+        val startTime = yesterday at 0 hour 0 minute 0 second time
+        val endTime = yesterday at 23 hour 59 minute 59 second time
+        for (group in bot.groups) {
+            val dailyGroupMessageCount = messagesMapper.getDailyGroupMessageCount(startTime.toString(), endTime.toString(), group.id)
+            if (dailyGroupMessageCount.isEmpty()) {
+                continue
+            }
+            val messageSum = messagesMapper.getDailyGroupMessageSum(startTime.toString(), endTime.toString(), group.id)
+            var index = 1
+            val stringBuilder = StringBuilder()
+            stringBuilder.append("龙王排行榜\n")
+            stringBuilder.append("本群${yesterday.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE)}日全天消息总量：${messageSum}条\n")
+            dailyGroupMessageCount.forEach {
+                val groupHasQqUser = groupHasQqUserMapper.selectByGroupIdAndQqUserId(1001342116, it.qqUserId!!)
+                stringBuilder.append("第${index}名：${groupHasQqUser.nameCard} ，当日消息${it.messageCount}条\n")
+                index ++
+            }
+            runBlocking {
+                group.sendMessage(stringBuilder.toString())
+            }
         }
     }
 
@@ -128,7 +146,11 @@ class MessageServiceImpl : MessageService {
 
     override fun processFriendMessage(friendMessageEvent: FriendMessageEvent) {
         if (friendMessageEvent.sender.id == 1479712749L) {
-            dailyGroupMessageCount()
+            try {
+                dailyGroupMessageCount()
+            } catch (e :Exception) {
+                println(e)
+            }
         }
     }
 
