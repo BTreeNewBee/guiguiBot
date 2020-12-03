@@ -26,6 +26,7 @@ import net.mamoe.mirai.message.data.content
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.net.URLEncoder
 import java.sql.Wrapper
 import java.time.LocalDateTime
 import java.time.Period
@@ -96,8 +97,15 @@ class MessageServiceImpl : MessageService {
         messages.messageId = id
         messagesMapper.insert(messages)
 
-        if (messages.messageDetail.equals("/查询实时记录")) {
+        if (contentToString == "/查询实时记录") {
             currentGroupMessageCount();
+        }
+
+        if (contentToString.startsWith("百度")) {
+            val substring = contentToString.substring(2)
+            runBlocking {
+                sender.group.sendMessage("怎么百度也要我教？？？自己去看：https://www.baidu.com/baidu?wd=" + URLEncoder.encode(substring,"UTF-8"))
+            }
         }
 
     }
