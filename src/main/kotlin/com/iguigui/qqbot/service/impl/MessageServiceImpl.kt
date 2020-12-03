@@ -1,5 +1,6 @@
 package com.iguigui.qqbot.service.impl
 
+import com.baomidou.mybatisplus.core.toolkit.Wrappers
 import com.iguigui.qqbot.dao.GroupHasQqUserMapper
 import com.iguigui.qqbot.dao.QqGroupMapper
 import com.iguigui.qqbot.dao.MessagesMapper
@@ -15,14 +16,17 @@ import net.mamoe.mirai.contact.ContactList
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.nameCardOrNick
+import net.mamoe.mirai.event.events.MessageRecallEvent
 import net.mamoe.mirai.message.FriendMessageEvent
 import net.mamoe.mirai.message.GroupMessageEvent
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
 import net.mamoe.mirai.message.data.MessageChainBuilder
+import net.mamoe.mirai.message.data.content
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.sql.Wrapper
 import java.time.LocalDateTime
 import java.time.Period
 import java.time.format.DateTimeFormatter
@@ -58,17 +62,33 @@ class MessageServiceImpl : MessageService {
             if (qqUserOptional == null) {
                 syncMember(event.group, event.sender)
             }
-            processMessageChain(event.sender,event.message)
+            processMessageChain(event.sender, event.message, event.source.id)
         }
 
     }
 
+    override fun processCancelMessage(event: MessageRecallEvent.GroupRecall) {
+        println("cancelMessage process")
+        runBlocking {
+            sendCancelMessage(event.messageId, event.group)
+        }
+    }
 
-    private suspend fun processMessageChain(sender : Member ,message: MessageChain) {
+    private suspend fun sendCancelMessage(id: Int, group: Group) {
+//        val message = messagesMapper.selectOne(Wrappers.lambdaQuery<Messages>()
+//                .eq(Messages::messageId, id)
+//                .eq(Messages::groupId, group.id))
+        var message = Messages()
+        message= messagesMapper.getMessageByMessageId(id,group.id)
+        group.sendMessage(message.senderName+":"+message.messageDetail)
+    }
+
+    private suspend fun processMessageChain(sender: Member, message: MessageChain, id: Int) {
         val contentToString = message.contentToString()
         println("message chain contentToString = $contentToString")
         val size = message.size
-        for ( i in 1 until size) {
+        for (i in 1 until size) {
+
             val singleMessage = message[i]
             var messages = Messages()
             messages.messageType = 1
@@ -77,6 +97,10 @@ class MessageServiceImpl : MessageService {
             messages.groupId = sender.group.id
             messages.groupName = sender.group.name
             messages.messageDetail = singleMessage.contentToString()
+            messages.messageId = id
+            if (messages.messageDetail.equals("/查询实时记录")) {
+                currentGroupMessageCount();
+            }
             messagesMapper.insert(messages)
         }
     }
@@ -108,7 +132,33 @@ class MessageServiceImpl : MessageService {
             dailyGroupMessageCount.forEach {
                 val groupHasQqUser = groupHasQqUserMapper.selectByGroupIdAndQqUserId(1001342116, it.qqUserId!!)
                 stringBuilder.append("第${index}名：${groupHasQqUser.nameCard} ，当日消息${it.messageCount}条\n")
-                index ++
+                index++
+            }
+            runBlocking {
+                group.sendMessage(stringBuilder.toString())
+            }
+        }
+    }
+
+
+    fun currentGroupMessageCount() {
+        val now = LocalDateTime.now()
+        val startTime = now at 0 hour 0 minute 0 second time
+        val endTime = now at 23 hour 59 minute 59 second time
+        for (group in bot.groups) {
+            val dailyGroupMessageCount = messagesMapper.getDailyGroupMessageCount(startTime.toString(), endTime.toString(), group.id)
+            if (dailyGroupMessageCount.isEmpty()) {
+                continue
+            }
+            val messageSum = messagesMapper.getDailyGroupMessageSum(startTime.toString(), endTime.toString(), group.id)
+            var index = 1
+            val stringBuilder = StringBuilder()
+            stringBuilder.append("龙王排行榜\n")
+            stringBuilder.append("本群${now.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE)}日全天消息总量：${messageSum}条\n")
+            dailyGroupMessageCount.forEach {
+                val groupHasQqUser = groupHasQqUserMapper.selectByGroupIdAndQqUserId(1001342116, it.qqUserId!!)
+                stringBuilder.append("第${index}名：${groupHasQqUser.nameCard} ，当日消息${it.messageCount}条\n")
+                index++
             }
             runBlocking {
                 group.sendMessage(stringBuilder.toString())
@@ -148,7 +198,7 @@ class MessageServiceImpl : MessageService {
         if (friendMessageEvent.sender.id == 1479712749L) {
             try {
                 dailyGroupMessageCount()
-            } catch (e :Exception) {
+            } catch (e: Exception) {
                 println(e)
             }
         }

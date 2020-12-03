@@ -29,4 +29,8 @@ interface MessagesMapper : BaseMapper<Messages> {
                                 @Param("endTime") endTime: String,
                                 @Param("groupId") groupId: Long): Int
 
+    @Select("select *  from messages where message_id = #{messageId} and group_id = #{groupId}")
+    fun getMessageByMessageId(@Param("messageId")messageId: Int,
+                                @Param("groupId") groupId: Long): Messages
+
 }

@@ -2,6 +2,30 @@ CREATE DATABASE `qq_bot` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_
 
 use qq_bot;
 
+
+CREATE TABLE `qq_group` (
+  `id` bigint NOT NULL,
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `creator` char(10) NOT NULL DEFAULT 'system',
+  `modify_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `modifier` char(10) NOT NULL DEFAULT 'system',
+  `name` varchar(45) NOT NULL DEFAULT '' COMMENT '群名',
+  `user_count` int NOT NULL DEFAULT '0' COMMENT '群员数量',
+  `message_count` int NOT NULL DEFAULT '0' COMMENT '累计统计到的消息数量',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+CREATE TABLE `qq_user` (
+  `id` bigint NOT NULL,
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `creator` char(10) NOT NULL DEFAULT 'system',
+  `modify_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `modifier` char(10) NOT NULL DEFAULT 'system',
+  `nick_name` varchar(45) NOT NULL DEFAULT '',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+
 CREATE TABLE `group_has_qq_user` (
   `id` bigint NOT NULL AUTO_INCREMENT,
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -38,24 +62,3 @@ CREATE TABLE `messages` (
   KEY `idx_group_message` (`create_time`,`group_id`,`sender_id`) /*!80000 INVISIBLE */
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
-CREATE TABLE `qq_group` (
-  `id` bigint NOT NULL,
-  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `creator` char(10) NOT NULL DEFAULT 'system',
-  `modify_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `modifier` char(10) NOT NULL DEFAULT 'system',
-  `name` varchar(45) NOT NULL DEFAULT '' COMMENT '群名',
-  `user_count` int NOT NULL DEFAULT '0' COMMENT '群员数量',
-  `message_count` int NOT NULL DEFAULT '0' COMMENT '累计统计到的消息数量',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
-
-CREATE TABLE `qq_user` (
-  `id` bigint NOT NULL,
-  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `creator` char(10) NOT NULL DEFAULT 'system',
-  `modify_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `modifier` char(10) NOT NULL DEFAULT 'system',
-  `nick_name` varchar(45) NOT NULL DEFAULT '',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;

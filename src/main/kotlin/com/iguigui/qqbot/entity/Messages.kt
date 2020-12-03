@@ -46,6 +46,11 @@ class Messages : BaseEntity() {
      */
     var messageDetail: String? = null
 
+    /**
+     * 消息id
+     * */
+    var messageId: Int? = null
+
 
     override fun toString(): String {
         return "Messages{" +
