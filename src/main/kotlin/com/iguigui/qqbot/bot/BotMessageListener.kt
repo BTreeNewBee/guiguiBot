@@ -3,6 +3,7 @@ package com.iguigui.qqbot.bot
 import com.iguigui.qqbot.service.MessageService
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.event.events.MessageRecallEvent
 import net.mamoe.mirai.event.subscribe
 import net.mamoe.mirai.event.subscribeAlways
 import net.mamoe.mirai.message.FriendMessageEvent
@@ -41,6 +42,9 @@ class BotMessageListener {
         // 在 Bot 的 CoroutineScope 下创建一个监听事件的 Job, 则这个子 Job 会在 Bot 离线后自动完成 (complete).
         bot.subscribeAlways<GroupMessageEvent> {
             messageService.processMessage(this)
+        }
+        bot.subscribeAlways<MessageRecallEvent.GroupRecall> {
+            messageService.processCancelMessage(this)
         }
         bot.subscribeAlways<FriendMessageEvent> {
             messageService.processFriendMessage(this)
