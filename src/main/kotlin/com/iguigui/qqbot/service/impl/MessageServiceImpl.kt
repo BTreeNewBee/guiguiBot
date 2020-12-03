@@ -75,34 +75,31 @@ class MessageServiceImpl : MessageService {
     }
 
     private suspend fun sendCancelMessage(id: Int, group: Group) {
-//        val message = messagesMapper.selectOne(Wrappers.lambdaQuery<Messages>()
-//                .eq(Messages::messageId, id)
-//                .eq(Messages::groupId, group.id))
-        var message = Messages()
-        message= messagesMapper.getMessageByMessageId(id,group.id)
-        group.sendMessage(message.senderName+":"+message.messageDetail)
+        val now = LocalDateTime.now();
+        val startTime = now.plusMinutes(-5)
+        var message = messagesMapper.getMessageByMessageId(startTime.toString(), now.toString(), id, group.id)
+        if (message != null) {
+            group.sendMessage(message.senderName + ":" + message.messageDetail)
+        }
     }
 
     private suspend fun processMessageChain(sender: Member, message: MessageChain, id: Int) {
         val contentToString = message.contentToString()
         println("message chain contentToString = $contentToString")
-        val size = message.size
-        for (i in 1 until size) {
+        var messages = Messages()
+        messages.messageType = 1
+        messages.senderId = sender.id
+        messages.senderName = sender.nameCardOrNick
+        messages.groupId = sender.group.id
+        messages.groupName = sender.group.name
+        messages.messageDetail = contentToString
+        messages.messageId = id
+        messagesMapper.insert(messages)
 
-            val singleMessage = message[i]
-            var messages = Messages()
-            messages.messageType = 1
-            messages.senderId = sender.id
-            messages.senderName = sender.nameCardOrNick
-            messages.groupId = sender.group.id
-            messages.groupName = sender.group.name
-            messages.messageDetail = singleMessage.contentToString()
-            messages.messageId = id
-            if (messages.messageDetail.equals("/查询实时记录")) {
-                currentGroupMessageCount();
-            }
-            messagesMapper.insert(messages)
+        if (messages.messageDetail.equals("/查询实时记录")) {
+            currentGroupMessageCount();
         }
+
     }
 
     @Transactional
