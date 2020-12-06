@@ -55,14 +55,9 @@ class MessageServiceImpl : MessageService {
     override fun processMessage(event: GroupMessageEvent) {
         println("message process")
         runBlocking {
-            val groupOptional = qqGroupMapper.selectById(event.group.id)
-            if (groupOptional == null) {
-                syncGroup(event.group)
-            }
-            val qqUserOptional = qqUserMapper.selectById(event.sender.id)
-            if (qqUserOptional == null) {
-                syncMember(event.group, event.sender)
-            }
+            syncGroup(event.group)
+            syncUser(event.sender)
+            syncMember(event.group, event.sender)
             processMessageChain(event.sender, event.message, event.source.id)
         }
 
@@ -104,7 +99,12 @@ class MessageServiceImpl : MessageService {
         if (contentToString.startsWith("百度")) {
             val substring = contentToString.substring(2)
             runBlocking {
-                sender.group.sendMessage("怎么百度也要我教？？？自己去看：https://www.baidu.com/baidu?wd=" + URLEncoder.encode(substring,"UTF-8"))
+                sender.group.sendMessage(
+                    "怎么百度也要我教？？？自己去看：https://www.baidu.com/baidu?wd=" + URLEncoder.encode(
+                        substring,
+                        "UTF-8"
+                    )
+                )
             }
         }
 
@@ -125,7 +125,8 @@ class MessageServiceImpl : MessageService {
         val startTime = yesterday at 0 hour 0 minute 0 second time
         val endTime = yesterday at 23 hour 59 minute 59 second time
         for (group in bot.groups) {
-            val dailyGroupMessageCount = messagesMapper.getDailyGroupMessageCount(startTime.toString(), endTime.toString(), group.id)
+            val dailyGroupMessageCount =
+                messagesMapper.getDailyGroupMessageCount(startTime.toString(), endTime.toString(), group.id)
             if (dailyGroupMessageCount.isEmpty()) {
                 continue
             }
@@ -133,7 +134,9 @@ class MessageServiceImpl : MessageService {
             var index = 1
             val stringBuilder = StringBuilder()
             stringBuilder.append("龙王排行榜\n")
-            stringBuilder.append("本群${yesterday.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE)}日全天消息总量：${messageSum}条\n")
+            stringBuilder.append(
+                "本群${yesterday.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE)}日全天消息总量：${messageSum}条\n"
+            )
             dailyGroupMessageCount.forEach {
                 val groupHasQqUser = groupHasQqUserMapper.selectByGroupIdAndQqUserId(group.id, it.qqUserId!!)
                 stringBuilder.append("第${index}名：${groupHasQqUser.nameCard} ，当日消息${it.messageCount}条\n")
@@ -151,7 +154,8 @@ class MessageServiceImpl : MessageService {
         val startTime = now at 0 hour 0 minute 0 second time
         val endTime = now at 23 hour 59 minute 59 second time
         for (group in bot.groups) {
-            val dailyGroupMessageCount = messagesMapper.getDailyGroupMessageCount(startTime.toString(), endTime.toString(), group.id)
+            val dailyGroupMessageCount =
+                messagesMapper.getDailyGroupMessageCount(startTime.toString(), endTime.toString(), group.id)
             if (dailyGroupMessageCount.isEmpty()) {
                 continue
             }
@@ -159,7 +163,9 @@ class MessageServiceImpl : MessageService {
             var index = 1
             val stringBuilder = StringBuilder()
             stringBuilder.append("龙王排行榜\n")
-            stringBuilder.append("本群${now.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE)}日全天消息总量：${messageSum}条\n")
+            stringBuilder.append(
+                "本群${now.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE)}日全天消息总量：${messageSum}条\n"
+            )
             dailyGroupMessageCount.forEach {
                 val groupHasQqUser = groupHasQqUserMapper.selectByGroupIdAndQqUserId(group.id, it.qqUserId!!)
                 stringBuilder.append("第${index}名：${groupHasQqUser.nameCard} ，当日消息${it.messageCount}条\n")
@@ -225,7 +231,7 @@ class MessageServiceImpl : MessageService {
         }
     }
 
-    private suspend fun syncMember(group: Group, member: Member) {
+    private suspend fun syncUser(member: Member) {
         var qqUser = qqUserMapper.selectById(member.id)
         if (qqUser == null) {
             qqUser = QqUser()
@@ -236,7 +242,9 @@ class MessageServiceImpl : MessageService {
             qqUser.nickName = member.nick
             qqUserMapper.updateById(qqUser)
         }
+    }
 
+    private suspend fun syncMember(group: Group, member: Member) {
         var groupHasQqUser = groupHasQqUserMapper.selectByGroupIdAndQqUserId(group.id, member.id)
         if (groupHasQqUser == null) {
             groupHasQqUser = GroupHasQqUser()
