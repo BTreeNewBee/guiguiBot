@@ -135,7 +135,7 @@ class MessageServiceImpl : MessageService {
             stringBuilder.append("龙王排行榜\n")
             stringBuilder.append("本群${yesterday.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE)}日全天消息总量：${messageSum}条\n")
             dailyGroupMessageCount.forEach {
-                val groupHasQqUser = groupHasQqUserMapper.selectByGroupIdAndQqUserId(1001342116, it.qqUserId!!)
+                val groupHasQqUser = groupHasQqUserMapper.selectByGroupIdAndQqUserId(group.id, it.qqUserId!!)
                 stringBuilder.append("第${index}名：${groupHasQqUser.nameCard} ，当日消息${it.messageCount}条\n")
                 index++
             }
@@ -161,7 +161,7 @@ class MessageServiceImpl : MessageService {
             stringBuilder.append("龙王排行榜\n")
             stringBuilder.append("本群${now.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE)}日全天消息总量：${messageSum}条\n")
             dailyGroupMessageCount.forEach {
-                val groupHasQqUser = groupHasQqUserMapper.selectByGroupIdAndQqUserId(1001342116, it.qqUserId!!)
+                val groupHasQqUser = groupHasQqUserMapper.selectByGroupIdAndQqUserId(group.id, it.qqUserId!!)
                 stringBuilder.append("第${index}名：${groupHasQqUser.nameCard} ，当日消息${it.messageCount}条\n")
                 index++
             }
