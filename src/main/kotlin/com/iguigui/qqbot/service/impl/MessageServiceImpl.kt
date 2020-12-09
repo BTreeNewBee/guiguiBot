@@ -93,7 +93,7 @@ class MessageServiceImpl : MessageService {
         messagesMapper.insert(messages)
 
         if (contentToString == "/查询实时记录") {
-            currentGroupMessageCount();
+            currentGroupMessageCount(sender.group);
         }
 
         if (contentToString.startsWith("百度")) {
@@ -107,6 +107,31 @@ class MessageServiceImpl : MessageService {
                 )
             }
         }
+
+        if (contentToString.startsWith("谷歌")) {
+            val substring = contentToString.substring(2)
+            runBlocking {
+                sender.group.sendMessage(
+                    "谷歌也要我教？？？自己去看：https://www.google.com/search?q=" + URLEncoder.encode(
+                        substring,
+                        "UTF-8"
+                    )
+                )
+            }
+        }
+
+        if (contentToString.startsWith("必应")) {
+            val substring = contentToString.substring(2)
+            runBlocking {
+                sender.group.sendMessage(
+                    "必应也要我教？？？自己去看：https://cn.bing.com/search?q=" + URLEncoder.encode(
+                        substring,
+                        "UTF-8"
+                    )
+                )
+            }
+        }
+
 
     }
 
@@ -149,31 +174,29 @@ class MessageServiceImpl : MessageService {
     }
 
 
-    fun currentGroupMessageCount() {
+    fun currentGroupMessageCount(group: Group) {
         val now = LocalDateTime.now()
         val startTime = now at 0 hour 0 minute 0 second time
         val endTime = now at 23 hour 59 minute 59 second time
-        for (group in bot.groups) {
-            val dailyGroupMessageCount =
-                messagesMapper.getDailyGroupMessageCount(startTime.toString(), endTime.toString(), group.id)
-            if (dailyGroupMessageCount.isEmpty()) {
-                continue
-            }
-            val messageSum = messagesMapper.getDailyGroupMessageSum(startTime.toString(), endTime.toString(), group.id)
-            var index = 1
-            val stringBuilder = StringBuilder()
-            stringBuilder.append("龙王排行榜\n")
-            stringBuilder.append(
-                "本群${now.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE)}日全天消息总量：${messageSum}条\n"
-            )
-            dailyGroupMessageCount.forEach {
-                val groupHasQqUser = groupHasQqUserMapper.selectByGroupIdAndQqUserId(group.id, it.qqUserId!!)
-                stringBuilder.append("第${index}名：${groupHasQqUser.nameCard} ，当日消息${it.messageCount}条\n")
-                index++
-            }
-            runBlocking {
-                group.sendMessage(stringBuilder.toString())
-            }
+        val dailyGroupMessageCount =
+            messagesMapper.getDailyGroupMessageCount(startTime.toString(), endTime.toString(), group.id)
+        if (dailyGroupMessageCount.isEmpty()) {
+            return
+        }
+        val messageSum = messagesMapper.getDailyGroupMessageSum(startTime.toString(), endTime.toString(), group.id)
+        var index = 1
+        val stringBuilder = StringBuilder()
+        stringBuilder.append("龙王排行榜\n")
+        stringBuilder.append(
+            "本群${now.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE)}日全天消息总量：${messageSum}条\n"
+        )
+        dailyGroupMessageCount.forEach {
+            val groupHasQqUser = groupHasQqUserMapper.selectByGroupIdAndQqUserId(group.id, it.qqUserId!!)
+            stringBuilder.append("第${index}名：${groupHasQqUser.nameCard} ，当日消息${it.messageCount}条\n")
+            index++
+        }
+        runBlocking {
+            group.sendMessage(stringBuilder.toString())
         }
     }
 
