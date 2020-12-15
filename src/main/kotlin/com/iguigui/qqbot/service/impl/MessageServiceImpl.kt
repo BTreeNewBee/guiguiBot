@@ -1,13 +1,12 @@
 package com.iguigui.qqbot.service.impl
 
-import com.baomidou.mybatisplus.core.toolkit.Wrappers
 import com.iguigui.qqbot.dao.GroupHasQqUserMapper
-import com.iguigui.qqbot.dao.QqGroupMapper
 import com.iguigui.qqbot.dao.MessagesMapper
+import com.iguigui.qqbot.dao.QqGroupMapper
 import com.iguigui.qqbot.dao.QqUserMapper
-import com.iguigui.qqbot.entity.QqGroup
 import com.iguigui.qqbot.entity.GroupHasQqUser
 import com.iguigui.qqbot.entity.Messages
+import com.iguigui.qqbot.entity.QqGroup
 import com.iguigui.qqbot.entity.QqUser
 import com.iguigui.qqbot.service.MessageService
 import kotlinx.coroutines.runBlocking
@@ -19,18 +18,19 @@ import net.mamoe.mirai.contact.nameCardOrNick
 import net.mamoe.mirai.event.events.MessageRecallEvent
 import net.mamoe.mirai.message.FriendMessageEvent
 import net.mamoe.mirai.message.GroupMessageEvent
-import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.MessageChain
-import net.mamoe.mirai.message.data.MessageChainBuilder
-import net.mamoe.mirai.message.data.content
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.net.DatagramPacket
+import java.net.DatagramSocket
+import java.net.InetAddress
 import java.net.URLEncoder
-import java.sql.Wrapper
 import java.time.LocalDateTime
 import java.time.Period
 import java.time.format.DateTimeFormatter
+
 
 @Service
 class MessageServiceImpl : MessageService {
@@ -50,6 +50,9 @@ class MessageServiceImpl : MessageService {
 
     @Autowired
     lateinit var bot: Bot
+
+    @Value("\${macAddress}")
+    lateinit var macAddress: String
 
     @Transactional
     override fun processMessage(event: GroupMessageEvent) {
@@ -229,13 +232,53 @@ class MessageServiceImpl : MessageService {
 
 
     override fun processFriendMessage(friendMessageEvent: FriendMessageEvent) {
-        if (friendMessageEvent.sender.id == 1479712749L) {
-            try {
-                dailyGroupMessageCount()
-            } catch (e: Exception) {
-                println(e)
-            }
+        if (friendMessageEvent.sender.id == 1479712749L
+            && friendMessageEvent.message.contentToString() == "开机") {
+            startUpMyComputer()
         }
+    }
+
+    //把我的电脑开机
+    fun startUpMyComputer() {
+
+        val command = ByteArray(102)
+        for ( i in 0 .. 6) {
+            command[i] = 0xff.toByte()
+        }
+        val split = macAddress.split("-")
+        val macArray = ByteArray(6)
+        for ( (index, value) in split.withIndex()) {
+            macArray[index] = value.toInt(16).toByte()
+        }
+        for ( i in 0 .. 15) {
+            System.arraycopy(macArray,0,command, (i + 1) * 6 , 6)
+        }
+
+        println(bytesToHexString(command))
+
+        val address = InetAddress.getByName("255.255.255.255")
+        val port = 7
+        val packet = DatagramPacket(command, command.size, address, port)
+        val socket = DatagramSocket()
+        socket.send(packet)
+
+    }
+
+    fun bytesToHexString(src: ByteArray?): String? {
+        val stringBuilder = StringBuilder("")
+        if (src == null || src.isEmpty()) {
+            return null
+        }
+        for (element in src) {
+            val v = element.toInt() and 0xFF
+            val hv = Integer.toHexString(v)
+            stringBuilder.append("0x")
+            if (hv.length < 2) {
+                stringBuilder.append("0,")
+            }
+            stringBuilder.append("$hv,")
+        }
+        return stringBuilder.toString()
     }
 
 
