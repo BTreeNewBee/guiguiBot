@@ -27,6 +27,7 @@ import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetAddress
 import java.net.URLEncoder
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Period
 import java.time.format.DateTimeFormatter
@@ -162,14 +163,26 @@ class MessageServiceImpl : MessageService {
             var index = 1
             val stringBuilder = StringBuilder()
             stringBuilder.append("龙王排行榜\n")
+
+            val now1 = LocalDate.now()
+            stringBuilder.append("今天是${now1.format(DateTimeFormatter.ISO_LOCAL_DATE)}日，今年的第${now1.dayOfYear}天，您的${now1.year}年使用进度条：\n")
+            val d = now1.dayOfYear * 1.0 / now1.lengthOfYear() / 2.0
+            var string = "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░░░░░"
+            val d1 = (string.length * (0.5 - d)).toInt()
+            stringBuilder.append("${string.substring(d1,d1 + 20)} ${String.format(
+                "%.2f",
+                now1.dayOfYear * 100.0 / now1.lengthOfYear()
+            )}% \n")
+
             stringBuilder.append(
-                "本群${yesterday.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE)}日全天消息总量：${messageSum}条\n"
+                "本群${yesterday.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE)}日消息总量：${messageSum}条\n"
             )
             dailyGroupMessageCount.forEach {
                 val groupHasQqUser = groupHasQqUserMapper.selectByGroupIdAndQqUserId(group.id, it.qqUserId!!)
-                stringBuilder.append("第${index}名：${groupHasQqUser.nameCard} ，当日消息${it.messageCount}条\n")
+                stringBuilder.append("第${index}名：${groupHasQqUser.nameCard} ，${it.messageCount}条消息\n")
                 index++
             }
+            stringBuilder.append("晚安~")
             runBlocking {
                 group.sendMessage(stringBuilder.toString())
             }
@@ -190,12 +203,21 @@ class MessageServiceImpl : MessageService {
         var index = 1
         val stringBuilder = StringBuilder()
         stringBuilder.append("龙王排行榜\n")
+        val now1 = LocalDate.now()
+        stringBuilder.append("今天是${now.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE)}日，今年的第${now1.dayOfYear}天，您的${now1.year}年使用进度条：\n")
+        val d = now1.dayOfYear * 1.0 / now1.lengthOfYear() / 2.0
+        var string = "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░░░░░"
+        val d1 = (string.length * (0.5 - d)).toInt()
+        stringBuilder.append("${string.substring(d1,d1 + 20)} ${String.format(
+            "%.2f",
+            now1.dayOfYear * 100.0 / now1.lengthOfYear()
+        )}% \n")
         stringBuilder.append(
-            "本群${now.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE)}日全天消息总量：${messageSum}条\n"
+            "本群${now.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE)}日消息总量：${messageSum}条\n"
         )
         dailyGroupMessageCount.forEach {
             val groupHasQqUser = groupHasQqUserMapper.selectByGroupIdAndQqUserId(group.id, it.qqUserId!!)
-            stringBuilder.append("第${index}名：${groupHasQqUser.nameCard} ，当日消息${it.messageCount}条\n")
+            stringBuilder.append("第${index}名：${groupHasQqUser.nameCard} ，${it.messageCount}条消息\n")
             index++
         }
         runBlocking {
