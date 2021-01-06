@@ -56,6 +56,7 @@ dependencies {
 	implementation("net.mamoe:mirai-core-qqandroid:$miraiCoreVersion")
 	runtimeOnly("mysql:mysql-connector-java")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
+	implementation("io.netty:netty-all:4.1.29.Final")
 
 }
 
