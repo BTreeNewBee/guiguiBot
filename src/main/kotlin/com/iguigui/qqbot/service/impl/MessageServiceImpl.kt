@@ -15,9 +15,9 @@ import net.mamoe.mirai.contact.ContactList
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.contact.Member
 import net.mamoe.mirai.contact.nameCardOrNick
+import net.mamoe.mirai.event.events.FriendMessageEvent
+import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.events.MessageRecallEvent
-import net.mamoe.mirai.message.FriendMessageEvent
-import net.mamoe.mirai.message.GroupMessageEvent
 import net.mamoe.mirai.message.data.MessageChain
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -62,7 +62,7 @@ class MessageServiceImpl : MessageService {
             syncGroup(event.group)
             syncUser(event.sender)
             syncMember(event.group, event.sender)
-            processMessageChain(event.sender, event.message, event.source.id)
+            processMessageChain(event.sender, event.message, event.source.ids.first())
         }
 
     }
@@ -70,7 +70,9 @@ class MessageServiceImpl : MessageService {
     override fun processCancelMessage(event: MessageRecallEvent.GroupRecall) {
         println("cancelMessage process")
         runBlocking {
-            sendCancelMessage(event.messageId, event.group)
+            event.messageIds.forEach {
+                sendCancelMessage(it, event.group)
+            }
         }
     }
 

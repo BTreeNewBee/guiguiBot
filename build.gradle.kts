@@ -17,7 +17,7 @@ java.sourceCompatibility = JavaVersion.VERSION_11
 
 val kotlinVersion: String = "1.0.4"
 
-val miraiCoreVersion: String = "1.0.4"
+val miraiCoreVersion: String = "2.1.1"
 
 val vertxVersion = "3.9.0"
 
@@ -52,8 +52,8 @@ dependencies {
 	implementation("org.jetbrains.kotlin:kotlin-reflect")
 	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 	implementation("org.springframework.boot:spring-boot-configuration-processor")
+	implementation("net.mamoe:mirai-core-api:$miraiCoreVersion")
 	implementation("net.mamoe:mirai-core:$miraiCoreVersion")
-	implementation("net.mamoe:mirai-core-qqandroid:$miraiCoreVersion")
 	runtimeOnly("mysql:mysql-connector-java")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	implementation("io.netty:netty-all:4.1.29.Final")

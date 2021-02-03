@@ -3,6 +3,7 @@ package com.iguigui.qqbot.bot
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.BotFactory
 import net.mamoe.mirai.alsoLogin
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Bean
@@ -24,7 +25,7 @@ class BotConfig {
 
         var bot: Bot
         runBlocking {
-            bot = Bot( // JVM 下也可以不写 `QQAndroid.` 引用顶层函数
+            bot = BotFactory.newBot( // JVM 下也可以不写 `QQAndroid.` 引用顶层函数
                     qqId.toLong(),
                     qqPassword
             ) {
