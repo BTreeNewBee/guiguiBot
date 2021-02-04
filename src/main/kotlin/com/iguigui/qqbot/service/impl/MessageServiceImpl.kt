@@ -1,5 +1,7 @@
 package com.iguigui.qqbot.service.impl
 
+import cn.hutool.http.HttpUtil
+import com.baidu.aip.ocr.AipOcr
 import com.iguigui.qqbot.dao.GroupHasQqUserMapper
 import com.iguigui.qqbot.dao.MessagesMapper
 import com.iguigui.qqbot.dao.QqGroupMapper
@@ -18,11 +20,15 @@ import net.mamoe.mirai.contact.nameCardOrNick
 import net.mamoe.mirai.event.events.FriendMessageEvent
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.events.MessageRecallEvent
+import net.mamoe.mirai.message.data.Image
+import net.mamoe.mirai.message.data.Image.Key.queryUrl
 import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.MessageSource.Key.recall
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.io.File
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetAddress
@@ -31,6 +37,14 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Period
 import java.time.format.DateTimeFormatter
+import java.util.HashMap
+
+import org.springframework.web.servlet.function.RequestPredicates.path
+
+import org.bouncycastle.crypto.tls.ConnectionEnd.client
+
+
+
 
 
 @Service
@@ -52,8 +66,14 @@ class MessageServiceImpl : MessageService {
     @Autowired
     lateinit var bot: Bot
 
+    @Autowired
+    lateinit var aipOcr: AipOcr
+
     @Value("\${macAddress}")
     lateinit var macAddress: String
+
+    @Value("\${baseFilePath}")
+    lateinit var baseFilePath: String
 
     @Transactional
     override fun processMessage(event: GroupMessageEvent) {
@@ -62,7 +82,7 @@ class MessageServiceImpl : MessageService {
             syncGroup(event.group)
             syncUser(event.sender)
             syncMember(event.group, event.sender)
-            processMessageChain(event.sender, event.message, event.source.ids.first())
+            processMessageChain(event.sender, event.message, event.source.ids.first(),event)
         }
 
     }
@@ -85,7 +105,7 @@ class MessageServiceImpl : MessageService {
         }
     }
 
-    private suspend fun processMessageChain(sender: Member, message: MessageChain, id: Int) {
+    private suspend fun processMessageChain(sender: Member, message: MessageChain, id: Int , event: GroupMessageEvent) {
         val contentToString = message.contentToString()
         println("message chain contentToString = $contentToString")
         var messages = Messages()
@@ -135,6 +155,39 @@ class MessageServiceImpl : MessageService {
                         "UTF-8"
                     )
                 )
+            }
+        }
+
+        //干死晒太阳
+        if (sender.id == 1472267064L) {
+            for (singleMessage in message) {
+                if (singleMessage is Image) {
+                    val queryUrl = singleMessage.queryUrl()
+                    val filePath = baseFilePath + "/" + singleMessage.imageId
+                    if (!File(filePath).exists()) {
+                        HttpUtil.downloadFile(queryUrl, filePath)
+                    }
+                    val basicGeneral = aipOcr.basicGeneralUrl(filePath, HashMap())
+                    val resultNum = basicGeneral.getInt("words_result_num")
+                    if (resultNum == 0) {
+                        continue
+                    }
+                    val jsonArray = basicGeneral.getJSONArray("words_result")
+                    val length = jsonArray.length()
+                    for (i in 0 until length) {
+                        val jsonObject = jsonArray.getJSONObject(i)
+                        val any = jsonObject.getString("word")
+                        if (any.contains("老公")) {
+                            //撤回
+                            event.message.recall()
+                            //禁言
+                            event.sender.mute(60)
+                            break
+                        }
+                    }
+
+
+                }
             }
         }
 

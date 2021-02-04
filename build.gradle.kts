@@ -57,7 +57,8 @@ dependencies {
 	runtimeOnly("mysql:mysql-connector-java")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
 	implementation("io.netty:netty-all:4.1.29.Final")
-
+	implementation("com.baidu.aip:java-sdk:4.15.3")
+	implementation("cn.hutool:hutool-all:5.5.8")
 }
 
 
