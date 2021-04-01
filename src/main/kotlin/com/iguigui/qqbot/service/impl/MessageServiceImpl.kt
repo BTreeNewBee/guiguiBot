@@ -1,5 +1,8 @@
 package com.iguigui.qqbot.service.impl
 
+import cn.hutool.crypto.digest.MD5
+import cn.hutool.http.HttpUtil
+import com.baidu.aip.ocr.AipOcr
 import com.iguigui.qqbot.dao.GroupHasQqUserMapper
 import com.iguigui.qqbot.dao.MessagesMapper
 import com.iguigui.qqbot.dao.QqGroupMapper
@@ -11,18 +14,17 @@ import com.iguigui.qqbot.entity.QqUser
 import com.iguigui.qqbot.service.MessageService
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
-import net.mamoe.mirai.contact.ContactList
-import net.mamoe.mirai.contact.Group
-import net.mamoe.mirai.contact.Member
-import net.mamoe.mirai.contact.nameCardOrNick
+import net.mamoe.mirai.contact.*
+import net.mamoe.mirai.event.events.FriendMessageEvent
+import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.events.MessageRecallEvent
-import net.mamoe.mirai.message.FriendMessageEvent
-import net.mamoe.mirai.message.GroupMessageEvent
-import net.mamoe.mirai.message.data.MessageChain
+import net.mamoe.mirai.message.data.*
+import net.mamoe.mirai.message.data.Image.Key.queryUrl
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.io.File
 import java.net.DatagramPacket
 import java.net.DatagramSocket
 import java.net.InetAddress
@@ -52,8 +54,14 @@ class MessageServiceImpl : MessageService {
     @Autowired
     lateinit var bot: Bot
 
+//    @Autowired
+//    lateinit var aipOcr: AipOcr
+
     @Value("\${macAddress}")
     lateinit var macAddress: String
+
+    @Value("\${baseFilePath}")
+    lateinit var baseFilePath: String
 
     @Transactional
     override fun processMessage(event: GroupMessageEvent) {
@@ -62,7 +70,7 @@ class MessageServiceImpl : MessageService {
             syncGroup(event.group)
             syncUser(event.sender)
             syncMember(event.group, event.sender)
-            processMessageChain(event.sender, event.message, event.source.id)
+            processMessageChain(event.sender, event.message, event.source.ids.first(), event)
         }
 
     }
@@ -70,7 +78,9 @@ class MessageServiceImpl : MessageService {
     override fun processCancelMessage(event: MessageRecallEvent.GroupRecall) {
         println("cancelMessage process")
         runBlocking {
-            sendCancelMessage(event.messageId, event.group)
+            event.messageIds.forEach {
+                sendCancelMessage(it, event.group)
+            }
         }
     }
 
@@ -83,7 +93,7 @@ class MessageServiceImpl : MessageService {
         }
     }
 
-    private suspend fun processMessageChain(sender: Member, message: MessageChain, id: Int) {
+    suspend fun processMessageChain(sender: Member, message: MessageChain, id: Int, event: GroupMessageEvent) {
         val contentToString = message.contentToString()
         println("message chain contentToString = $contentToString")
         var messages = Messages()
@@ -104,10 +114,10 @@ class MessageServiceImpl : MessageService {
             val substring = contentToString.substring(2)
             runBlocking {
                 sender.group.sendMessage(
-                    "怎么百度也要我教？？？自己去看：https://www.baidu.com/baidu?wd=" + URLEncoder.encode(
-                        substring,
-                        "UTF-8"
-                    )
+                        "怎么百度也要我教？？？自己去看：https://www.baidu.com/baidu?wd=" + URLEncoder.encode(
+                                substring,
+                                "UTF-8"
+                        )
                 )
             }
         }
@@ -116,10 +126,10 @@ class MessageServiceImpl : MessageService {
             val substring = contentToString.substring(2)
             runBlocking {
                 sender.group.sendMessage(
-                    "谷歌也要我教？？？自己去看：https://www.google.com/search?q=" + URLEncoder.encode(
-                        substring,
-                        "UTF-8"
-                    )
+                        "谷歌也要我教？？？自己去看：https://www.google.com/search?q=" + URLEncoder.encode(
+                                substring,
+                                "UTF-8"
+                        )
                 )
             }
         }
@@ -128,13 +138,33 @@ class MessageServiceImpl : MessageService {
             val substring = contentToString.substring(2)
             runBlocking {
                 sender.group.sendMessage(
-                    "必应也要我教？？？自己去看：https://cn.bing.com/search?q=" + URLEncoder.encode(
-                        substring,
-                        "UTF-8"
-                    )
+                        "必应也要我教？？？自己去看：https://cn.bing.com/search?q=" + URLEncoder.encode(
+                                substring,
+                                "UTF-8"
+                        )
                 )
             }
         }
+
+        //管那么多图片都给我下回来
+        for (singleMessage in message) {
+            if (singleMessage is Image) {
+                val queryUrl = singleMessage.queryUrl()
+
+                val digestHex = MD5.create().digestHex(singleMessage.imageId)
+
+
+                val filePath = "$baseFilePath/${digestHex[digestHex.length-2]}${digestHex[digestHex.length-1]}/${singleMessage.imageId}"
+                if (!File(filePath).exists()) {
+                    HttpUtil.downloadFile(queryUrl, filePath)
+                }
+            }
+        }
+
+//        //查询虚拟币行情
+//        if (contentToString) {
+//
+//        }
 
 
     }
@@ -155,7 +185,7 @@ class MessageServiceImpl : MessageService {
         val endTime = yesterday at 23 hour 59 minute 59 second time
         for (group in bot.groups) {
             val dailyGroupMessageCount =
-                messagesMapper.getDailyGroupMessageCount(startTime.toString(), endTime.toString(), group.id)
+                    messagesMapper.getDailyGroupMessageCount(startTime.toString(), endTime.toString(), group.id)
             if (dailyGroupMessageCount.isEmpty()) {
                 continue
             }
@@ -169,13 +199,15 @@ class MessageServiceImpl : MessageService {
             val d = now1.dayOfYear * 1.0 / now1.lengthOfYear() / 2.0
             var string = "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░░░░░"
             val d1 = (string.length * (0.5 - d)).toInt()
-            stringBuilder.append("${string.substring(d1,d1 + 20)} ${String.format(
-                "%.2f",
-                now1.dayOfYear * 100.0 / now1.lengthOfYear()
-            )}% \n")
+            stringBuilder.append("${string.substring(d1, d1 + 20)} ${
+                String.format(
+                        "%.2f",
+                        now1.dayOfYear * 100.0 / now1.lengthOfYear()
+                )
+            }% \n")
 
             stringBuilder.append(
-                "本群${yesterday.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE)}日消息总量：${messageSum}条\n"
+                    "本群${yesterday.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE)}日消息总量：${messageSum}条\n"
             )
             dailyGroupMessageCount.forEach {
                 val groupHasQqUser = groupHasQqUserMapper.selectByGroupIdAndQqUserId(group.id, it.qqUserId!!)
@@ -195,7 +227,7 @@ class MessageServiceImpl : MessageService {
         val startTime = now at 0 hour 0 minute 0 second time
         val endTime = now at 23 hour 59 minute 59 second time
         val dailyGroupMessageCount =
-            messagesMapper.getDailyGroupMessageCount(startTime.toString(), endTime.toString(), group.id)
+                messagesMapper.getDailyGroupMessageCount(startTime.toString(), endTime.toString(), group.id)
         if (dailyGroupMessageCount.isEmpty()) {
             return
         }
@@ -208,12 +240,14 @@ class MessageServiceImpl : MessageService {
         val d = now1.dayOfYear * 1.0 / now1.lengthOfYear() / 2.0
         var string = "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░░░░░"
         val d1 = (string.length * (0.5 - d)).toInt()
-        stringBuilder.append("${string.substring(d1,d1 + 20)} ${String.format(
-            "%.2f",
-            now1.dayOfYear * 100.0 / now1.lengthOfYear()
-        )}% \n")
+        stringBuilder.append("${string.substring(d1, d1 + 20)} ${
+            String.format(
+                    "%.2f",
+                    now1.dayOfYear * 100.0 / now1.lengthOfYear()
+            )
+        }% \n")
         stringBuilder.append(
-            "本群${now.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE)}日消息总量：${messageSum}条\n"
+                "本群${now.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE)}日消息总量：${messageSum}条\n"
         )
         dailyGroupMessageCount.forEach {
             val groupHasQqUser = groupHasQqUserMapper.selectByGroupIdAndQqUserId(group.id, it.qqUserId!!)
@@ -255,7 +289,7 @@ class MessageServiceImpl : MessageService {
 
     override fun processFriendMessage(friendMessageEvent: FriendMessageEvent) {
         if (friendMessageEvent.sender.id == 1479712749L
-            && friendMessageEvent.message.contentToString() == "开机") {
+                && friendMessageEvent.message.contentToString() == "开机") {
             startUpMyComputer()
         }
     }
@@ -264,16 +298,16 @@ class MessageServiceImpl : MessageService {
     fun startUpMyComputer() {
 
         val command = ByteArray(102)
-        for ( i in 0 .. 6) {
+        for (i in 0..6) {
             command[i] = 0xff.toByte()
         }
         val split = macAddress.split("-")
         val macArray = ByteArray(6)
-        for ( (index, value) in split.withIndex()) {
+        for ((index, value) in split.withIndex()) {
             macArray[index] = value.toInt(16).toByte()
         }
-        for ( i in 0 .. 15) {
-            System.arraycopy(macArray,0,command, (i + 1) * 6 , 6)
+        for (i in 0..15) {
+            System.arraycopy(macArray, 0, command, (i + 1) * 6, 6)
         }
 
         println(bytesToHexString(command))

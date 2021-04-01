@@ -3,11 +3,10 @@ package com.iguigui.qqbot.bot
 import com.iguigui.qqbot.service.MessageService
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
+import net.mamoe.mirai.event.GlobalEventChannel
+import net.mamoe.mirai.event.events.FriendMessageEvent
+import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.events.MessageRecallEvent
-import net.mamoe.mirai.event.subscribe
-import net.mamoe.mirai.event.subscribeAlways
-import net.mamoe.mirai.message.FriendMessageEvent
-import net.mamoe.mirai.message.GroupMessageEvent
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import javax.annotation.PostConstruct
@@ -40,13 +39,13 @@ class BotMessageListener {
         // 则这个 `runBlocking` 永远不会结束, 因为 `subscribeAlways` 在 `runBlocking` 的 `CoroutineScope` 下创建了一个 Job.
         // 正确的用法为:
         // 在 Bot 的 CoroutineScope 下创建一个监听事件的 Job, 则这个子 Job 会在 Bot 离线后自动完成 (complete).
-        bot.subscribeAlways<GroupMessageEvent> {
+        GlobalEventChannel.subscribeAlways<GroupMessageEvent> {
             messageService.processMessage(this)
         }
-        bot.subscribeAlways<MessageRecallEvent.GroupRecall> {
+        GlobalEventChannel.subscribeAlways<MessageRecallEvent.GroupRecall> {
             messageService.processCancelMessage(this)
         }
-        bot.subscribeAlways<FriendMessageEvent> {
+        GlobalEventChannel.subscribeAlways<FriendMessageEvent> {
             messageService.processFriendMessage(this)
         }
         messageService.processGroups(bot.groups)
