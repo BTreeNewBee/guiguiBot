@@ -67,7 +67,8 @@ dependencies {
 		exclude("net.mamoe", "mirai-core-utils")
 	}
 	implementation("net.mamoe:mirai-core-utils-jvm:$miraiVersion")
-
+	implementation("org.springframework.boot:spring-boot-starter-amqp")
+	implementation("com.github.salomonbrys.kotson:kotson:2.5.0")
 }
 
 

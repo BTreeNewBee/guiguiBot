@@ -8,6 +8,24 @@ spring:
     hikari:
       username: root
       password: admin
+  application:
+    name: rabbitmq-hello
+  rabbitmq:
+    addresses: 47.245.14.9
+    port: 5672
+    virtual-host: dev
+    username: 123456
+    password: 123456
+    listener:
+      simple:
+        prefetch: 1
+        retry:
+          initial-interval: 5000
+          max-attempts: 10
+          enabled: true
+      default-requeue-rejected: true
+
+
 
 qq:
   id: 123456
@@ -21,3 +39,5 @@ logging:
     org.springframework.web: error
 
 macAddress: 11-22-33-44-55-66
+
+

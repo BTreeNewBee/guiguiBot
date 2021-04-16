@@ -1,5 +1,6 @@
 package com.iguigui.qqbot.bot
 
+import com.iguigui.qqbot.service.GdKiller
 import com.iguigui.qqbot.service.MessageService
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
@@ -21,6 +22,9 @@ class BotMessageListener {
     @Autowired
     lateinit var messageService: MessageService
 
+    @Autowired
+    lateinit var gdKiller: GdKiller
+
     @PostConstruct
     fun listenerBotMessage() {
         // 在当前协程作用域 (CoroutineScope) 下创建一个子 Job, 监听一个事件.
@@ -41,6 +45,9 @@ class BotMessageListener {
         // 在 Bot 的 CoroutineScope 下创建一个监听事件的 Job, 则这个子 Job 会在 Bot 离线后自动完成 (complete).
         GlobalEventChannel.subscribeAlways<GroupMessageEvent> {
             messageService.processMessage(this)
+        }
+        GlobalEventChannel.subscribeAlways<GroupMessageEvent> {
+            gdKiller.processMessage(this)
         }
         GlobalEventChannel.subscribeAlways<MessageRecallEvent.GroupRecall> {
             messageService.processCancelMessage(this)
