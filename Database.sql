@@ -58,6 +58,7 @@ CREATE TABLE `messages` (
   `receiver_name` varchar(45) NOT NULL DEFAULT '' COMMENT '接收方昵称',
   `group_name` varchar(45) NOT NULL DEFAULT '',
   `message_detail` varchar(4096) NOT NULL DEFAULT '' COMMENT '消息详情',
+  `message_id` int NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
   KEY `idx_group_message` (`create_time`,`group_id`,`sender_id`) /*!80000 INVISIBLE */
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
