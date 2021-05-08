@@ -30,7 +30,6 @@ class GdKillerImpl : GdKiller {
                 "content" to contentToString,
                 "groupId" to event.sender.group.id,
         )
-        println(cclMessage.toString())
         rabbitTemplate.convertAndSend("botinfo",cclMessage.toString())
     }
 
