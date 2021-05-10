@@ -354,8 +354,8 @@ class MessageServiceImpl : MessageService {
         if (huobiArticle.size < 20) {
             for (jsonElement in articleArray) {
                 val asJsonObject = jsonElement.asJsonObject
-                val code = asJsonObject.getAsJsonObject("orderNo").asString
-                huobiArticle.add(code)
+                val id = asJsonObject.getAsJsonObject("id").asString
+                huobiArticle.add(id)
             }
             return
         }
@@ -363,12 +363,12 @@ class MessageServiceImpl : MessageService {
         for (jsonElement in articleArray) {
             val asJsonObject = jsonElement.asJsonObject
             val title = asJsonObject.getAsJsonObject("title").asString
-            val code = asJsonObject.getAsJsonObject("orderNo").asString
-            huobiArticleNew.add(code)
-            if (!huobiArticle.contains(code)) {
+            val id = asJsonObject.getAsJsonObject("id").asString
+            huobiArticleNew.add(id)
+            if (!huobiArticle.contains(id)) {
                 println("发现新文章")
                 runBlocking {
-                    bot.getGroup(694967597)?.sendMessage("发现新币上市公告，公告标题：$title ，公告地址：https://www.binance.com/zh-CN/support/announcement/$code")
+                    bot.getGroup(694967597)?.sendMessage("发现新币上市公告，公告标题：$title ，https://www.huobi.pe/support/zh-cn/detail/$id")
                 }
             }
         }
