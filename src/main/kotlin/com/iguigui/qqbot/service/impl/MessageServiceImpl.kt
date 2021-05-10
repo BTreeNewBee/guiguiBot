@@ -3,6 +3,9 @@ package com.iguigui.qqbot.service.impl
 import cn.hutool.crypto.digest.MD5
 import cn.hutool.http.HttpUtil
 import com.baidu.aip.ocr.AipOcr
+import com.github.salomonbrys.kotson.fromJson
+import com.google.gson.Gson
+import com.google.gson.JsonElement
 import com.iguigui.qqbot.dao.GroupHasQqUserMapper
 import com.iguigui.qqbot.dao.MessagesMapper
 import com.iguigui.qqbot.dao.QqGroupMapper
@@ -154,7 +157,7 @@ class MessageServiceImpl : MessageService {
                 val digestHex = MD5.create().digestHex(singleMessage.imageId)
 
 
-                val filePath = "$baseFilePath/${digestHex[digestHex.length-2]}${digestHex[digestHex.length-1]}/${singleMessage.imageId}"
+                val filePath = "$baseFilePath/${digestHex[digestHex.length - 2]}${digestHex[digestHex.length - 1]}/${singleMessage.imageId}"
                 if (!File(filePath).exists()) {
                     HttpUtil.downloadFile(queryUrl, filePath)
                 }
@@ -293,6 +296,85 @@ class MessageServiceImpl : MessageService {
             startUpMyComputer()
         }
     }
+
+
+    override fun listeningCryptocurrencySchedule() {
+        getBinance()
+        getHuobi()
+    }
+
+
+    var binanceArticle = HashSet<String>()
+
+    fun getBinance() {
+        var url = "https://www.binance.com/bapi/composite/v1/public/cms/article/catalog/list/query?catalogId=48&pageNo=1&pageSize=15"
+        val get = HttpUtil.createGet(url).header("lang", "zh-CN").execute().body()
+        var json: JsonElement = Gson().fromJson(get)
+        val articleArray = json.asJsonObject.getAsJsonObject("data").asJsonArray
+        if (binanceArticle.size < 15) {
+            for (jsonElement in articleArray) {
+                val asJsonObject = jsonElement.asJsonObject
+                val code = asJsonObject.getAsJsonObject("code").asString
+                binanceArticle.add(code)
+            }
+            return
+        }
+        var binanceArticleNew = HashSet<String>()
+        for (jsonElement in articleArray) {
+            val asJsonObject = jsonElement.asJsonObject
+            val title = asJsonObject.getAsJsonObject("title").asString
+            val code = asJsonObject.getAsJsonObject("code").asString
+            binanceArticleNew.add(code)
+            if (!binanceArticle.contains(code)) {
+                println("发现新文章")
+                if (title.contains("上市")) {
+                    println("发现新上市文章")
+                    runBlocking {
+                        bot.getGroup(694967597)?.sendMessage("发现新币上市公告，公告标题：$title ，公告地址：https://www.binance.com/zh-CN/support/announcement/$code")
+                    }
+                }
+            }
+        }
+        binanceArticle = binanceArticleNew
+    }
+
+    var huobiArticle = HashSet<String>()
+
+    fun getHuobi() {
+        var url = "https://www.huobi.pe/support/public/getList"
+        val hashMap = HashMap<String, Any>()
+        hashMap["language"] = "zh-cn"
+        hashMap["page"] = 1
+        hashMap["limit"] = 20
+        hashMap["oneLevelId"] = 360000031902
+        hashMap["twoLevelId"] = 360000039942
+        val get = HttpUtil.createPost(url).form(hashMap).header("Accept-Language", "zh-cn").execute().body()
+        var json: JsonElement = Gson().fromJson(get)
+        val articleArray = json.asJsonObject.getAsJsonObject("data").asJsonObject.getAsJsonArray("list")
+        if (huobiArticle.size < 20) {
+            for (jsonElement in articleArray) {
+                val asJsonObject = jsonElement.asJsonObject
+                val code = asJsonObject.getAsJsonObject("orderNo").asString
+                huobiArticle.add(code)
+            }
+            return
+        }
+        var huobiArticleNew = HashSet<String>()
+        for (jsonElement in articleArray) {
+            val asJsonObject = jsonElement.asJsonObject
+            val title = asJsonObject.getAsJsonObject("title").asString
+            val code = asJsonObject.getAsJsonObject("orderNo").asString
+            huobiArticleNew.add(code)
+            if (!huobiArticle.contains(code)) {
+                println("发现新文章")
+                runBlocking {
+                    bot.getGroup(694967597)?.sendMessage("发现新币上市公告，公告标题：$title ，公告地址：https://www.binance.com/zh-CN/support/announcement/$code")
+                }
+            }
+        }
+        huobiArticle = huobiArticleNew
+    }
+
 
     //把我的电脑开机
     fun startUpMyComputer() {

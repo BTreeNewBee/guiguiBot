@@ -18,4 +18,6 @@ interface MessageService {
 
     fun processFriendMessage(friendMessageEvent: FriendMessageEvent)
 
+    fun listeningCryptocurrencySchedule()
+
 }
