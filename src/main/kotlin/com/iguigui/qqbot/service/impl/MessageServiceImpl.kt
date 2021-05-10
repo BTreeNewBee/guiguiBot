@@ -330,7 +330,7 @@ class MessageServiceImpl : MessageService {
                 if (title.contains("上市")) {
                     println("发现新上市文章")
                     runBlocking {
-                        bot.getGroup(694967597)?.sendMessage("发现新币上市公告，公告标题：$title ，公告地址：https://www.binance.com/zh-CN/support/announcement/$code")
+                        bot.getGroup(694967597)!!.sendMessage("发现新币上市公告，公告标题：$title ，公告地址：https://www.binance.com/zh-CN/support/announcement/$code")
                     }
                 }
             }
@@ -368,7 +368,7 @@ class MessageServiceImpl : MessageService {
             if (!huobiArticle.contains(id)) {
                 println("发现新文章")
                 runBlocking {
-                    bot.getGroup(694967597)?.sendMessage("发现新币上市公告，公告标题：$title ，https://www.huobi.pe/support/zh-cn/detail/$id")
+                    bot.getGroup(694967597)!!.sendMessage("发现新币上市公告，公告标题：$title ，https://www.huobi.pe/support/zh-cn/detail/$id")
                 }
             }
         }
