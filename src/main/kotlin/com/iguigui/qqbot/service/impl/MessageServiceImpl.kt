@@ -299,81 +299,83 @@ class MessageServiceImpl : MessageService {
 
 
     override fun listeningCryptocurrencySchedule() {
-        getBinance()
-        getHuobi()
+//        getBinance()
+//        getHuobi()
     }
 
 
-    var binanceArticle = HashSet<String>()
-
-    fun getBinance() {
-        var url = "https://www.binance.com/bapi/composite/v1/public/cms/article/catalog/list/query?catalogId=48&pageNo=1&pageSize=15"
-        val get = HttpUtil.createGet(url).header("lang", "zh-CN").execute().body()
-        var json: JsonElement = Gson().fromJson(get)
-        val articleArray = json.asJsonObject.getAsJsonObject("data").asJsonArray
-        if (binanceArticle.size < 15) {
-            for (jsonElement in articleArray) {
-                val asJsonObject = jsonElement.asJsonObject
-                val code = asJsonObject.getAsJsonObject("code").asString
-                binanceArticle.add(code)
-            }
-            return
-        }
-        var binanceArticleNew = HashSet<String>()
-        for (jsonElement in articleArray) {
-            val asJsonObject = jsonElement.asJsonObject
-            val title = asJsonObject.getAsJsonObject("title").asString
-            val code = asJsonObject.getAsJsonObject("code").asString
-            binanceArticleNew.add(code)
-            if (!binanceArticle.contains(code)) {
-                println("发现新文章")
-                if (title.contains("上市")) {
-                    println("发现新上市文章")
-                    runBlocking {
-                        bot.getGroup(694967597)!!.sendMessage("发现新币上市公告，公告标题：$title ，公告地址：https://www.binance.com/zh-CN/support/announcement/$code")
-                    }
-                }
-            }
-        }
-        binanceArticle = binanceArticleNew
-    }
-
-    var huobiArticle = HashSet<String>()
-
-    fun getHuobi() {
-        var url = "https://www.huobi.pe/support/public/getList"
-        val hashMap = HashMap<String, Any>()
-        hashMap["language"] = "zh-cn"
-        hashMap["page"] = 1
-        hashMap["limit"] = 20
-        hashMap["oneLevelId"] = 360000031902
-        hashMap["twoLevelId"] = 360000039942
-        val get = HttpUtil.createPost(url).form(hashMap).header("Accept-Language", "zh-cn").execute().body()
-        var json: JsonElement = Gson().fromJson(get)
-        val articleArray = json.asJsonObject.getAsJsonObject("data").asJsonObject.getAsJsonArray("list")
-        if (huobiArticle.size < 20) {
-            for (jsonElement in articleArray) {
-                val asJsonObject = jsonElement.asJsonObject
-                val id = asJsonObject.getAsJsonObject("id").asString
-                huobiArticle.add(id)
-            }
-            return
-        }
-        var huobiArticleNew = HashSet<String>()
-        for (jsonElement in articleArray) {
-            val asJsonObject = jsonElement.asJsonObject
-            val title = asJsonObject.getAsJsonObject("title").asString
-            val id = asJsonObject.getAsJsonObject("id").asString
-            huobiArticleNew.add(id)
-            if (!huobiArticle.contains(id)) {
-                println("发现新文章")
-                runBlocking {
-                    bot.getGroup(694967597)!!.sendMessage("发现新币上市公告，公告标题：$title ，https://www.huobi.pe/support/zh-cn/detail/$id")
-                }
-            }
-        }
-        huobiArticle = huobiArticleNew
-    }
+//    var binanceArticle = HashSet<String>()
+//
+//    fun getBinance() {
+//        var url = "https://www.binance.com/bapi/composite/v1/public/cms/article/catalog/list/query?catalogId=48&pageNo=1&pageSize=15"
+//        val get = HttpUtil.createGet(url).header("lang", "zh-CN").execute().body()
+//        var json: JsonElement = Gson().fromJson(get)
+//        val articleArray = json.asJsonObject.getAsJsonObject("data").asJsonArray
+//        if (binanceArticle.size < 15) {
+//            for (jsonElement in articleArray) {
+//                val asJsonObject = jsonElement.asJsonObject
+//                val code = asJsonObject.getAsJsonObject("code").asString
+//                binanceArticle.add(code)
+//                println(jsonElement)
+//            }
+//            return
+//        }
+//        var binanceArticleNew = HashSet<String>()
+//        for (jsonElement in articleArray) {
+//            val asJsonObject = jsonElement.asJsonObject
+//            val title = asJsonObject.getAsJsonObject("title").asString
+//            val code = asJsonObject.getAsJsonObject("code").asString
+//            binanceArticleNew.add(code)
+//            if (!binanceArticle.contains(code)) {
+//                println("发现新文章")
+//                if (title.contains("上市")) {
+//                    println("发现新上市文章")
+//                    runBlocking {
+//                        bot.getGroup(694967597)!!.sendMessage("发现新币上市公告，公告标题：$title ，公告地址：https://www.binance.com/zh-CN/support/announcement/$code")
+//                    }
+//                }
+//            }
+//        }
+//        binanceArticle = binanceArticleNew
+//    }
+//
+//    var huobiArticle = HashSet<String>()
+//
+//    fun getHuobi() {
+//        var url = "https://www.huobi.pe/support/public/getList"
+//        val hashMap = HashMap<String, Any>()
+//        hashMap["language"] = "zh-cn"
+//        hashMap["page"] = 1
+//        hashMap["limit"] = 20
+//        hashMap["oneLevelId"] = 360000031902
+//        hashMap["twoLevelId"] = 360000039942
+//        val get = HttpUtil.createPost(url).form(hashMap).header("Accept-Language", "zh-cn").execute().body()
+//        var json: JsonElement = Gson().fromJson(get)
+//        val articleArray = json.asJsonObject.getAsJsonObject("data").asJsonObject.getAsJsonArray("list")
+//        if (huobiArticle.size < 20) {
+//            for (jsonElement in articleArray) {
+//                val asJsonObject = jsonElement.asJsonObject
+//                val id = asJsonObject.getAsJsonObject("id").asString
+//                huobiArticle.add(id)
+//                println(jsonElement)
+//            }
+//            return
+//        }
+//        var huobiArticleNew = HashSet<String>()
+//        for (jsonElement in articleArray) {
+//            val asJsonObject = jsonElement.asJsonObject
+//            val title = asJsonObject.getAsJsonObject("title").asString
+//            val id = asJsonObject.getAsJsonObject("id").asString
+//            huobiArticleNew.add(id)
+//            if (!huobiArticle.contains(id)) {
+//                println("发现新文章")
+//                runBlocking {
+//                    bot.getGroup(694967597)!!.sendMessage("发现新币上市公告，公告标题：$title ，https://www.huobi.pe/support/zh-cn/detail/$id")
+//                }
+//            }
+//        }
+//        huobiArticle = huobiArticleNew
+//    }
 
 
     //把我的电脑开机

@@ -16,9 +16,9 @@ class ListeningCryptocurrencySchedule {
     @Autowired
     lateinit var messageService: MessageService
 
-    @Scheduled(cron = "0 * * * * ?")
-    fun listeningCryptocurrencySchedule() {
-        messageService.listeningCryptocurrencySchedule()
-    }
+//    @Scheduled(cron = "0 * * * * ?")
+//    fun listeningCryptocurrencySchedule() {
+//        messageService.listeningCryptocurrencySchedule()
+//    }
 
 }
