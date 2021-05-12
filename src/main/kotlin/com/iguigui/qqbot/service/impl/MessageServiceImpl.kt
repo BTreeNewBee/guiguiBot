@@ -173,15 +173,15 @@ class MessageServiceImpl : MessageService {
             var res = ""
             val timeList: MutableList<LocalDateTime>? = foodQuestionRecord[sender.id]
             if (timeList != null && timeList.size >= 3) {
-                if (timeList[timeList.size - 1].minusSeconds(30) <= timeList[timeList.size - 4]) {
+                if (timeList[timeList.size - 1].minusSeconds(30) <= timeList[timeList.size - 3]) {
                     res = "爱吃吃，不吃拉倒，爷不伺候了"
                     foodQuestionRecord.remove(sender.id)
                 }
             } else if(timeList == null) {
-                res = "哟，爷，来了！吃点" + foods[Random(foods.size).nextInt()] + "怎么样？"
+                res = "哟，爷，来了！吃点" + foods[(foods.indices).random()] + "怎么样？"
                 foodQuestionRecord[sender.id] = mutableListOf(LocalDateTime.now())
             } else {
-                res = foods[Random(foods.size).nextInt()] + "？"
+                res = foods[(foods.indices).random()] + "？"
                 foodQuestionRecord[sender.id]?.add(LocalDateTime.now())
             }
             runBlocking {
@@ -335,6 +335,28 @@ class MessageServiceImpl : MessageService {
                 && friendMessageEvent.message.contentToString() == "开机") {
             startUpMyComputer()
         }
+//        if(friendMessageEvent.sender.id == 545784329L) {
+//            var res = ""
+//            val timeList: MutableList<LocalDateTime>? = foodQuestionRecord[545784329L]
+//            if (timeList != null && timeList.size >= 3) {
+//                if (timeList[timeList.size - 1].minusSeconds(30) <= timeList[timeList.size - 3]) {
+//                    res = "爱吃吃，不吃拉倒，爷不伺候了"
+//                    foodQuestionRecord.remove(545784329L)
+//                }
+//            } else if(timeList == null) {
+//                res = "哟，爷，来了！吃点" + foods[(foods.indices).random()] + "怎么样？"
+//                foodQuestionRecord[545784329L] = mutableListOf(LocalDateTime.now())
+//            } else {
+//                res = foods[(foods.indices).random()] + "？"
+//                foodQuestionRecord[545784329L]?.add(LocalDateTime.now())
+//            }
+//            val friend = bot.getFriend(545784329)
+//            if (friend != null) {
+//                runBlocking {
+//                    friend.sendMessage(res)
+//                }
+//            }
+//        }
     }
 
 
