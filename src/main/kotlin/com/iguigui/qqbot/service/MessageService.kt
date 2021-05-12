@@ -1,6 +1,7 @@
 package com.iguigui.qqbot.service
 
 import net.mamoe.mirai.contact.ContactList
+import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.event.events.FriendMessageEvent
 import net.mamoe.mirai.event.events.GroupMessageEvent
@@ -19,5 +20,7 @@ interface MessageService {
     fun processFriendMessage(friendMessageEvent: FriendMessageEvent)
 
     fun listeningCryptocurrencySchedule()
+
+    fun sendWeather(friend : Friend, city : String)
 
 }

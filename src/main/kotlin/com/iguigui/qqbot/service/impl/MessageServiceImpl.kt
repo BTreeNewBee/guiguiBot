@@ -15,6 +15,7 @@ import com.iguigui.qqbot.entity.Messages
 import com.iguigui.qqbot.entity.QqGroup
 import com.iguigui.qqbot.entity.QqUser
 import com.iguigui.qqbot.service.MessageService
+import com.iguigui.qqbot.util.MessageUtil
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
@@ -36,6 +37,8 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Period
 import java.time.format.DateTimeFormatter
+import javax.annotation.Resource
+import kotlin.random.Random
 
 
 @Service
@@ -54,6 +57,9 @@ class MessageServiceImpl : MessageService {
     @Autowired
     lateinit var messagesMapper: MessagesMapper
 
+    @Resource
+    lateinit var messageUtil: MessageUtil
+
     @Autowired
     lateinit var bot: Bot
 
@@ -65,6 +71,10 @@ class MessageServiceImpl : MessageService {
 
     @Value("\${baseFilePath}")
     lateinit var baseFilePath: String
+
+    var foods: List<String> = listOf("馄饨", "拉面", "烩面", "热干面", "刀削面", "油泼面", "炸酱面", "炒面", "重庆小面", "米线", "酸辣粉", "土豆粉", "螺狮粉", "凉皮儿", "麻辣烫", "肉夹馍", "羊肉汤", "炒饭", "盖浇饭", "卤肉饭", "烤肉饭", "黄焖鸡米饭", "驴肉火烧", "川菜", "麻辣香锅", "火锅", "酸菜鱼", "烤串", "披萨", "烤鸭", "汉堡", "炸鸡", "寿司", "蟹黄包", "煎饼果子", "生煎", "炒年糕")
+
+    val foodQuestionRecord: LinkedHashMap<Long, MutableList<LocalDateTime>> = linkedMapOf()
 
     @Transactional
     override fun processMessage(event: GroupMessageEvent) {
@@ -146,6 +156,36 @@ class MessageServiceImpl : MessageService {
                                 "UTF-8"
                         )
                 )
+            }
+        }
+
+        if (contentToString.startsWith("天气")) {
+            val substring = contentToString.substring(2)
+            runBlocking {
+                sender.group.sendMessage(
+                        messageUtil.getWeather(URLEncoder.encode(substring, "UTF-8"))
+                )
+            }
+        }
+
+        if ((contentToString.contains("早上") || contentToString.contains("中午") || contentToString.contains("晚上"))
+                && (contentToString.contains("吃点啥") || contentToString.contains("吃什么") || contentToString.contains("吃啥"))) {
+            var res = ""
+            val timeList: MutableList<LocalDateTime>? = foodQuestionRecord[sender.id]
+            if (timeList != null && timeList.size >= 3) {
+                if (timeList[timeList.size - 1].minusSeconds(30) <= timeList[timeList.size - 4]) {
+                    res = "爱吃吃，不吃拉倒，爷不伺候了"
+                    foodQuestionRecord.remove(sender.id)
+                }
+            } else if(timeList == null) {
+                res = "哟，爷，来了！吃点" + foods[Random(foods.size).nextInt()] + "怎么样？"
+                foodQuestionRecord[sender.id] = mutableListOf(LocalDateTime.now())
+            } else {
+                res = foods[Random(foods.size).nextInt()] + "？"
+                foodQuestionRecord[sender.id]?.add(LocalDateTime.now())
+            }
+            runBlocking {
+                sender.group.sendMessage(res)
             }
         }
 
@@ -301,6 +341,12 @@ class MessageServiceImpl : MessageService {
     override fun listeningCryptocurrencySchedule() {
 //        getBinance()
 //        getHuobi()
+    }
+
+    override fun sendWeather(friend: Friend, city : String) {
+        runBlocking {
+            friend.sendMessage(messageUtil.getWeather(city))
+        }
     }
 
 
