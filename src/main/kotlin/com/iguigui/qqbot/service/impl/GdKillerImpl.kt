@@ -6,6 +6,10 @@ import com.iguigui.qqbot.dto.CclMessage
 import com.iguigui.qqbot.service.GdKiller
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.events.GroupMessageEvent
+import net.mamoe.mirai.message.data.At
+import net.mamoe.mirai.message.data.MessageChainBuilder
+import net.mamoe.mirai.message.data.PlainText
+import net.mamoe.mirai.message.data.buildMessageChain
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -20,9 +24,6 @@ class GdKillerImpl : GdKiller {
     lateinit var rabbitTemplate: RabbitTemplate
 
     override suspend fun processMessage(event: GroupMessageEvent) {
-//        if (event.group.id != 641716978L) {
-//            return;
-//        }
         val id = event.sender.id
         val contentToString = event.message.contentToString()
         val cclMessage: JsonObject = jsonObject(
@@ -35,7 +36,15 @@ class GdKillerImpl : GdKiller {
 
     override suspend fun listeningMQMessage(message: CclMessage) {
         val group = bot.getGroup(message.groupId)
-        group!!.sendMessage(message.content)
+        if(message.atAction == 1) {
+            val chain = buildMessageChain {
+                +At(message.id)
+                +PlainText(message.content)
+            }
+            group!!.sendMessage(chain)
+        } else {
+            group!!.sendMessage(message.content)
+        }
     }
 
 
