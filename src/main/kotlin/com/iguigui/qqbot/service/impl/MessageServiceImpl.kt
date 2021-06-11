@@ -286,10 +286,6 @@ class MessageServiceImpl : MessageService {
                         sender.group.sendMessage("选锤子呢")
                     }
                 }
-            } else {
-                runBlocking {
-                    sender.group.sendMessage("你没点就别瞎选")
-                }
             }
         } catch (e: NumberFormatException) {
             println("不是数字")
