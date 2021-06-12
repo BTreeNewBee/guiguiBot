@@ -4,6 +4,8 @@ import cn.hutool.crypto.digest.MD5
 import cn.hutool.http.HttpUtil
 import com.baidu.aip.ocr.AipOcr
 import com.github.salomonbrys.kotson.fromJson
+import com.github.salomonbrys.kotson.get
+import com.github.salomonbrys.kotson.int
 import com.google.gson.Gson
 import com.google.gson.JsonElement
 import com.iguigui.qqbot.dao.GroupHasQqUserMapper
@@ -38,6 +40,7 @@ import java.time.LocalDateTime
 import java.time.Period
 import java.time.format.DateTimeFormatter
 import javax.annotation.Resource
+import kotlin.math.log
 import kotlin.random.Random
 
 
@@ -75,6 +78,8 @@ class MessageServiceImpl : MessageService {
     var foods: List<String> = listOf("馄饨", "拉面", "烩面", "热干面", "刀削面", "油泼面", "炸酱面", "炒面", "重庆小面", "米线", "酸辣粉", "土豆粉", "螺狮粉", "凉皮儿", "麻辣烫", "肉夹馍", "羊肉汤", "炒饭", "盖浇饭", "卤肉饭", "烤肉饭", "黄焖鸡米饭", "驴肉火烧", "川菜", "麻辣香锅", "火锅", "酸菜鱼", "烤串", "披萨", "烤鸭", "汉堡", "炸鸡", "寿司", "蟹黄包", "煎饼果子", "生煎", "炒年糕")
 
     val foodQuestionRecord: LinkedHashMap<Long, MutableList<LocalDateTime>> = linkedMapOf()
+
+    val musicQuestionRecord: LinkedHashMap<Long, MutableList<MusicShare>> = linkedMapOf()
 
     @Transactional
     override fun processMessage(event: GroupMessageEvent) {
@@ -209,6 +214,82 @@ class MessageServiceImpl : MessageService {
 //
 //        }
 
+        if (contentToString.startsWith("点歌")) {
+            musicQuestionRecord.remove(sender.id)
+            val musicList: MutableList<MusicShare> = mutableListOf()
+            val songName = contentToString.substring(2).trim()
+            val params: LinkedHashMap<String, Any> = linkedMapOf()
+            var ms = ""
+            params["s"] = songName
+            params["offset"] = 0
+            params["limit"] = 10
+            params["type"] = 1
+            val post:String = HttpUtil.post("http://music.163.com/api/search/pc", params)
+            val result: JsonElement = Gson().fromJson(post)
+            println(result)
+            println(result["result"])
+            try {
+                val totalCount: Int = result["result"]["songCount"].int //result["result"]["songCount"].toString().toInt()result
+                if (totalCount > 0) {
+                    var count = 1
+                    for (index in 0 until totalCount) {
+                        // 收费的不展示
+                        if (result["result"]["songs"][index]["fee"].int != 1) {
+                            val musicId: String = result["result"]["songs"][index]["id"].toString().trim('\"')
+                            val title: String = result["result"]["songs"][index]["name"].toString().trim('\"')
+                            val artist: String = result["result"]["songs"][index]["artists"][0]["name"].toString().trim('\"')
+                            val summary: String = result["result"]["songs"][index]["album"]["name"].toString().trim('\"')
+                            val pictureUrl: String = result["result"]["songs"][index]["album"]["blurPicUrl"].toString().trim('\"')
+                            val jumpUrl = "https://y.music.163.com/m/song/$musicId"
+                            val musicUrl = "http://music.163.com/song/media/outer/url?id=$musicId.mp3"
+                            val brief = "[分享]$title"
+                            musicList.add(MusicShare(MusicKind.NeteaseCloudMusic, title, summary, jumpUrl, pictureUrl, musicUrl, brief))
+                            println(title)
+                            println(artist)
+                            ms += "$count. $artist  $title"
+                            count++
+                            if (count > 5) {
+                                break
+                            }
+                            ms += "\n"
+                        }
+                    }
+                    musicQuestionRecord[sender.id] = musicList
+                    runBlocking {
+                        sender.group.sendMessage(ms)
+                    }
+                } else {
+                    runBlocking {
+                        sender.group.sendMessage("搜锤子呢，没有这鸽")
+                    }
+                }
+
+            } catch (e : Exception) {
+                runBlocking {
+                    sender.group.sendMessage("不要搜一些乱七八糟的东西行不行")
+                }
+            }
+        }
+
+        try {
+            val num:Int = contentToString.toInt() - 1
+            val musicList: MutableList<MusicShare>? = musicQuestionRecord[sender.id]
+            if (musicList != null) {
+                if (num >= 0 && num < musicList.size) {
+                    runBlocking {
+                        val ms:MusicShare = musicList[num]
+                        sender.group.sendMessage(ms)
+                    }
+                    musicQuestionRecord.remove(sender.id)
+                } else {
+                    runBlocking {
+                        sender.group.sendMessage("选锤子呢")
+                    }
+                }
+            }
+        } catch (e: NumberFormatException) {
+            println("不是数字")
+        }
 
     }
 
@@ -335,7 +416,7 @@ class MessageServiceImpl : MessageService {
                 && friendMessageEvent.message.contentToString() == "开机") {
             startUpMyComputer()
         }
-//        if(friendMessageEvent.sender.id == 545784329L) {
+        if(friendMessageEvent.sender.id == 545784329L) {
 //            var res = ""
 //            val timeList: MutableList<LocalDateTime>? = foodQuestionRecord[545784329L]
 //            if (timeList != null && timeList.size >= 3) {
@@ -356,7 +437,11 @@ class MessageServiceImpl : MessageService {
 //                    friend.sendMessage(res)
 //                }
 //            }
-//        }
+//            val friend = bot.getFriend(545784329)
+//            if (friend != null) {
+//                testMusic(friend)
+//            }
+        }
     }
 
 
