@@ -35,18 +35,23 @@ class GdKillerImpl : GdKiller {
     }
 
     override suspend fun listeningMQMessage(message: CclMessage) {
-        println(message)
-        return
-//        val group = bot.getGroup(message.groupId)
-//        if(message.atAction == 1) {
-//            val chain = buildMessageChain {
-//                +At(message.id)
-//                +PlainText(message.content)
-//            }
-//            group!!.sendMessage(chain)
-//        } else {
-//            group!!.sendMessage(message.content)
-//        }
+        if (message.groupId == 1049125084L) {
+            return
+        }
+        val group = bot.getGroup(message.groupId)
+        if (group == null) {
+            println("group not found message $message")
+            return
+        }
+        if(message.atAction == 1) {
+            val chain = buildMessageChain {
+                +At(message.id)
+                +PlainText(message.content)
+            }
+            group.sendMessage(chain)
+        } else {
+            group.sendMessage(message.content)
+        }
     }
 
 

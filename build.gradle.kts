@@ -56,8 +56,14 @@ dependencies {
 	implementation("com.squareup:gifencoder:0.10.1")
 
 	val miraiVersion = "2.7.0"
-	api("net.mamoe", "mirai-core-api", miraiVersion)     // 编译代码使用
-	runtimeOnly("net.mamoe", "mirai-core", miraiVersion) // 运行时使用
+	implementation("net.mamoe:mirai-core-jvm:$miraiVersion") {
+		exclude("net.mamoe","mirai-core-api")
+		exclude("net.mamoe","mirai-core-utils")
+	}
+	implementation("net.mamoe:mirai-core-api-jvm:$miraiVersion") {
+		exclude("net.mamoe", "mirai-core-utils")
+	}
+	implementation("net.mamoe:mirai-core-utils-jvm:$miraiVersion")
 
 	//强制指定版本号，不知道哪里版本冲突了很生气
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.5.0")
