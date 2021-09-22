@@ -288,7 +288,6 @@ class MessageServiceImpl : MessageService {
                 }
             }
         } catch (e: NumberFormatException) {
-            println("不是数字")
         }
 
     }

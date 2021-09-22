@@ -4,20 +4,19 @@ plugins {
 	id("org.springframework.boot") version "2.4.0-SNAPSHOT"
 	id("io.spring.dependency-management") version "1.0.10.RELEASE"
 //	id("io.vertx.vertx-plugin") version "0.3.1"
-	kotlin("jvm") version "1.4.10"
-	kotlin("plugin.spring") version "1.4.10"
+	kotlin("jvm") version "1.5.30"
+	kotlin("plugin.spring") version "1.5.30"
 }
 
-allOpen {
-}
+
 
 group = "com.iguigui"
 version = "0.0.1-SNAPSHOT"
 java.sourceCompatibility = JavaVersion.VERSION_11
 
-val kotlinVersion: String = "1.0.4"
+val kotlinVersion: String = "1.5.30"
 
-val miraiVersion: String = "2.5.0"
+val miraiVersion: String = "2.7.0"
 
 val vertxVersion = "3.9.0"
 
@@ -49,26 +48,24 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.boot:spring-boot-starter-test")
 	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-	implementation("org.jetbrains.kotlin:kotlin-reflect")
-	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 	implementation("org.springframework.boot:spring-boot-configuration-processor")
 	runtimeOnly("mysql:mysql-connector-java")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
-	implementation("io.netty:netty-all:4.1.29.Final")
 	implementation("com.baidu.aip:java-sdk:4.15.3")
 	implementation("cn.hutool:hutool-all:5.5.8")
 	implementation("com.squareup:gifencoder:0.10.1")
 
-	implementation("net.mamoe:mirai-core-jvm:$miraiVersion") {
-		exclude("net.mamoe","mirai-core-api")
-		exclude("net.mamoe","mirai-core-utils")
-	}
-	implementation("net.mamoe:mirai-core-api-jvm:$miraiVersion") {
-		exclude("net.mamoe", "mirai-core-utils")
-	}
-	implementation("net.mamoe:mirai-core-utils-jvm:$miraiVersion")
+	val miraiVersion = "2.7.0"
+	api("net.mamoe", "mirai-core-api", miraiVersion)     // 编译代码使用
+	runtimeOnly("net.mamoe", "mirai-core", miraiVersion) // 运行时使用
+
+	//强制指定版本号，不知道哪里版本冲突了很生气
+	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.5.0")
+	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0")
+
 	implementation("org.springframework.boot:spring-boot-starter-amqp")
 	implementation("com.github.salomonbrys.kotson:kotson:2.5.0")
+	implementation(kotlin("stdlib-jdk8"))
 }
 
 
@@ -93,3 +90,13 @@ tasks.withType<JavaCompile> {
 }
 
 
+val compileKotlin: KotlinCompile by tasks
+compileKotlin.kotlinOptions {
+	jvmTarget = "1.8"
+}
+
+
+val compileTestKotlin: KotlinCompile by tasks
+compileTestKotlin.kotlinOptions {
+	jvmTarget = "1.8"
+}
