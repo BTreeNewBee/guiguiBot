@@ -75,7 +75,45 @@ class MessageServiceImpl : MessageService {
     @Value("\${baseFilePath}")
     lateinit var baseFilePath: String
 
-    var foods: List<String> = listOf("馄饨", "拉面", "烩面", "热干面", "刀削面", "油泼面", "炸酱面", "炒面", "重庆小面", "米线", "酸辣粉", "土豆粉", "螺狮粉", "凉皮儿", "麻辣烫", "肉夹馍", "羊肉汤", "炒饭", "盖浇饭", "卤肉饭", "烤肉饭", "黄焖鸡米饭", "驴肉火烧", "川菜", "麻辣香锅", "火锅", "酸菜鱼", "烤串", "披萨", "烤鸭", "汉堡", "炸鸡", "寿司", "蟹黄包", "煎饼果子", "生煎", "炒年糕")
+    var foods: List<String> = listOf(
+        "馄饨",
+        "拉面",
+        "烩面",
+        "热干面",
+        "刀削面",
+        "油泼面",
+        "炸酱面",
+        "炒面",
+        "重庆小面",
+        "米线",
+        "酸辣粉",
+        "土豆粉",
+        "螺狮粉",
+        "凉皮儿",
+        "麻辣烫",
+        "肉夹馍",
+        "羊肉汤",
+        "炒饭",
+        "盖浇饭",
+        "卤肉饭",
+        "烤肉饭",
+        "黄焖鸡米饭",
+        "驴肉火烧",
+        "川菜",
+        "麻辣香锅",
+        "火锅",
+        "酸菜鱼",
+        "烤串",
+        "披萨",
+        "烤鸭",
+        "汉堡",
+        "炸鸡",
+        "寿司",
+        "蟹黄包",
+        "煎饼果子",
+        "生煎",
+        "炒年糕"
+    )
 
     val foodQuestionRecord: LinkedHashMap<Long, MutableList<LocalDateTime>> = linkedMapOf()
 
@@ -128,53 +166,21 @@ class MessageServiceImpl : MessageService {
             currentGroupMessageCount(sender.group);
         }
 
-        if (contentToString.startsWith("百度")) {
-            val substring = contentToString.substring(2)
-            runBlocking {
-                sender.group.sendMessage(
-                        "怎么百度也要我教？？？自己去看：https://www.baidu.com/baidu?wd=" + URLEncoder.encode(
-                                substring,
-                                "UTF-8"
-                        )
-                )
-            }
-        }
-
-        if (contentToString.startsWith("谷歌")) {
-            val substring = contentToString.substring(2)
-            runBlocking {
-                sender.group.sendMessage(
-                        "谷歌也要我教？？？自己去看：https://www.google.com/search?q=" + URLEncoder.encode(
-                                substring,
-                                "UTF-8"
-                        )
-                )
-            }
-        }
-
-        if (contentToString.startsWith("必应")) {
-            val substring = contentToString.substring(2)
-            runBlocking {
-                sender.group.sendMessage(
-                        "必应也要我教？？？自己去看：https://cn.bing.com/search?q=" + URLEncoder.encode(
-                                substring,
-                                "UTF-8"
-                        )
-                )
-            }
-        }
+        //一大堆搜索小助手功能
+        searchHelper(contentToString, sender)
 
         if (contentToString.startsWith("天气")) {
             val substring = contentToString.substring(2)
             runBlocking {
                 sender.group.sendMessage(
-                        messageUtil.getWeather(URLEncoder.encode(substring, "UTF-8"))
+                    messageUtil.getWeather(URLEncoder.encode(substring, "UTF-8"))
                 )
             }
         }
 
         if ((contentToString.contains("早上") || contentToString.contains("中午") || contentToString.contains("晚上"))
-                && (contentToString.contains("吃点啥") || contentToString.contains("吃什么") || contentToString.contains("吃啥"))) {
+            && (contentToString.contains("吃点啥") || contentToString.contains("吃什么") || contentToString.contains("吃啥"))
+        ) {
             var res = ""
             val timeList: MutableList<LocalDateTime>? = foodQuestionRecord[sender.id]
             if (timeList != null && timeList.size >= 3) {
@@ -182,7 +188,7 @@ class MessageServiceImpl : MessageService {
                     res = "爱吃吃，不吃拉倒，爷不伺候了"
                     foodQuestionRecord.remove(sender.id)
                 }
-            } else if(timeList == null) {
+            } else if (timeList == null) {
                 res = "哟，爷，来了！吃点" + foods[(foods.indices).random()] + "怎么样？"
                 foodQuestionRecord[sender.id] = mutableListOf(LocalDateTime.now())
             } else {
@@ -202,7 +208,8 @@ class MessageServiceImpl : MessageService {
                 val digestHex = MD5.create().digestHex(singleMessage.imageId)
 
 
-                val filePath = "$baseFilePath/${digestHex[digestHex.length - 2]}${digestHex[digestHex.length - 1]}/${singleMessage.imageId}"
+                val filePath =
+                    "$baseFilePath/${digestHex[digestHex.length - 2]}${digestHex[digestHex.length - 1]}/${singleMessage.imageId}"
                 if (!File(filePath).exists()) {
                     HttpUtil.downloadFile(queryUrl, filePath)
                 }
@@ -219,17 +226,16 @@ class MessageServiceImpl : MessageService {
             val musicList: MutableList<MusicShare> = mutableListOf()
             val songName = contentToString.substring(2).trim()
             val params: LinkedHashMap<String, Any> = linkedMapOf()
-            var ms = ""
+            var ms = "请输入序号选择：\n"
             params["s"] = songName
             params["offset"] = 0
             params["limit"] = 10
             params["type"] = 1
-            val post:String = HttpUtil.post("http://music.163.com/api/search/pc", params)
+            val post: String = HttpUtil.post("http://music.163.com/api/search/pc", params)
             val result: JsonElement = Gson().fromJson(post)
-            println(result)
-            println(result["result"])
             try {
-                val totalCount: Int = result["result"]["songCount"].int //result["result"]["songCount"].toString().toInt()result
+                val totalCount: Int =
+                    result["result"]["songCount"].int //result["result"]["songCount"].toString().toInt()result
                 if (totalCount > 0) {
                     var count = 1
                     for (index in 0 until totalCount) {
@@ -237,15 +243,26 @@ class MessageServiceImpl : MessageService {
                         if (result["result"]["songs"][index]["fee"].int != 1) {
                             val musicId: String = result["result"]["songs"][index]["id"].toString().trim('\"')
                             val title: String = result["result"]["songs"][index]["name"].toString().trim('\"')
-                            val artist: String = result["result"]["songs"][index]["artists"][0]["name"].toString().trim('\"')
-                            val summary: String = result["result"]["songs"][index]["album"]["name"].toString().trim('\"')
-                            val pictureUrl: String = result["result"]["songs"][index]["album"]["blurPicUrl"].toString().trim('\"')
+                            val artist: String =
+                                result["result"]["songs"][index]["artists"][0]["name"].toString().trim('\"')
+                            val summary: String =
+                                result["result"]["songs"][index]["album"]["name"].toString().trim('\"')
+                            val pictureUrl: String =
+                                result["result"]["songs"][index]["album"]["blurPicUrl"].toString().trim('\"')
                             val jumpUrl = "https://y.music.163.com/m/song/$musicId"
                             val musicUrl = "http://music.163.com/song/media/outer/url?id=$musicId.mp3"
                             val brief = "[分享]$title"
-                            musicList.add(MusicShare(MusicKind.NeteaseCloudMusic, title, summary, jumpUrl, pictureUrl, musicUrl, brief))
-                            println(title)
-                            println(artist)
+                            musicList.add(
+                                MusicShare(
+                                    MusicKind.NeteaseCloudMusic,
+                                    title,
+                                    summary,
+                                    jumpUrl,
+                                    pictureUrl,
+                                    musicUrl,
+                                    brief
+                                )
+                            )
                             ms += "$count. $artist  $title"
                             count++
                             if (count > 5) {
@@ -264,7 +281,7 @@ class MessageServiceImpl : MessageService {
                     }
                 }
 
-            } catch (e : Exception) {
+            } catch (e: Exception) {
                 runBlocking {
                     sender.group.sendMessage("不要搜一些乱七八糟的东西行不行")
                 }
@@ -272,12 +289,12 @@ class MessageServiceImpl : MessageService {
         }
 
         try {
-            val num:Int = contentToString.toInt() - 1
+            val num: Int = contentToString.toInt() - 1
             val musicList: MutableList<MusicShare>? = musicQuestionRecord[sender.id]
             if (musicList != null) {
                 if (num >= 0 && num < musicList.size) {
                     runBlocking {
-                        val ms:MusicShare = musicList[num]
+                        val ms: MusicShare = musicList[num]
                         sender.group.sendMessage(ms)
                     }
                     musicQuestionRecord.remove(sender.id)
@@ -291,6 +308,38 @@ class MessageServiceImpl : MessageService {
         }
 
     }
+
+    private val searchHelperMap : Map<String,String> = mapOf(
+        "百度" to "https://www.baidu.com/baidu?wd=",
+        "谷歌" to "https://www.google.com/search?q=",
+        "必应" to "https://cn.bing.com/search?q=",
+        "淘宝" to "https://s.taobao.com/search?q=",
+        "github" to "https://github.com/search?q=",
+    )
+
+
+
+    private fun searchHelper(contentToString: String, sender: Member) {
+        searchHelperMap.entries.forEach {
+            if (contentToString.startsWith(it.key)) {
+                val substring = contentToString.substring(2)
+                if (substring.trim().isNotEmpty()) {
+                    runBlocking {
+                        sender.group.sendMessage(
+                            "怎么${it.key}也要我教？？？自己去看"
+                        )
+                        sender.group.sendMessage(
+                            it.value + URLEncoder.encode(
+                                substring,
+                                "UTF-8"
+                            )
+                        )
+                    }
+                }
+            }
+        }
+    }
+
 
     @Transactional
     override fun processGroups(groups: ContactList<Group>) {
@@ -308,7 +357,7 @@ class MessageServiceImpl : MessageService {
         val endTime = yesterday at 23 hour 59 minute 59 second time
         for (group in bot.groups) {
             val dailyGroupMessageCount =
-                    messagesMapper.getDailyGroupMessageCount(startTime.toString(), endTime.toString(), group.id)
+                messagesMapper.getDailyGroupMessageCount(startTime.toString(), endTime.toString(), group.id)
             if (dailyGroupMessageCount.isEmpty()) {
                 continue
             }
@@ -318,19 +367,21 @@ class MessageServiceImpl : MessageService {
             stringBuilder.append("龙王排行榜\n")
 
             val now1 = LocalDate.now()
-            stringBuilder.append("今天是${now1.format(DateTimeFormatter.ISO_LOCAL_DATE)}日，今年的第${now1.dayOfYear}天，您的${now1.year}年使用进度条：\n")
+            stringBuilder.append("今天是${now1.format(DateTimeFormatter.ISO_LOCAL_DATE)}日，今年的第${now1.dayOfYear}天，剩余${now1.lengthOfYear() - now1.dayOfYear}天，您的${now1.year}年使用进度条：\n")
             val d = now1.dayOfYear * 1.0 / now1.lengthOfYear() / 2.0
             var string = "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░░░░░"
             val d1 = (string.length * (0.5 - d)).toInt()
-            stringBuilder.append("${string.substring(d1, d1 + 20)} ${
-                String.format(
+            stringBuilder.append(
+                "${string.substring(d1, d1 + 20)} ${
+                    String.format(
                         "%.2f",
                         now1.dayOfYear * 100.0 / now1.lengthOfYear()
-                )
-            }% \n")
+                    )
+                }% \n"
+            )
 
             stringBuilder.append(
-                    "本群${yesterday.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE)}日消息总量：${messageSum}条\n"
+                "本群${yesterday.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE)}日消息总量：${messageSum}条\n"
             )
             dailyGroupMessageCount.forEach {
                 val groupHasQqUser = groupHasQqUserMapper.selectByGroupIdAndQqUserId(group.id, it.qqUserId!!)
@@ -350,7 +401,7 @@ class MessageServiceImpl : MessageService {
         val startTime = now at 0 hour 0 minute 0 second time
         val endTime = now at 23 hour 59 minute 59 second time
         val dailyGroupMessageCount =
-                messagesMapper.getDailyGroupMessageCount(startTime.toString(), endTime.toString(), group.id)
+            messagesMapper.getDailyGroupMessageCount(startTime.toString(), endTime.toString(), group.id)
         if (dailyGroupMessageCount.isEmpty()) {
             return
         }
@@ -359,18 +410,24 @@ class MessageServiceImpl : MessageService {
         val stringBuilder = StringBuilder()
         stringBuilder.append("龙王排行榜\n")
         val now1 = LocalDate.now()
-        stringBuilder.append("今天是${now.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE)}日，今年的第${now1.dayOfYear}天，您的${now1.year}年使用进度条：\n")
+        stringBuilder.append(
+            "今天是${
+                now.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE)
+            }日，今年的第${now1.dayOfYear}天，您的${now1.year}年使用进度条：\n"
+        )
         val d = now1.dayOfYear * 1.0 / now1.lengthOfYear() / 2.0
         var string = "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░░░░░"
         val d1 = (string.length * (0.5 - d)).toInt()
-        stringBuilder.append("${string.substring(d1, d1 + 20)} ${
-            String.format(
+        stringBuilder.append(
+            "${string.substring(d1, d1 + 20)} ${
+                String.format(
                     "%.2f",
                     now1.dayOfYear * 100.0 / now1.lengthOfYear()
-            )
-        }% \n")
+                )
+            }% \n"
+        )
         stringBuilder.append(
-                "本群${now.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE)}日消息总量：${messageSum}条\n"
+            "本群${now.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE)}日消息总量：${messageSum}条\n"
         )
         dailyGroupMessageCount.forEach {
             val groupHasQqUser = groupHasQqUserMapper.selectByGroupIdAndQqUserId(group.id, it.qqUserId!!)
@@ -412,10 +469,11 @@ class MessageServiceImpl : MessageService {
 
     override fun processFriendMessage(friendMessageEvent: FriendMessageEvent) {
         if (friendMessageEvent.sender.id == 1479712749L
-                && friendMessageEvent.message.contentToString() == "开机") {
+            && friendMessageEvent.message.contentToString() == "开机"
+        ) {
             startUpMyComputer()
         }
-        if(friendMessageEvent.sender.id == 545784329L) {
+        if (friendMessageEvent.sender.id == 545784329L) {
 //            var res = ""
 //            val timeList: MutableList<LocalDateTime>? = foodQuestionRecord[545784329L]
 //            if (timeList != null && timeList.size >= 3) {
@@ -449,7 +507,7 @@ class MessageServiceImpl : MessageService {
 //        getHuobi()
     }
 
-    override fun sendWeather(friend: Friend, city : String) {
+    override fun sendWeather(friend: Friend, city: String) {
         runBlocking {
             friend.sendMessage(messageUtil.getWeather(city))
         }
