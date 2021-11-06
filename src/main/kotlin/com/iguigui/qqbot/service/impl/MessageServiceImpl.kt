@@ -39,7 +39,9 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Period
 import java.time.format.DateTimeFormatter
+import java.util.*
 import javax.annotation.Resource
+import kotlin.collections.LinkedHashMap
 import kotlin.math.log
 import kotlin.random.Random
 
@@ -321,18 +323,15 @@ class MessageServiceImpl : MessageService {
 
     private fun searchHelper(contentToString: String, sender: Member) {
         searchHelperMap.entries.forEach {
-            if (contentToString.startsWith(it.key)) {
+            if (contentToString.lowercase(Locale.getDefault()).startsWith(it.key)) {
                 val substring = contentToString.substring(2)
                 if (substring.trim().isNotEmpty()) {
                     runBlocking {
                         sender.group.sendMessage(
-                            "怎么${it.key}也要我教？？？自己去看"
-                        )
-                        sender.group.sendMessage(
-                            it.value + URLEncoder.encode(
-                                substring,
+                            "这也要我教？？？自己去看\n${URLEncoder.encode(
+                                substring.trim(),
                                 "UTF-8"
-                            )
+                            )}"
                         )
                     }
                 }
