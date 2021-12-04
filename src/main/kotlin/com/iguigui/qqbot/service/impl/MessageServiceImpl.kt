@@ -328,7 +328,7 @@ class MessageServiceImpl : MessageService {
                 if (substring.trim().isNotEmpty()) {
                     runBlocking {
                         sender.group.sendMessage(
-                            "这也要我教？？？自己去看\n${URLEncoder.encode(
+                            "这也要我教？？？自己去看\n${it.value + URLEncoder.encode(
                                 substring.trim(),
                                 "UTF-8"
                             )}"
