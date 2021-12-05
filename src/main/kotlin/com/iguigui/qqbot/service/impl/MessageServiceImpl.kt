@@ -12,10 +12,13 @@ import com.iguigui.qqbot.dao.GroupHasQqUserMapper
 import com.iguigui.qqbot.dao.MessagesMapper
 import com.iguigui.qqbot.dao.QqGroupMapper
 import com.iguigui.qqbot.dao.QqUserMapper
+import com.iguigui.qqbot.dto.BaseNetData
 import com.iguigui.qqbot.entity.GroupHasQqUser
 import com.iguigui.qqbot.entity.Messages
 import com.iguigui.qqbot.entity.QqGroup
 import com.iguigui.qqbot.entity.QqUser
+import com.iguigui.qqbot.net.channelPool.ChannelPool
+import com.iguigui.qqbot.net.protocol.MessageHandler
 import com.iguigui.qqbot.service.MessageService
 import com.iguigui.qqbot.util.MessageUtil
 import kotlinx.coroutines.runBlocking
@@ -67,6 +70,9 @@ class MessageServiceImpl : MessageService {
 
     @Autowired
     lateinit var bot: Bot
+
+    @Autowired
+    lateinit var messageHandler: MessageHandler
 
 //    @Autowired
 //    lateinit var aipOcr: AipOcr
@@ -470,8 +476,14 @@ class MessageServiceImpl : MessageService {
         if (friendMessageEvent.sender.id == 1479712749L
             && friendMessageEvent.message.contentToString() == "开机"
         ) {
-            startUpMyComputer()
+            messageHandler.startUp()
         }
+        if (friendMessageEvent.sender.id == 1479712749L
+            && friendMessageEvent.message.contentToString() == "重启"
+        ) {
+            messageHandler.reboot()
+        }
+
         if (friendMessageEvent.sender.id == 545784329L) {
 //            var res = ""
 //            val timeList: MutableList<LocalDateTime>? = foodQuestionRecord[545784329L]
@@ -587,31 +599,7 @@ class MessageServiceImpl : MessageService {
 //    }
 
 
-    //把我的电脑开机
-    fun startUpMyComputer() {
 
-        val command = ByteArray(102)
-        for (i in 0..6) {
-            command[i] = 0xff.toByte()
-        }
-        val split = macAddress.split("-")
-        val macArray = ByteArray(6)
-        for ((index, value) in split.withIndex()) {
-            macArray[index] = value.toInt(16).toByte()
-        }
-        for (i in 0..15) {
-            System.arraycopy(macArray, 0, command, (i + 1) * 6, 6)
-        }
-
-        println(bytesToHexString(command))
-
-        val address = InetAddress.getByName("255.255.255.255")
-        val port = 7
-        val packet = DatagramPacket(command, command.size, address, port)
-        val socket = DatagramSocket()
-        socket.send(packet)
-
-    }
 
     fun bytesToHexString(src: ByteArray?): String? {
         val stringBuilder = StringBuilder("")
