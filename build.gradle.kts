@@ -65,6 +65,8 @@ dependencies {
 	}
 	implementation("net.mamoe:mirai-core-utils-jvm:$miraiVersion")
 
+	// https://mvnrepository.com/artifact/io.netty/netty-all
+	implementation("io.netty:netty-all:4.1.54.Final")
 	//强制指定版本号，不知道哪里版本冲突了很生气
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.5.0")
 	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0")

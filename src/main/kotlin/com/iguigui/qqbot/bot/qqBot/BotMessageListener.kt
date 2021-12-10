@@ -1,8 +1,7 @@
-package com.iguigui.qqbot.bot
+package com.iguigui.qqbot.qqBot
 
 import com.iguigui.qqbot.service.GdKiller
 import com.iguigui.qqbot.service.MessageService
-import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.GlobalEventChannel
 import net.mamoe.mirai.event.events.FriendMessageEvent

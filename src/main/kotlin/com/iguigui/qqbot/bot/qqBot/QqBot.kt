@@ -1,6 +1,5 @@
-package com.iguigui.qqbot.bot
+package com.iguigui.qqbot.qqBot
 
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.BotFactory
@@ -12,7 +11,7 @@ import org.springframework.stereotype.Component
 
 @Configuration
 @Component
-class BotConfig {
+class QqBot {
 
     @Value("\${qq.id}")
     lateinit var qqId: String
