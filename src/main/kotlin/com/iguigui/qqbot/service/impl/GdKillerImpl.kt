@@ -15,7 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
 @Service
-class GdKillerImpl : GdKiller {
+open class GdKillerImpl : GdKiller {
 
     @Autowired
     lateinit var bot : Bot

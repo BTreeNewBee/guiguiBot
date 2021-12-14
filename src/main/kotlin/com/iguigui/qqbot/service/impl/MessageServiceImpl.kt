@@ -50,7 +50,7 @@ import kotlin.random.Random
 
 
 @Service
-class MessageServiceImpl : MessageService {
+open class MessageServiceImpl : MessageService {
 
 
     @Autowired

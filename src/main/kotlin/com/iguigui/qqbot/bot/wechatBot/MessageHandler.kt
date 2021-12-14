@@ -11,16 +11,13 @@ import io.netty.handler.codec.http.websocketx.*
 import io.netty.util.CharsetUtil
 import java.lang.Exception
 
-//@Component
-class MessageHandler(private val handshaker: WebSocketClientHandshaker) : SimpleChannelInboundHandler<Any?>() {
+class MessageHandler(private val handshaker: WebSocketClientHandshaker,private val wechatBot: WechatBot) : SimpleChannelInboundHandler<Any?>() {
 
     private var handshakeFuture: ChannelPromise? = null
-    fun handshakeFuture(): ChannelFuture? {
-        return handshakeFuture
-    }
 
     override fun handlerAdded(ctx: ChannelHandlerContext) {
         handshakeFuture = ctx.newPromise()
+        this.wechatBot.setChannelHandlerContext(ctx)
     }
 
     override fun channelActive(ctx: ChannelHandlerContext) {
@@ -54,11 +51,9 @@ class MessageHandler(private val handshaker: WebSocketClientHandshaker) : Simple
         }
         val frame = msg as WebSocketFrame?
         if (frame is TextWebSocketFrame) {
-            println("WebSocket Client received message: " + frame.text())
+            wechatBot.processMessage(frame.text())
         } else if (frame is PongWebSocketFrame) {
-            println("WebSocket Client received pong")
         } else if (frame is CloseWebSocketFrame) {
-            println("WebSocket Client received closing")
             ch.close()
         }
     }
@@ -69,5 +64,6 @@ class MessageHandler(private val handshaker: WebSocketClientHandshaker) : Simple
             handshakeFuture!!.setFailure(cause)
         }
         ctx.close()
+        wechatBot.login()
     }
 }

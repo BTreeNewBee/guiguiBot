@@ -11,7 +11,7 @@ import org.springframework.stereotype.Component
 
 @Configuration
 @Component
-class QqBot {
+open class QqBot {
 
     @Value("\${qq.id}")
     lateinit var qqId: String
@@ -20,7 +20,7 @@ class QqBot {
     lateinit var qqPassword: String
 
     @Bean
-    fun getBot(): Bot {
+    open fun getBot(): Bot {
 
         var bot: Bot
         runBlocking {

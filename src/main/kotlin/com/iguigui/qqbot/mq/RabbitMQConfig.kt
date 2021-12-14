@@ -5,10 +5,10 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
 @Configuration
-class RabbitMQConfig {
+open class RabbitMQConfig {
 
     @Bean
-    fun  helloQueue(): Queue {
+    open fun helloQueue(): Queue {
         return Queue("botinfo")
     }
 

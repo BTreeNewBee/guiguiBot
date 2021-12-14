@@ -6,7 +6,7 @@ import org.springframework.scheduling.annotation.EnableScheduling
 
 @SpringBootApplication
 @EnableScheduling
-class QqbotApplication
+open class QqbotApplication
 
 fun main(args: Array<String>) {
 	runApplication<QqbotApplication>(*args)

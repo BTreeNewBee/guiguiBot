@@ -4,8 +4,8 @@ plugins {
 	id("org.springframework.boot") version "2.4.0-SNAPSHOT"
 	id("io.spring.dependency-management") version "1.0.10.RELEASE"
 //	id("io.vertx.vertx-plugin") version "0.3.1"
-	kotlin("jvm") version "1.5.30"
-	kotlin("plugin.spring") version "1.5.30"
+	kotlin("jvm") version "1.6.10"
+	kotlin("plugin.serialization") version "1.6.10"
 }
 
 
@@ -54,7 +54,7 @@ dependencies {
 	implementation("com.baidu.aip:java-sdk:4.15.3")
 	implementation("cn.hutool:hutool-all:5.5.8")
 	implementation("com.squareup:gifencoder:0.10.1")
-
+	implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.1")
 	val miraiVersion = "2.7.0"
 	implementation("net.mamoe:mirai-core-jvm:$miraiVersion") {
 		exclude("net.mamoe","mirai-core-api")
