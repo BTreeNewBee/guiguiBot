@@ -1,15 +1,11 @@
 package com.iguigui.qqbot.bot.wechatBot
 
-import kotlin.Throws
-import io.netty.handler.codec.http.FullHttpResponse
-import java.lang.IllegalStateException
-import io.netty.channel.ChannelFuture
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelPromise
 import io.netty.channel.SimpleChannelInboundHandler
+import io.netty.handler.codec.http.FullHttpResponse
 import io.netty.handler.codec.http.websocketx.*
 import io.netty.util.CharsetUtil
-import java.lang.Exception
 
 class MessageHandler(private val handshaker: WebSocketClientHandshaker,private val wechatBot: WechatBot) : SimpleChannelInboundHandler<Any?>() {
 
@@ -26,6 +22,7 @@ class MessageHandler(private val handshaker: WebSocketClientHandshaker,private v
 
     override fun channelInactive(ctx: ChannelHandlerContext) {
         println("WebSocket Client disconnected!")
+        wechatBot.login()
     }
 
     @Throws(Exception::class)

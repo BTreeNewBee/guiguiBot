@@ -1,5 +1,6 @@
 package com.iguigui.qqbot.bot.wechatBot
 
+
 import com.iguigui.qqbot.bot.Bot
 import com.iguigui.qqbot.bot.Contact
 import com.iguigui.qqbot.bot.Group
@@ -13,20 +14,19 @@ import io.netty.channel.socket.nio.NioSocketChannel
 import io.netty.handler.codec.http.DefaultHttpHeaders
 import io.netty.handler.codec.http.HttpClientCodec
 import io.netty.handler.codec.http.HttpObjectAggregator
+import io.netty.handler.codec.http.websocketx.TextWebSocketFrame
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory
 import io.netty.handler.codec.http.websocketx.WebSocketVersion
 import io.netty.handler.codec.http.websocketx.extensions.compression.WebSocketClientCompressionHandler
 import io.netty.handler.ssl.SslContext
 import io.netty.handler.ssl.SslContextBuilder
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory
-import java.net.URI
-
-
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
+import io.netty.handler.stream.ChunkedWriteHandler
 import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.jsonObject
+import java.net.URI
 
 
 class WechatBot : Bot {
@@ -118,14 +118,13 @@ class WechatBot : Bot {
                     )
                 }
             })
-        b.connect(uri.host, port)
-        loadInfo()
+        val connect = b.connect(uri.host, port)
     }
 
-    private fun loadInfo() {
-        val encodeToString = Json.encodeToString(WeChatMessageDTO(USER_LIST, "", "user list"))
+    fun loadInfo() {
+        val encodeToString = Json.encodeToString(WeChatMessageDTO(USER_LIST, "null", "user list"))
         println(encodeToString)
-        ctx?.channel()?.writeAndFlush(encodeToString)
+        ctx?.channel()?.writeAndFlush(TextWebSocketFrame(encodeToString))
     }
 
     fun processMessage(message: String) {
