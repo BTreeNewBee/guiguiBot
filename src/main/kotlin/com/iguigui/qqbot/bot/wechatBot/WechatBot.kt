@@ -33,6 +33,7 @@ class WechatBot : Bot {
     val HEART_BEAT = 5005
     val RECV_TXT_MSG = 1
     val RECV_PIC_MSG = 3
+    val RECV_XML_MSG = 49 //其他奇怪类型的内容
     val USER_LIST = 5000
     val GET_USER_LIST_SUCCSESS = 5001
     val GET_USER_LIST_FAIL = 5002
@@ -135,38 +136,47 @@ class WechatBot : Bot {
             HEART_BEAT -> {
             }
             GET_USER_LIST_SUCCSESS -> {
+                println("GET_USER_LIST_SUCCSESS")
             }
             USER_LIST -> {
+                println("RECV_PIC_MSG")
                 val userListDTO = Json.decodeFromJsonElement<UserListDTO>(parseToJsonElement)
-                println(userListDTO.toString())
             }
             RECV_PIC_MSG -> {
+                println("RECV_PIC_MSG")
             }
             RECV_TXT_MSG -> {
+                println("RECV_TXT_MSG")
             }
-            AT_MSG -> {
-            }
-            PIC_MSG -> {
-            }
-            TXT_MSG -> {
+            RECV_XML_MSG -> {
+                println("RECV_XML_MSG")
             }
             GET_USER_LIST_FAIL -> {
+                println("GET_USER_LIST_FAIL")
             }
             CHATROOM_MEMBER -> {
+                println("CHATROOM_MEMBER")
             }
             CHATROOM_MEMBER_NICK -> {
+                println("CHATROOM_MEMBER_NICK")
             }
             PERSONAL_INFO -> {
+                println("PERSONAL_INFO")
             }
             DEBUG_SWITCH -> {
+                println("DEBUG_SWITCH")
             }
             PERSONAL_DETAIL -> {
+                println("PERSONAL_DETAIL")
             }
             DESTROY_ALL -> {
+                println("DESTROY_ALL")
             }
             NEW_FRIEND_REQUEST -> {
+                println("NEW_FRIEND_REQUEST")
             }
             AGREE_TO_FRIEND_REQUEST -> {
+                println("AGREE_TO_FRIEND_REQUEST")
             }
 
         }
