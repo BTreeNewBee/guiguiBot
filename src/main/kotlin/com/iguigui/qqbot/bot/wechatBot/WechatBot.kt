@@ -4,6 +4,7 @@ package com.iguigui.qqbot.bot.wechatBot
 import com.iguigui.qqbot.bot.Bot
 import com.iguigui.qqbot.bot.Contact
 import com.iguigui.qqbot.bot.Group
+import com.iguigui.qqbot.bot.wechatBot.dto.UserListDTO
 import io.netty.bootstrap.Bootstrap
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelInitializer
@@ -23,31 +24,29 @@ import io.netty.handler.ssl.SslContextBuilder
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory
 import io.netty.handler.stream.ChunkedWriteHandler
 import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.*
 import java.net.URI
 
 
 class WechatBot : Bot {
 
-    var HEART_BEAT = 5005
-    var RECV_TXT_MSG = 1
-    var RECV_PIC_MSG = 3
-    var USER_LIST = 5000
-    var GET_USER_LIST_SUCCSESS = 5001
-    var GET_USER_LIST_FAIL = 5002
-    var TXT_MSG = 555
-    var PIC_MSG = 500
-    var AT_MSG = 550
-    var CHATROOM_MEMBER = 5010//
-    var CHATROOM_MEMBER_NICK = 5020
-    var PERSONAL_INFO = 6500
-    var DEBUG_SWITCH = 6000
-    var PERSONAL_DETAIL = 6550
-    var DESTROY_ALL = 9999
-    var NEW_FRIEND_REQUEST = 37//微信好友请求消息
-    var AGREE_TO_FRIEND_REQUEST = 10000//同意微信好友请求消息
+    val HEART_BEAT = 5005
+    val RECV_TXT_MSG = 1
+    val RECV_PIC_MSG = 3
+    val USER_LIST = 5000
+    val GET_USER_LIST_SUCCSESS = 5001
+    val GET_USER_LIST_FAIL = 5002
+    val TXT_MSG = 555
+    val PIC_MSG = 500
+    val AT_MSG = 550
+    val CHATROOM_MEMBER = 5010//
+    val CHATROOM_MEMBER_NICK = 5020
+    val PERSONAL_INFO = 6500
+    val DEBUG_SWITCH = 6000
+    val PERSONAL_DETAIL = 6550
+    val DESTROY_ALL = 9999
+    val NEW_FRIEND_REQUEST = 37//微信好友请求消息
+    val AGREE_TO_FRIEND_REQUEST = 10000//同意微信好友请求消息
 
     var ctx: ChannelHandlerContext? = null
 
@@ -123,23 +122,23 @@ class WechatBot : Bot {
 
     fun loadInfo() {
         val encodeToString = Json.encodeToString(WeChatMessageDTO(USER_LIST, "null", "user list"))
-        println(encodeToString)
         ctx?.channel()?.writeAndFlush(TextWebSocketFrame(encodeToString))
     }
 
     fun processMessage(message: String) {
         val parseToJsonElement = Json.parseToJsonElement(message)
-        println(message)
-        val get : JsonElement? = parseToJsonElement.jsonObject.get("type")
-        println(get)
-        println(get?.javaClass)
-        when (1) {
+        val type = parseToJsonElement.jsonObject["type"]?.jsonPrimitive?.int
+        if (type != HEART_BEAT) {
+            println(parseToJsonElement)
+        }
+        when (parseToJsonElement.jsonObject["type"]?.jsonPrimitive?.int) {
             HEART_BEAT -> {
             }
             GET_USER_LIST_SUCCSESS -> {
-                println(message)
             }
             USER_LIST -> {
+                val userListDTO = Json.decodeFromJsonElement<UserListDTO>(parseToJsonElement)
+                println(userListDTO.toString())
             }
             RECV_PIC_MSG -> {
             }
@@ -171,7 +170,6 @@ class WechatBot : Bot {
             }
 
         }
-        println(parseToJsonElement)
 
     }
 

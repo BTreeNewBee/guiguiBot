@@ -7,6 +7,10 @@ import kotlinx.coroutines.launch
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
+fun main() {
+    val wechatBot = WechatBotStarter().wechatBot()
+    println(wechatBot)
+}
 
 @Configuration
 open class WechatBotStarter {
