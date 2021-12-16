@@ -19,8 +19,8 @@ class WeChatBotSchedule {
     lateinit var bot: WechatBot
 
 
-    @Scheduled(cron = "0 0 9 * * ?")
-    fun dailyGroupMessageCount() {
+    @Scheduled(cron = "0 0 9 * * 1,2,3,4,5")
+    fun morningNotice() {
         bot.groupList.forEach {
             val stringBuilder = StringBuilder()
             stringBuilder.append("摸鱼小助手提醒您：\n")
@@ -37,6 +37,14 @@ class WeChatBotSchedule {
                     )
                 }% \n"
             )
+            it.sendTextMessage(stringBuilder.toString())
+        }
+    }
+
+    @Scheduled(cron = "0 30 18 * * 1,2,3,4,5")
+    fun afternoonNotice() {
+        bot.groupList.forEach {
+            it.sendTextMessage("今天这个B班，就上到这！")
         }
     }
 

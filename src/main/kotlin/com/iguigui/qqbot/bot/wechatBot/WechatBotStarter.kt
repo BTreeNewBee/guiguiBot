@@ -16,11 +16,11 @@ fun main() {
 open class WechatBotStarter {
 
     @Bean
-    open fun wechatBot() : WechatBot {
+    open fun wechatBot(): WechatBot {
         val wechatBot = WechatBot()
         wechatBot.login()
         GlobalScope.launch {
-            delay(1000*10)
+            delay(1000 * 5)
             wechatBot.loadInfo()
         }
         println("wechat login success")
