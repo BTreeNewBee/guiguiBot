@@ -1,30 +1,35 @@
 package com.iguigui.qqbot.bot.wechatBot
 
 
+import com.iguigui.qqbot.service.WechatMessageService
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import javax.annotation.PostConstruct
 
 fun main() {
-    val wechatBot = WechatBotStarter().wechatBot()
-    println(wechatBot)
 }
 
 @Configuration
 open class WechatBotStarter {
 
-    @Bean
-    open fun wechatBot(): WechatBot {
-        val wechatBot = WechatBot()
+    @Autowired
+    lateinit var wechatMessageService: WechatMessageService
+
+    @Autowired
+    lateinit var wechatBot: WechatBot
+
+    @PostConstruct
+    open fun wechatBot() {
         wechatBot.login()
         GlobalScope.launch {
             delay(1000 * 5)
             wechatBot.loadInfo()
         }
         println("wechat login success")
-        return wechatBot
     }
 
 }
