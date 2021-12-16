@@ -4,6 +4,22 @@ package com.iguigui.qqbot.bot.wechatBot
 import com.iguigui.qqbot.bot.Bot
 import com.iguigui.qqbot.bot.Contact
 import com.iguigui.qqbot.bot.Group
+import com.iguigui.qqbot.bot.wechatBot.Constant.Companion.AGREE_TO_FRIEND_REQUEST
+import com.iguigui.qqbot.bot.wechatBot.Constant.Companion.HEART_BEAT
+import com.iguigui.qqbot.bot.wechatBot.Constant.Companion.USER_LIST
+import com.iguigui.qqbot.bot.wechatBot.Constant.Companion.CHATROOM_MEMBER
+import com.iguigui.qqbot.bot.wechatBot.Constant.Companion.CHATROOM_MEMBER_NICK
+import com.iguigui.qqbot.bot.wechatBot.Constant.Companion.DEBUG_SWITCH
+import com.iguigui.qqbot.bot.wechatBot.Constant.Companion.DESTROY_ALL
+import com.iguigui.qqbot.bot.wechatBot.Constant.Companion.GET_USER_LIST_FAIL
+import com.iguigui.qqbot.bot.wechatBot.Constant.Companion.GET_USER_LIST_SUCCSESS
+import com.iguigui.qqbot.bot.wechatBot.Constant.Companion.NEW_FRIEND_REQUEST
+import com.iguigui.qqbot.bot.wechatBot.Constant.Companion.PERSONAL_DETAIL
+import com.iguigui.qqbot.bot.wechatBot.Constant.Companion.PERSONAL_INFO
+import com.iguigui.qqbot.bot.wechatBot.Constant.Companion.RECV_PIC_MSG
+import com.iguigui.qqbot.bot.wechatBot.Constant.Companion.RECV_TXT_MSG
+import com.iguigui.qqbot.bot.wechatBot.Constant.Companion.RECV_XML_MSG
+import com.iguigui.qqbot.bot.wechatBot.dto.RecverTextMessageDTO
 import com.iguigui.qqbot.bot.wechatBot.dto.UserListDTO
 import io.netty.bootstrap.Bootstrap
 import io.netty.channel.ChannelHandlerContext
@@ -23,9 +39,12 @@ import io.netty.handler.ssl.SslContext
 import io.netty.handler.ssl.SslContextBuilder
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory
 import io.netty.handler.stream.ChunkedWriteHandler
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
 import java.net.URI
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 
 class WechatBot : Bot {
@@ -68,8 +87,13 @@ class WechatBot : Bot {
         TODO("Not yet implemented")
     }
 
-    override fun getGroupById(): Group? {
-        TODO("Not yet implemented")
+    override fun getGroupById(id: String): Group? {
+        groupList.forEach {
+            if (it.getId().equals(id)) {
+                return it
+            }
+        }
+        return null
     }
 
 
@@ -122,11 +146,14 @@ class WechatBot : Bot {
     }
 
     fun loadInfo() {
-        val encodeToString = Json.encodeToString(WeChatMessageDTO(USER_LIST, "null", "user list"))
-        ctx?.channel()?.writeAndFlush(TextWebSocketFrame(encodeToString))
+        send(Json.encodeToString(WeChatMessageDTO(USER_LIST, "null", "user list")))
+        println("load info")
     }
 
     fun processMessage(message: String) {
+        if (message == "null") {
+            return
+        }
         val parseToJsonElement = Json.parseToJsonElement(message)
         val type = parseToJsonElement.jsonObject["type"]?.jsonPrimitive?.int
         if (type != HEART_BEAT) {
@@ -147,6 +174,30 @@ class WechatBot : Bot {
             }
             RECV_TXT_MSG -> {
                 println("RECV_TXT_MSG")
+                val recverTextMessageDTO = Json.decodeFromJsonElement<RecverTextMessageDTO>(parseToJsonElement)
+                recverTextMessageDTO.content?.contains("摸鱼")?.let {
+                    if (it) {
+                        val groupById = this.getGroupById(recverTextMessageDTO.wxid!!)
+
+                        val stringBuilder = StringBuilder()
+                        stringBuilder.append("摸鱼小助手提醒您：\n")
+                        val now1 = LocalDate.now()
+                        stringBuilder.append("今天是${now1.format(DateTimeFormatter.ISO_LOCAL_DATE)}日，今年的第${now1.dayOfYear}天，剩余${now1.lengthOfYear() - now1.dayOfYear}天，您的${now1.year}年使用进度条：\n")
+                        val d = now1.dayOfYear * 1.0 / now1.lengthOfYear() / 2.0
+                        var string = "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░░░░░"
+                        val d1 = (string.length * (0.5 - d)).toInt()
+                        stringBuilder.append(
+                            "${string.substring(d1, d1 + 20)} ${
+                                String.format(
+                                    "%.2f",
+                                    now1.dayOfYear * 100.0 / now1.lengthOfYear()
+                                )
+                            }% \n"
+                        )
+
+                        groupById?.sendTextMessage(stringBuilder.toString())
+                    }
+                }
             }
             RECV_XML_MSG -> {
                 println("RECV_XML_MSG")
@@ -181,6 +232,15 @@ class WechatBot : Bot {
 
         }
 
+    }
+
+    fun send(message: String) {
+        println("send to server $message")
+        ctx?.channel()?.writeAndFlush(TextWebSocketFrame(message))
+    }
+
+    fun addGroup(group: Group) {
+        this.groupList += group
     }
 
 }
