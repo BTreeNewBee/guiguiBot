@@ -25,17 +25,17 @@ class WeChatBotSchedule {
     @Scheduled(cron = "0 0 9 * * 1,2,3,4,5")
 //    @Scheduled(cron = "0 */1 * * * ?")
     fun morningNotice() {
-        bot.groupList.forEach {
+        bot.groups.forEach {
             val moleNotice = messageUtil.getMoleNotice()
-            it.sendTextMessage(moleNotice)
+            it.value.sendTextMessage(moleNotice)
         }
     }
 
     @Scheduled(cron = "0 30 18 * * 1,2,3,4,5")
 //    @Scheduled(cron = "0 */1 * * * ?")
     fun afternoonNotice() {
-        bot.groupList.forEach {
-            it.sendTextMessage("今天这个B班，就上到这！")
+        bot.groups.forEach {
+            it.value.sendTextMessage("今天这个B班，就上到这！")
         }
     }
 

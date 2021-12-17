@@ -38,7 +38,7 @@ class WechatBot : Bot {
     @Autowired
     lateinit var wechatMessageService : WechatMessageService
 
-    var groupList: List<Group> = ArrayList()
+    var groups: MutableMap<String,Group> = mutableMapOf()
 
     var contactList: List<Contact>? = null
 
@@ -55,12 +55,7 @@ class WechatBot : Bot {
     }
 
     override fun getGroupById(id: String): Group? {
-        groupList.forEach {
-            if (it.getId().equals(id)) {
-                return it
-            }
-        }
-        return null
+        return groups[id]
     }
 
 
@@ -127,7 +122,9 @@ class WechatBot : Bot {
     }
 
     fun addGroup(group: Group) {
-        this.groupList += group
+        group.getId()?.let {
+            this.groups.put(it,group)
+        }
     }
 
 }

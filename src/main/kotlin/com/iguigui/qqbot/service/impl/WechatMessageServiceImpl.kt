@@ -90,7 +90,7 @@ class WechatMessageServiceImpl : WechatMessageService {
                 println("NEW_FRIEND_REQUEST")
             }
             Constant.AGREE_TO_FRIEND_REQUEST -> {
-                println("AGREE_TO_FRIEND_REQUEST")
+                wechatBot.loadInfo()
             }
 
         }
