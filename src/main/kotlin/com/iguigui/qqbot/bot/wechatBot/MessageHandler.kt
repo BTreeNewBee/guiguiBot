@@ -1,13 +1,21 @@
 package com.iguigui.qqbot.bot.wechatBot
 
+import com.iguigui.qqbot.schedule.daily.DailyGroupMessageCount
+import io.netty.channel.ChannelFutureListener
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelPromise
 import io.netty.channel.SimpleChannelInboundHandler
 import io.netty.handler.codec.http.FullHttpResponse
 import io.netty.handler.codec.http.websocketx.*
+import io.netty.handler.timeout.IdleState
+import io.netty.handler.timeout.IdleStateEvent
 import io.netty.util.CharsetUtil
+import org.apache.commons.logging.LogFactory
+
 
 class MessageHandler(private val handshaker: WebSocketClientHandshaker,private val wechatBot: WechatBot) : SimpleChannelInboundHandler<Any?>() {
+
+    val log = LogFactory.getLog(DailyGroupMessageCount::class.java)!!
 
     private var handshakeFuture: ChannelPromise? = null
 
@@ -61,6 +69,22 @@ class MessageHandler(private val handshaker: WebSocketClientHandshaker,private v
             handshakeFuture!!.setFailure(cause)
         }
         ctx.close()
-        wechatBot.login()
     }
+
+    override fun userEventTriggered(ctx: ChannelHandlerContext, evt: Any?) {
+        if (evt is IdleStateEvent) {
+            if (evt.state() == IdleState.READER_IDLE) {
+                log.info("READER_IDLE")
+                ctx.channel().close()
+                ctx.close()
+            } else if (evt.state() == IdleState.WRITER_IDLE) {
+                log.info("WRITER_IDLE")
+            } else if (evt.state() == IdleState.ALL_IDLE) {
+                log.info("ALL_IDLE")
+            }
+        } else {
+            super.userEventTriggered(ctx, evt)
+        }
+    }
+
 }

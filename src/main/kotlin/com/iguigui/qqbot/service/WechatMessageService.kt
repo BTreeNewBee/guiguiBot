@@ -4,4 +4,6 @@ interface WechatMessageService {
 
     fun processMessage(message: String)
 
+    fun dailyGroupMessageCount()
+
 }

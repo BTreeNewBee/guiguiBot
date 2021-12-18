@@ -61,7 +61,7 @@ class GeneratorTest {
         var dsc = com.baomidou.mybatisplus.generator.config.DataSourceConfig()
         dsc.dbType = DbType.MYSQL
         dsc.driverName = "com.mysql.cj.jdbc.Driver"
-        dsc.url = "jdbc:mysql://localhost:3306/qq_bot?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf8"
+        dsc.url = "jdbc:mysql://192.168.50.185:3306/qq_bot?serverTimezone=Asia/Shanghai&useUnicode=true&characterEncoding=utf8"
         dsc.username = "root"
         dsc.password = "admin"
 
@@ -98,7 +98,7 @@ class GeneratorTest {
 
         var sc = StrategyConfig()
         sc.columnNaming = NamingStrategy.underline_to_camel
-        sc.setInclude("group","group_has_qq_user","messages","qq_user")
+        sc.setInclude("wechat_group","wechat_group_has_wechat_user","wechat_messages","wechat_user")
         sc.naming = NamingStrategy.underline_to_camel
         sc.isEntityLombokModel = true
         sc.isRestControllerStyle = true

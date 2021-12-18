@@ -2,17 +2,21 @@ package com.iguigui.qqbot.util;
 
 import cn.hutool.http.HttpUtil
 import com.google.gson.Gson
+import com.iguigui.qqbot.bot.wechatBot.dto.RecverTextMessageDTO
+import com.iguigui.qqbot.dto.HolidayInfo
 import com.iguigui.qqbot.dto.Weather
 import com.iguigui.qqbot.dto.WeatherResponse
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.*
+import org.assertj.core.util.Arrays
 import org.springframework.stereotype.Component
 import org.springframework.stereotype.Service
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
+import javax.annotation.PostConstruct
 
 @Service
 @Component
@@ -62,30 +66,70 @@ class MessageUtil {
         }
 
         val now1 = LocalDate.now()
-        stringBuilder.append("今天是${now1.format(DateTimeFormatter.ISO_LOCAL_DATE)}日，今年的第${now1.dayOfYear}天，剩余${now1.lengthOfYear() - now1.dayOfYear}天，您的${now1.year}年使用进度条：\n")
-        val d = now1.dayOfYear * 1.0 / now1.lengthOfYear() / 2.0
-        var string = "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░░░░░"
-        val d1 = (string.length * (0.5 - d)).toInt()
-        stringBuilder.append(
-            "${string.substring(d1, d1 + 20)} ${
-                String.format(
-                    "%.2f",
-                    now1.dayOfYear * 100.0 / now1.lengthOfYear()
-                )
-            }% \n"
-        )
+        stringBuilder.append("今天是${now1.format(DateTimeFormatter.ISO_LOCAL_DATE)}日，今年的第${now1.dayOfYear}天，剩余${now1.lengthOfYear() - now1.dayOfYear}天\n")
+
+        holidayInfo.forEach {
+            val date = LocalDate.parse(it.date.toString(), DateTimeFormatter.BASIC_ISO_DATE)
+            if (date.isEqual(now1)) {
+                stringBuilder.append("${it.holiday_cn}到了，我宣布全群放假！\n")
+            } else {
+                val toDays = now1.until(date,ChronoUnit.DAYS)
+                if (toDays < 355) {
+                    stringBuilder.append("距离${it.holiday_cn}还有${toDays}天\n")
+                }
+            }
+        }
         val weather = getWeather("深圳")
         stringBuilder.append(weather)
         return stringBuilder.toString()
     }
 
+    var holidayInfo : MutableList<HolidayInfo> = mutableListOf()
+
+    @PostConstruct
     fun getNextYearHoliday() {
-        val format = LocalDate.now()
-        val url = "https://api.apihubs.cn/holiday/get?field=date,holiday,workday&year=${format.year}&holiday_legal=1&size=365"
+        var holidayInfo : MutableList<HolidayInfo> = mutableListOf()
+
+        val mutableListOf = mutableListOf<HolidayInfo>()
+        val now = LocalDate.now()
+        val holidayInfo1 = getHolidayInfo(now.year.toString())
+        holidayInfo1?.let {
+            mutableListOf.addAll(Json.decodeFromJsonElement(it))
+        }
+        val holidayInfo2 = getHolidayInfo(now.plusYears(1).year.toString())
+        holidayInfo2?.let {
+            mutableListOf.addAll(Json.decodeFromJsonElement(it))
+        }
+        mutableListOf.sortBy { it.date }
+
+
+        var holidayInfoSet : MutableSet<String> = mutableSetOf()
+        mutableListOf.forEach {
+            val parse = LocalDate.parse(it.date.toString(), DateTimeFormatter.BASIC_ISO_DATE)
+            if (parse.isBefore(now)) {
+                return@forEach
+            }
+            if (now.isEqual(parse)) {
+                println("yes data equals ! ${it}")
+            }
+
+            if (holidayInfoSet.contains(it.holiday_cn)) {
+                return@forEach
+            }
+            holidayInfoSet.add(it.holiday_cn)
+            holidayInfo.add(it)
+        }
+        this.holidayInfo = holidayInfo
+    }
+
+    /**
+     * 获取从今天开始往后的一年的节假日
+     */
+    fun getHolidayInfo(year : String) :JsonArray? {
+        val url = "https://api.apihubs.cn/holiday/get?field=date,holiday,workday&year=$year&holiday_legal=1&size=365&cn=1"
         val get = HttpUtil.get(url)
-        val parseToJsonElement = Json.parseToJsonElement(get)
-
-
+        val dataList = Json.parseToJsonElement(get).jsonObject["data"]?.jsonObject?.get("list")?.jsonArray
+        return dataList
     }
 
 }

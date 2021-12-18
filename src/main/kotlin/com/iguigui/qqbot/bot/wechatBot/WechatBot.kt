@@ -6,6 +6,7 @@ import com.iguigui.qqbot.bot.Contact
 import com.iguigui.qqbot.bot.Group
 import com.iguigui.qqbot.bot.wechatBot.Constant.Companion.USER_LIST
 import com.iguigui.qqbot.service.WechatMessageService
+import com.iguigui.qqbot.service.impl.WechatMessageServiceImpl
 import io.netty.bootstrap.Bootstrap
 import io.netty.channel.ChannelHandlerContext
 import io.netty.channel.ChannelInitializer
@@ -24,9 +25,11 @@ import io.netty.handler.ssl.SslContext
 import io.netty.handler.ssl.SslContextBuilder
 import io.netty.handler.ssl.util.InsecureTrustManagerFactory
 import io.netty.handler.stream.ChunkedWriteHandler
+import io.netty.handler.timeout.IdleStateHandler
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
+import org.apache.commons.logging.LogFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import java.net.URI
@@ -35,8 +38,13 @@ import java.time.format.DateTimeFormatter
 
 @Component
 class WechatBot : Bot {
+
+    val log = LogFactory.getLog(WechatBot::class.java)!!
+
     @Autowired
     lateinit var wechatMessageService : WechatMessageService
+
+    val group: EventLoopGroup = NioEventLoopGroup()
 
     var groups: MutableMap<String,Group> = mutableMapOf()
 
@@ -60,6 +68,7 @@ class WechatBot : Bot {
 
 
     override fun login() {
+        log.info("try connection")
         var handler: MessageHandler? = null
         val uri = URI("ws://192.168.50.55:5555")
         val scheme = if (uri.scheme == null) "ws" else uri.scheme
@@ -89,7 +98,6 @@ class WechatBot : Bot {
                 uri, WebSocketVersion.V13, null, true, DefaultHttpHeaders()
             ), this
         )
-        val group: EventLoopGroup = NioEventLoopGroup()
         val b = Bootstrap()
         b.group(group)
             .channel(NioSocketChannel::class.java)
@@ -100,16 +108,18 @@ class WechatBot : Bot {
                         HttpClientCodec(),
                         HttpObjectAggregator(8192),
                         WebSocketClientCompressionHandler.INSTANCE,
+                        IdleStateHandler(30,30,30),
                         handler
                     )
                 }
             })
         val connect = b.connect(uri.host, port)
+        log.info("connection finish")
     }
 
-    fun loadInfo() {
+    fun loadContactInfo() {
         send(Json.encodeToString(WeChatMessageDTO(USER_LIST, "null", "user list")))
-        println("load info")
+        log.info("load info")
     }
 
     fun processMessage(message: String) {
@@ -117,7 +127,7 @@ class WechatBot : Bot {
     }
 
     fun send(message: String) {
-        println("send to server $message")
+        log.info("send to server $message")
         ctx?.channel()?.writeAndFlush(TextWebSocketFrame(message))
     }
 

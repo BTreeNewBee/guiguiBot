@@ -11,5 +11,9 @@ interface Group {
 
     fun setId(id :String)
 
+    fun syncGroupMember()
+
+    fun syncGroupMemberNick(it: String)
+
 
 }
