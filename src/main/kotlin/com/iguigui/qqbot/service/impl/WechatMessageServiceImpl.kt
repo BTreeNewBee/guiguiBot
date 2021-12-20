@@ -259,7 +259,7 @@ class WechatMessageServiceImpl : WechatMessageService {
             val dailyGroupMessageCount =
                 wechatMessagesMapper.getDailyGroupMessageCount(startTime.toString(), endTime.toString(), groupWxId)
             if (dailyGroupMessageCount.isEmpty()) {
-                return
+                return@forEach
             }
             val messageSum = wechatMessagesMapper.getDailyGroupMessageSum(startTime.toString(), endTime.toString(), groupWxId)
             var index = 1
