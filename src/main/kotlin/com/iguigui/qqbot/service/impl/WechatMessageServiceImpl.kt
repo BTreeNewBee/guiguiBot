@@ -27,6 +27,7 @@ import net.mamoe.mirai.message.data.MusicShare
 import org.apache.commons.logging.LogFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
+import java.net.URLEncoder
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Period
@@ -138,10 +139,16 @@ class WechatMessageServiceImpl : WechatMessageService {
                         receiverTextMessageDTO.wxid?.let { groupWxId ->
                             words = if (msg.contains("夸")) {
                                 HttpUtil.get("https://chp.shadiao.app/api.php")
-                            } else if(msg.contains("骂")) {
-                                HttpUtil.get("https://zuanbot.com/api.php?level=min&lang=zh_cn")
-                            } else {
-                                messageUtil.getMoleNotice()
+                            }else {
+                                val get = HttpUtil.get(
+                                    "http://api.qingyunke.com/api.php?key=free&appid=0&msg=${
+                                        URLEncoder.encode(
+                                            msg.substring(6).trim(),
+                                            "UTF-8"
+                                        )
+                                    }"
+                                )
+                                Json.parseToJsonElement(get).jsonObject["content"].toString().replace("{br}","\n").replace("\"","")
                             }
                             words.let {
                                 wechatBot.getGroupById(groupWxId)?.sendTextMessage(it)
