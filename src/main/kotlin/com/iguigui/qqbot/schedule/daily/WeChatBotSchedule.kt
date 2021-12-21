@@ -57,17 +57,17 @@ class WeChatBotSchedule {
 
     }
 
-    @Scheduled(cron = "1 0 9 * * ?")
-//    @Scheduled(cron = "0 */1 * * * ?")
-    fun morningNotice() {
-        if (!todayIsWorkDay) {
-            return
-        }
-        bot.groups.forEach {
-            val moleNotice = messageUtil.getMoleNotice()
-            it.value.sendTextMessage(moleNotice)
-        }
-    }
+//    @Scheduled(cron = "1 0 9 * * ?")
+////    @Scheduled(cron = "0 */1 * * * ?")
+//    fun morningNotice() {
+//        if (!todayIsWorkDay) {
+//            return
+//        }
+//        bot.groups.forEach {
+//            val moleNotice = messageUtil.getMoleNotice()
+//            it.value.sendTextMessage(moleNotice)
+//        }
+//    }
 
     @Scheduled(cron = "0 30 18 * * ?")
 //    @Scheduled(cron = "0 */1 * * * ?")

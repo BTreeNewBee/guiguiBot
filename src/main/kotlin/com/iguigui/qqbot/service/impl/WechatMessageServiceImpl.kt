@@ -1,6 +1,11 @@
 package com.iguigui.qqbot.service.impl
 
 import cn.hutool.http.HttpUtil
+import com.github.salomonbrys.kotson.fromJson
+import com.github.salomonbrys.kotson.get
+import com.github.salomonbrys.kotson.int
+import com.google.gson.Gson
+import com.google.gson.JsonElement
 import com.iguigui.qqbot.bot.wechatBot.Constant
 import com.iguigui.qqbot.bot.wechatBot.WechatBot
 import com.iguigui.qqbot.bot.wechatBot.WechatGroupBO
@@ -15,7 +20,10 @@ import com.iguigui.qqbot.entity.WechatMessages
 import com.iguigui.qqbot.entity.WechatUser
 import com.iguigui.qqbot.service.WechatMessageService
 import com.iguigui.qqbot.util.MessageUtil
+import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.*
+import net.mamoe.mirai.message.data.MusicKind
+import net.mamoe.mirai.message.data.MusicShare
 import org.apache.commons.logging.LogFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
@@ -47,6 +55,7 @@ class WechatMessageServiceImpl : WechatMessageService {
     @Autowired
     lateinit var wechatGroupHasWechatUserMapper: WechatGroupHasWechatUserMapper
 
+    val musicQuestionRecord: LinkedHashMap<String, MutableList<String>> = linkedMapOf()
 
     override fun processMessage(message: String) {
         if (message == "null") {
@@ -167,6 +176,87 @@ class WechatMessageServiceImpl : WechatMessageService {
                             wechatBot.getGroupById(groupWxId)?.sendTextMessage(stringBuilder.toString())
                         }
                     }
+                }
+
+                if (msg.startsWith("点歌")) {
+                    val groupId = receiverTextMessageDTO.wxid
+                    val senderId = receiverTextMessageDTO.id1!!
+                    musicQuestionRecord.remove(senderId)
+                    val musicList: MutableList<String> = mutableListOf()
+                    val songName = msg.substring(2).trim()
+                    val params: LinkedHashMap<String, Any> = linkedMapOf()
+                    var ms = "请输入序号选择：\n"
+                    params["s"] = songName
+                    params["offset"] = 0
+                    params["limit"] = 10
+                    params["type"] = 1
+                    val post: String = HttpUtil.post("http://music.163.com/api/search/pc", params)
+                    log.info("search music resp $post ")
+                    val result: JsonElement = Gson().fromJson(post)
+                    try {
+                        val totalCount: Int =
+                            result["result"]["songCount"].int //result["result"]["songCount"].toString().toInt()result
+                        if (totalCount > 0) {
+                            var count = 1
+                            for (index in 0 until totalCount) {
+                                // 收费的不展示
+                                if (result["result"]["songs"][index]["fee"].int != 1) {
+                                    val musicId: String = result["result"]["songs"][index]["id"].toString().trim('\"')
+                                    val title: String = result["result"]["songs"][index]["name"].toString().trim('\"')
+                                    val artist: String =
+                                        result["result"]["songs"][index]["artists"][0]["name"].toString().trim('\"')
+                                    val summary: String =
+                                        result["result"]["songs"][index]["album"]["name"].toString().trim('\"')
+                                    val pictureUrl: String =
+                                        result["result"]["songs"][index]["album"]["blurPicUrl"].toString().trim('\"')
+                                    val jumpUrl = "分享$artist 的单曲 《$title》：https://y.music.163.com/m/song/$musicId"
+                                    musicList.add(
+                                        jumpUrl
+                                    )
+                                    ms += "$count. $artist  $title"
+                                    count++
+                                    if (count > 5) {
+                                        break
+                                    }
+                                    ms += "\n"
+                                }
+                            }
+                            musicQuestionRecord[senderId] = musicList
+                            runBlocking {
+                                wechatBot.getGroupById(groupId!!)?.sendTextMessage(ms)
+                            }
+                        } else {
+                            runBlocking {
+                                wechatBot.getGroupById(groupId!!)?.sendTextMessage("搜锤子呢，没有这鸽")
+                            }
+                        }
+
+                    } catch (e: Exception) {
+                        runBlocking {
+                            wechatBot.getGroupById(groupId!!)?.sendTextMessage("不要搜一些乱七八糟的东西行不行")
+                        }
+                    }
+                }
+
+                try {
+                    val groupId = receiverTextMessageDTO.wxid
+                    val senderId = receiverTextMessageDTO.id1!!
+                    val num: Int = msg.toInt() - 1
+                    val musicList = musicQuestionRecord[senderId]
+                    if (musicList != null) {
+                        if (num >= 0 && num < musicList.size) {
+                            runBlocking {
+                                val ms = musicList[num]
+                                wechatBot.getGroupById(groupId!!)?.sendTextMessage(ms)
+                            }
+                            musicQuestionRecord.remove(senderId)
+                        } else {
+                            runBlocking {
+                                wechatBot.getGroupById(groupId!!)?.sendTextMessage("选锤子呢")
+                            }
+                        }
+                    }
+                } catch (e: NumberFormatException) {
                 }
 
 
