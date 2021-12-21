@@ -15,7 +15,6 @@ import com.iguigui.qqbot.entity.WechatMessages
 import com.iguigui.qqbot.entity.WechatUser
 import com.iguigui.qqbot.service.WechatMessageService
 import com.iguigui.qqbot.util.MessageUtil
-import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.*
 import org.apache.commons.logging.LogFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -122,23 +121,34 @@ class WechatMessageServiceImpl : WechatMessageService {
             }
             Constant.RECV_TXT_MSG -> {
                 log.info("RECV_TXT_MSG")
-                val recverTextMessageDTO = Json.decodeFromJsonElement<RecverTextMessageDTO>(parseToJsonElement)
-                recverTextMessageDTO.content?.contains("摸鱼")?.let { mole ->
-                    if (mole) {
-                        recverTextMessageDTO.wxid?.let {
-                            wechatBot.getGroupById(it)?.sendTextMessage(messageUtil.getMoleNotice())
+                val receiverTextMessageDTO = Json.decodeFromJsonElement<RecverTextMessageDTO>(parseToJsonElement)
+                val msg = receiverTextMessageDTO.content?:""
+                msg.contains("@摸鱼助手").let { call ->
+                    if (call) {
+                        var words: String
+                        receiverTextMessageDTO.wxid?.let { groupWxId ->
+                            words = if (msg.contains("夸")) {
+                                HttpUtil.get("https://chp.shadiao.app/api.php")
+                            } else if(msg.contains("骂")) {
+                                HttpUtil.get("https://zuanbot.com/api.php?level=min&lang=zh_cn")
+                            } else {
+                                messageUtil.getMoleNotice()
+                            }
+                            words.let {
+                                wechatBot.getGroupById(groupWxId)?.sendTextMessage(it)
+                            }
                         }
                     }
                 }
 
-                recverTextMessageDTO.content?.equals("排名")?.let { rank ->
+                (msg == "排名").let { rank ->
                     if (rank) {
-                        recverTextMessageDTO.wxid?.let { groupWxId ->
+                        receiverTextMessageDTO.wxid?.let { groupWxId ->
                             val now = LocalDateTime.now()
                             val startTime = now at 0 hour 0 minute 0 second time
                             val endTime = now at 23 hour 59 minute 59 second time
                             val dailyGroupMessageCount =
-                                wechatMessagesMapper.getDailyGroupMessageCount(startTime.toString(), endTime.toString(), groupWxId)
+                                    wechatMessagesMapper.getDailyGroupMessageCount(startTime.toString(), endTime.toString(), groupWxId)
                             if (dailyGroupMessageCount.isEmpty()) {
                                 return
                             }
@@ -147,7 +157,7 @@ class WechatMessageServiceImpl : WechatMessageService {
                             val stringBuilder = StringBuilder()
                             stringBuilder.append("摸鱼排行榜\n")
                             stringBuilder.append(
-                                "本群${now.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE)}日消息总量：${messageSum}条\n"
+                                    "本群${now.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE)}日消息总量：${messageSum}条\n"
                             )
                             dailyGroupMessageCount.forEach {
                                 val groupHasQqUser = wechatGroupHasWechatUserMapper.selectByGroupIdAndUserId(groupWxId, it.userWxId!!)
@@ -159,34 +169,14 @@ class WechatMessageServiceImpl : WechatMessageService {
                     }
                 }
 
-                recverTextMessageDTO.content?.contains("@摸鱼助手")?.let { call ->
-                    if (call) {
-                        var words: String? = null
-                        recverTextMessageDTO.wxid?.let { groupWxId ->
-                            recverTextMessageDTO.content?.contains("夸")?.let { good ->
-                                if (good) {
-                                    words = HttpUtil.get("https://chp.shadiao.app/api.php")
-                                }
-                            }
-                            recverTextMessageDTO.content?.contains("骂")?.let { bad ->
-                                if (bad) {
-                                    words = HttpUtil.get("https://zuanbot.com/api.php?level=min&lang=zh_cn")
-                                }
-                            }
-                            words?.let {
-                                wechatBot.getGroupById(groupWxId)?.sendTextMessage(it)
-                            }
-                        }
-                    }
-                }
 
 
 
-                val endsWith = recverTextMessageDTO.wxid?.endsWith("@chatroom")
+                val endsWith = receiverTextMessageDTO.wxid?.endsWith("@chatroom")
                 endsWith?.let {
                     if (it) {
-                        recverTextMessageDTO.wxid?.let { groupWxId ->
-                            recverTextMessageDTO.id1?.let { userWxId ->
+                        receiverTextMessageDTO.wxid?.let { groupWxId ->
+                            receiverTextMessageDTO.id1?.let { userWxId ->
                                 var selectOne =
                                     wechatGroupHasWechatUserMapper.selectByGroupIdAndUserId(groupWxId, userWxId)
                                 if (selectOne == null) {
@@ -198,7 +188,7 @@ class WechatMessageServiceImpl : WechatMessageService {
                                 wechatMessages.groupWxId = groupWxId
                                 wechatMessages.senderWxId = userWxId
                                 wechatMessages.senderName = selectOne?.nickName
-                                wechatMessages.messageDetail = recverTextMessageDTO.content
+                                wechatMessages.messageDetail = receiverTextMessageDTO.content
                                 wechatMessagesMapper.insert(wechatMessages)
                             }
                         }
