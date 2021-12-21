@@ -1,5 +1,6 @@
 package com.iguigui.qqbot.service.impl
 
+import cn.hutool.http.HttpUtil
 import com.iguigui.qqbot.bot.wechatBot.Constant
 import com.iguigui.qqbot.bot.wechatBot.WechatBot
 import com.iguigui.qqbot.bot.wechatBot.WechatGroupBO
@@ -154,6 +155,27 @@ class WechatMessageServiceImpl : WechatMessageService {
                                 index++
                             }
                             wechatBot.getGroupById(groupWxId)?.sendTextMessage(stringBuilder.toString())
+                        }
+                    }
+                }
+
+                recverTextMessageDTO.content?.contains("@摸鱼助手")?.let { call ->
+                    if (call) {
+                        var words: String? = null
+                        recverTextMessageDTO.wxid?.let { groupWxId ->
+                            recverTextMessageDTO.content?.contains("夸")?.let { good ->
+                                if (good) {
+                                    words = HttpUtil.get("https://chp.shadiao.app/api.php")
+                                }
+                            }
+                            recverTextMessageDTO.content?.contains("骂")?.let { bad ->
+                                if (bad) {
+                                    words = HttpUtil.get("https://zuanbot.com/api.php?level=min&lang=zh_cn")
+                                }
+                            }
+                            words?.let {
+                                wechatBot.getGroupById(groupWxId)?.sendTextMessage(it)
+                            }
                         }
                     }
                 }
