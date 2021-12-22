@@ -138,7 +138,7 @@ class WechatMessageServiceImpl : WechatMessageService {
                         val msgContent = msg.substring(msg.indexOf("@摸鱼助手") + 5).trim()
                         var words: String
                         receiverTextMessageDTO.wxid?.let { groupWxId ->
-                            words = if(msgContent == "@摸鱼助手") {
+                            words = if(msgContent == "") {
                                 messageUtil.getMoleNotice()
                             } else if (msgContent.contains("夸")) {
                                 HttpUtil.get("https://chp.shadiao.app/api.php")
