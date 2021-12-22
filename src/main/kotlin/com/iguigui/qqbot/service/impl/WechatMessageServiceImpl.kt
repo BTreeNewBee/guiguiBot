@@ -135,16 +135,21 @@ class WechatMessageServiceImpl : WechatMessageService {
                 val msg = receiverTextMessageDTO.content?:""
                 msg.contains("@摸鱼助手").let { call ->
                     if (call) {
+                        val msgContent = msg.substring(msg.indexOf("@摸鱼助手") + 5).trim()
                         var words: String
                         receiverTextMessageDTO.wxid?.let { groupWxId ->
-                            words = if (msg.contains("夸")) {
+                            words = if(msgContent == "@摸鱼助手") {
+                                messageUtil.getMoleNotice()
+                            } else if (msgContent.contains("夸")) {
                                 HttpUtil.get("https://chp.shadiao.app/api.php")
+                            } else  if(msgContent.contains("q", true) && msg.contains("骂")) {
+                                HttpUtil.get("https://zuanbot.com/api.php?level=min&lang=zh_cn")
                             }else {
                                 val get = HttpUtil.get(
                                     "http://api.qingyunke.com/api.php?key=free&appid=0&msg=${
                                         URLEncoder.encode(
-                                            msg.substring(6).trim(),
-                                            "UTF-8"
+                                                msg.substring(6).trim(),
+                                                "UTF-8"
                                         )
                                     }"
                                 )
@@ -157,7 +162,7 @@ class WechatMessageServiceImpl : WechatMessageService {
                     }
                 }
 
-                (msg == "排名").let { rank ->
+                (msg == "排名" || msg == "排行").let { rank ->
                     if (rank) {
                         receiverTextMessageDTO.wxid?.let { groupWxId ->
                             val now = LocalDateTime.now()
