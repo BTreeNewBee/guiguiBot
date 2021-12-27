@@ -244,6 +244,7 @@ class WechatMessageServiceImpl : WechatMessageService {
                         }
 
                     } catch (e: Exception) {
+                        log.info(e.message)
                         runBlocking {
                             wechatBot.getGroupById(groupId!!)?.sendTextMessage("不要搜一些乱七八糟的东西行不行")
                         }
