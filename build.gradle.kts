@@ -16,7 +16,7 @@ java.sourceCompatibility = JavaVersion.VERSION_11
 
 val kotlinVersion: String = "1.5.30"
 
-val miraiVersion: String = "2.7.0"
+val miraiVersion: String = "2.10.0"
 
 val vertxVersion = "3.9.0"
 

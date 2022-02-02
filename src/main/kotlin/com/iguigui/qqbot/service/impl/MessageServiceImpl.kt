@@ -29,6 +29,8 @@ import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.events.MessageRecallEvent
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.Image.Key.queryUrl
+import net.mamoe.mirai.utils.ExternalResource
+import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -183,6 +185,28 @@ open class MessageServiceImpl : MessageService {
                 sender.group.sendMessage(
                     messageUtil.getWeather(URLEncoder.encode(substring, "UTF-8"))
                 )
+            }
+        }
+
+        if (contentToString.startsWith("来点菜")) {
+            runBlocking {
+                val group = sender.group
+                val file = File("C:\\git\\kotlin\\guiguiBot\\src\\main\\resources\\中森明菜_OH_NO,_OH_YES.amr")
+                val toExternalResource = file.toExternalResource()
+                group.sendMessage(group.uploadAudio(toExternalResource))
+                toExternalResource.close()
+            }
+        }
+
+        if (contentToString.startsWith("minako")) {
+            runBlocking {
+                val file1 = File("C:\\Users\\atmzx\\Desktop\\morningCallMinako\\minako\\")
+                val listFiles = file1.listFiles()
+                val group = sender.group
+                val file = listFiles.random()
+                val toExternalResource = file.toExternalResource()
+                group.sendMessage(group.uploadAudio(toExternalResource))
+                toExternalResource.close()
             }
         }
 
