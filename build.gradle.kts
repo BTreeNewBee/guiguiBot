@@ -74,6 +74,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-amqp")
 	implementation("com.github.salomonbrys.kotson:kotson:2.5.0")
 	implementation(kotlin("stdlib-jdk8"))
+	implementation("top.yumbo.music:yumbo-music-utils:1.2.3")
 }
 
 
