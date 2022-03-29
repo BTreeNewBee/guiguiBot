@@ -347,6 +347,7 @@ open class MessageServiceImpl : MessageService {
         "必应" to "https://cn.bing.com/search?q=",
         "淘宝" to "https://s.taobao.com/search?q=",
         "github" to "https://github.com/search?q=",
+        "b站" to "https://search.bilibili.com/all?keyword=",
     )
 
 
