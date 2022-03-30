@@ -6,6 +6,7 @@ import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.GlobalEventChannel
 import net.mamoe.mirai.event.events.FriendMessageEvent
 import net.mamoe.mirai.event.events.GroupMessageEvent
+import net.mamoe.mirai.event.events.MemberCardChangeEvent
 import net.mamoe.mirai.event.events.MessageRecallEvent
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -53,6 +54,9 @@ class BotMessageListener {
         }
         GlobalEventChannel.subscribeAlways<FriendMessageEvent> {
             messageService.processFriendMessage(this)
+        }
+        GlobalEventChannel.subscribeAlways<MemberCardChangeEvent> {
+            messageService.processMemberCardChangeEvent(this)
         }
         messageService.processGroups(bot.groups)
 

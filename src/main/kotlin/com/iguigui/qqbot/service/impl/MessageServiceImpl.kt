@@ -22,10 +22,13 @@ import com.iguigui.qqbot.net.protocol.MessageHandler
 import com.iguigui.qqbot.service.MessageService
 import com.iguigui.qqbot.util.MessageUtil
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.event.events.FriendMessageEvent
 import net.mamoe.mirai.event.events.GroupMessageEvent
+import net.mamoe.mirai.event.events.MemberCardChangeEvent
 import net.mamoe.mirai.event.events.MessageRecallEvent
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.Image.Key.queryUrl
@@ -131,7 +134,6 @@ open class MessageServiceImpl : MessageService {
 
     @Transactional
     override fun processMessage(event: GroupMessageEvent) {
-        println("message process")
         runBlocking {
             syncGroup(event.group)
             syncUser(event.sender)
@@ -142,7 +144,6 @@ open class MessageServiceImpl : MessageService {
     }
 
     override fun processCancelMessage(event: MessageRecallEvent.GroupRecall) {
-        println("cancelMessage process")
         runBlocking {
             event.messageIds.forEach {
                 sendCancelMessage(it, event.group)
@@ -248,10 +249,6 @@ open class MessageServiceImpl : MessageService {
             }
         }
 
-//        //查询虚拟币行情
-//        if (contentToString) {
-//
-//        }
 
         if (contentToString.startsWith("点歌")) {
             musicQuestionRecord.remove(sender.id)
@@ -338,6 +335,31 @@ open class MessageServiceImpl : MessageService {
             }
         } catch (e: NumberFormatException) {
         }
+//
+//        val get1 = message.get(1)
+//        println(get1)
+//        if (get1 is At) {
+//            val get2 = message.get(2)
+//            println(get2)
+//            if (get2 != null) {
+//                val msgContent = get2.contentToString()
+//                var words: String
+//                val get = HttpUtil.get(
+//                    "http://api.qingyunke.com/api.php?key=free&appid=0&msg=${
+//                        URLEncoder.encode(
+//                            msgContent.trim(),
+//                            "UTF-8"
+//                        )
+//                    }"
+//                )
+//                println(get)
+//                words = Json.parseToJsonElement(get).jsonObject["content"].toString().replace("{br}","\n").replace("\"","")
+//                println(words)
+//                words.let {
+//                    sender.group.sendMessage(words)
+//                }
+//            }
+//        }
 
     }
 
@@ -546,6 +568,12 @@ open class MessageServiceImpl : MessageService {
     override fun sendWeather(friend: Friend, city: String) {
         runBlocking {
             friend.sendMessage(messageUtil.getWeather(city))
+        }
+    }
+
+    override fun processMemberCardChangeEvent(memberCardChangeEvent: MemberCardChangeEvent) {
+        runBlocking {
+            memberCardChangeEvent.group.sendMessage("有人改名字了我不说是谁")
         }
     }
 

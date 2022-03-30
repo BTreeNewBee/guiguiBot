@@ -5,6 +5,7 @@ import net.mamoe.mirai.contact.Friend
 import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.event.events.FriendMessageEvent
 import net.mamoe.mirai.event.events.GroupMessageEvent
+import net.mamoe.mirai.event.events.MemberCardChangeEvent
 import net.mamoe.mirai.event.events.MessageRecallEvent
 
 interface MessageService {
@@ -22,5 +23,7 @@ interface MessageService {
     fun listeningCryptocurrencySchedule()
 
     fun sendWeather(friend : Friend, city : String)
+
+    fun processMemberCardChangeEvent(memberCardChangeEvent: MemberCardChangeEvent)
 
 }
