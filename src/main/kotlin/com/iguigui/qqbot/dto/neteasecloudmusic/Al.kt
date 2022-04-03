@@ -1,6 +1,6 @@
 package com.iguigui.qqbot.dto.neteasecloudmusic
 
-
+//专辑信息
 class Al {
     var picUrl: String? = null
     var name: String? = null
