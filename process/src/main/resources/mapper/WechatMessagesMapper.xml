@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.iguigui.process.dao.WechatMessagesMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.iguigui.process.entity.WechatMessages">
+        <id column="id" property="id" />
+        <result column="create_time" property="createTime" />
+        <result column="creator" property="creator" />
+        <result column="modify_time" property="modifyTime" />
+        <result column="modifier" property="modifier" />
+        <result column="message_type" property="messageType" />
+        <result column="sender_wx_id" property="senderWxId" />
+        <result column="receiver_wx_id" property="receiverWxId" />
+        <result column="group_wx_id" property="groupWxId" />
+        <result column="sender_name" property="senderName" />
+        <result column="receiver_name" property="receiverName" />
+        <result column="group_name" property="groupName" />
+        <result column="message_detail" property="messageDetail" />
+        <result column="message_id" property="messageId" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, create_time, creator, modify_time, modifier, message_type, sender_wx_id, receiver_wx_id, group_wx_id, sender_name, receiver_name, group_name, message_detail, message_id
+    </sql>
+
+</mapper>

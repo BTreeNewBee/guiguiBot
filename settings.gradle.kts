@@ -16,3 +16,4 @@ rootProject.name = "qqbot"
 include("common")
 include("qqBot")
 include("process")
+include("consumer")

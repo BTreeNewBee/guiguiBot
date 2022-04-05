@@ -1,11 +1,11 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-	id("org.springframework.boot") version "2.4.0-SNAPSHOT"
-	id("io.spring.dependency-management") version "1.0.10.RELEASE"
 //	id("io.vertx.vertx-plugin") version "0.3.1"
 	kotlin("jvm") version "1.6.10"
 	kotlin("plugin.serialization") version "1.6.10"
+	id("org.springframework.boot") version "2.4.0-SNAPSHOT"
+	id("io.spring.dependency-management") version "1.0.10.RELEASE"
 }
 
 
@@ -34,53 +34,42 @@ repositories {
 
 dependencies {
 
-//	implementation(kotlin("stdlib-jdk8"))
-//	implementation("io.vertx:vertx-core")
-//	implementation("io.vertx:vertx-lang-kotlin")
-	implementation("org.koin:koin-core:1.0.2")
-	implementation("org.slf4j:jcl-over-slf4j:1.7.20")
-	implementation("ch.qos.logback:logback-classic:1.1.7")
-	implementation("com.baomidou:mybatis-plus-boot-starter:3.4.1")
-	implementation("com.baomidou:mybatis-plus-generator:3.4.1")
-	implementation("org.apache.velocity:velocity-engine-core:2.2")
-	implementation("org.freemarker:freemarker:2.3.30")
-	implementation("org.springframework.boot:spring-boot-starter-data-redis")
-	implementation("org.springframework.boot:spring-boot-starter-web")
-	implementation("org.springframework.boot:spring-boot-starter-test")
-	implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-	implementation("org.springframework.boot:spring-boot-configuration-processor")
-	runtimeOnly("mysql:mysql-connector-java")
-	testImplementation("org.springframework.boot:spring-boot-starter-test")
-	implementation("com.baidu.aip:java-sdk:4.15.3")
-	implementation("cn.hutool:hutool-all:5.5.8")
-	implementation("com.squareup:gifencoder:0.10.1")
-	implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.1")
-	val miraiVersion = "2.7.0"
-	implementation("net.mamoe:mirai-core-jvm:$miraiVersion") {
-		exclude("net.mamoe","mirai-core-api")
-		exclude("net.mamoe","mirai-core-utils")
-	}
-	implementation("net.mamoe:mirai-core-api-jvm:$miraiVersion") {
-		exclude("net.mamoe", "mirai-core-utils")
-	}
-	implementation("net.mamoe:mirai-core-utils-jvm:$miraiVersion")
-
-	// https://mvnrepository.com/artifact/io.netty/netty-all
-	implementation("io.netty:netty-all:4.1.54.Final")
-	//强制指定版本号，不知道哪里版本冲突了很生气
-	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.5.0")
-	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.0")
-
-	implementation("org.springframework.boot:spring-boot-starter-amqp")
-	implementation("com.github.salomonbrys.kotson:kotson:2.5.0")
-	implementation(kotlin("stdlib-jdk8"))
-	implementation("top.yumbo.music:yumbo-music-utils:1.2.3")
 }
 
 
-//vertx {
-//	mainVerticle = "io.vertx.koin.example.BootstrapVerticle"
-//}
+allprojects {
+	repositories {
+		mavenCentral()
+		maven { url = uri("https://repo.spring.io/milestone") }
+		maven { url = uri("https://repo.spring.io/snapshot") }
+		jcenter()
+		google()
+		maven { url = uri ("https://dl.bintray.com/kotlin/kotlin-eap")}
+	}
+}
+
+subprojects {
+	apply(plugin = "org.jetbrains.kotlin.jvm")
+
+	repositories {
+		mavenCentral()
+	}
+
+	dependencies {
+		implementation("net.mamoe:mirai-core-api-jvm:$miraiVersion") {
+			exclude("net.mamoe", "mirai-core-utils")
+		}
+		implementation("org.springframework.boot:spring-boot-starter:2.6.0")
+		implementation("org.apache.dubbo:dubbo-spring-boot-starter:2.7.8")
+		implementation("org.apache.dubbo:dubbo-dependencies-zookeeper:2.7.8")
+		implementation("de.javakaffee:kryo-serializers:0.45")
+		implementation("com.esotericsoftware:kryo:4.0.2")
+	}
+
+
+}
+
+
 
 tasks.withType<Test> {
 	useJUnitPlatform()

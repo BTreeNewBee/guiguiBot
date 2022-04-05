@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: demo-consumer
+  devtools:
+    restart:
+      enabled: false
+dubbo:
+  application:
+    name: demo-consumer
+  registry:
+    address: zookeeper://192.168.50.185:2181
+    timeout: 15000
+  protocol:
+    name: dubbo
+    serialization: kryo
+    port: 14586
+  provider:
+    retries: 0
+  config-center:
+    timeout: 25000
+  scan:
+    base-packages: com.iguigui.consumer.service
+
+logging:
+  level:
+    org.springframework.security:
+      - debug
+      - info
+    org.springframework.web: error
+
+macAddress: 30-9C-23-D3-C1-F4
+
+baseFilePath: /root/qq_bot/img

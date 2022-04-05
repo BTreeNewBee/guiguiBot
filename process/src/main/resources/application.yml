@@ -1,0 +1,53 @@
+spring:
+  devtools:
+    restart:
+      enabled: false
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/qq_bot?serverTimezone=Asia/Shanghai
+    hikari:
+      username: 123
+      password: 123
+  application:
+    name: process
+  rabbitmq:
+    addresses: 123
+    port: 123
+    virtual-host: dev
+    username: 123
+    password: 123
+    listener:
+      simple:
+        prefetch: 1
+        retry:
+          initial-interval: 5000
+          max-attempts: 10
+          enabled: true
+      default-requeue-rejected: true
+
+dubbo:
+  application:
+    name: process
+  registry:
+    address: zookeeper://localhost:2181
+    timeout: 15000
+  protocol:
+    name: dubbo
+    serialization: kryo
+  provider:
+    retries: 0
+  consumer:
+    check: false
+  scan:
+    base-packages: com.iguigui.process.service.impl
+
+logging:
+  level:
+    org.springframework.security:
+      - debug
+      - info
+    org.springframework.web: error
+
+macAddress: 123
+
+baseFilePath: /root/qq_bot/img

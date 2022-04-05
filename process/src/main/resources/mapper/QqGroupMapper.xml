@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.iguigui.process.dao.QqGroupMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="com.iguigui.process.entity.QqGroup">
+        <id column="id" property="id" />
+        <result column="create_time" property="createTime" />
+        <result column="creator" property="creator" />
+        <result column="modify_time" property="modifyTime" />
+        <result column="modifier" property="modifier" />
+        <result column="name" property="name" />
+        <result column="user_count" property="userCount" />
+        <result column="message_count" property="messageCount" />
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, create_time, creator, modify_time, modifier, name, user_count, message_count
+    </sql>
+
+</mapper>

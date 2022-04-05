@@ -36,9 +36,9 @@ out/
 ### VS Code ###
 .vscode/
 
-src/main/resources/application-local.yml
-src/main/resources/application-prod.yml
-
 gradle.properties
 
 /cache/
+/qqBot/src/main/resources/application-local.yml
+/qqBot/src/main/resources/application-prod.yml
+/process/src/main/resources/application-prod.yml

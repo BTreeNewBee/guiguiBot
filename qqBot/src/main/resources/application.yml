@@ -1,0 +1,30 @@
+spring:
+  application:
+    name: bot
+
+dubbo:
+  application:
+    name: bot
+  registry:
+    address: zookeeper://192.168.50.185:2181
+    timeout: 15000
+  protocol:
+    name: dubbo
+    serialization: kryo
+  provider:
+    retries: 0
+  consumer:
+    check: false
+  scan:
+    base-packages: com.iguigui.service.impl
+
+qq:
+  id: 123456
+  password: 123456
+
+logging:
+  level:
+    org.springframework.security:
+      - debug
+      - info
+    org.springframework.web: error
