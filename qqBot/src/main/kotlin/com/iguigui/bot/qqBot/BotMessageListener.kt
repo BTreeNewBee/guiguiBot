@@ -49,8 +49,8 @@ class BotMessageListener {
         // 正确的用法为:
         // 在 Bot 的 CoroutineScope 下创建一个监听事件的 Job, 则这个子 Job 会在 Bot 离线后自动完成 (complete).
         GlobalEventChannel.subscribeAlways<GroupMessageEvent> {
-
-            messageService.processMessage(this)
+            val jsonObject = JSONObject.toJSON(this) as JSONObject
+            messageService.processMessage(jsonObject)
         }
 //        GlobalEventChannel.subscribeAlways<GroupMessageEvent> {
 //            gdKiller.processMessage(this)
@@ -64,7 +64,7 @@ class BotMessageListener {
         GlobalEventChannel.subscribeAlways<MemberCardChangeEvent> {
             messageService.processMemberCardChangeEvent(this)
         }
-        messageService.processGroups(bot.groups)
+//        messageService.processGroups(bot.groups)
 
 
     }

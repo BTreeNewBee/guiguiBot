@@ -23,7 +23,7 @@ open class WechatBotStarter {
     open fun wechatBot() {
         wechatBot.login()
         GlobalScope.launch {
-            delay(1000 * 5)
+            delay(1000 * 5L)
             wechatBot.loadContactInfo()
         }
         println("wechat login success")

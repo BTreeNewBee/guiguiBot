@@ -11,6 +11,7 @@ dubbo:
   protocol:
     name: dubbo
     serialization: kryo
+    port: 8866
   provider:
     retries: 0
   consumer:
