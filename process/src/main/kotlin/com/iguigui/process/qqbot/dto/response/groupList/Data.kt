@@ -1,4 +1,4 @@
-package com.iguigui.process.qqbot.dto.response.friendList
+package com.iguigui.process.qqbot.dto.response.groupList
 
 
 import kotlinx.serialization.SerialName
@@ -9,7 +9,7 @@ data class Data(
     @SerialName("code")
     val code: Int,
     @SerialName("data")
-    val `data`: List<FirendListInfo>,
+    val `data`: List<GroupListInfo>,
     @SerialName("msg")
     val msg: String
 )

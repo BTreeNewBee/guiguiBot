@@ -5,11 +5,9 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Data(
-    @SerialName("code")
-    val code: Int,
+data class FriendListResponse(
     @SerialName("data")
-    val `data`: List<FirendListInfo>,
-    @SerialName("msg")
-    val msg: String
+    val `data`: Data,
+    @SerialName("syncId")
+    val syncId: String
 )
