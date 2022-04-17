@@ -14,12 +14,12 @@ import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.UserProfile
 
 @Serializable
-internal abstract class ContactDTO : DTO {
+abstract class ContactDTO : DTO {
     abstract val id: Long
 }
 
 @Serializable
-internal data class QQDTO(
+data class QQDTO(
     override val id: Long,
     val nickname: String,
     val remark: String
@@ -30,7 +30,7 @@ internal data class QQDTO(
 
 
 @Serializable
-internal data class MemberDTO(
+data class MemberDTO(
     override val id: Long,
     val memberName: String,
     val specialTitle: String,
@@ -50,7 +50,7 @@ internal data class MemberDTO(
 }
 
 @Serializable
-internal data class GroupDTO(
+data class GroupDTO(
     override val id: Long,
     val name: String,
     val permission: MemberPermission
@@ -59,7 +59,7 @@ internal data class GroupDTO(
 }
 
 @Serializable
-internal data class OtherClientDTO(
+data class OtherClientDTO(
     override val id: Long,
     val platform: String
 ) : ContactDTO() {
@@ -67,7 +67,7 @@ internal data class OtherClientDTO(
 }
 
 @Serializable
-internal data class ComplexSubjectDTO(
+data class ComplexSubjectDTO(
     override val id: Long,
     val kind: String
 ) : ContactDTO() {
@@ -83,7 +83,7 @@ internal data class ComplexSubjectDTO(
 }
 
 @Serializable
-internal data class ProfileDTO(
+data class ProfileDTO(
     val nickname: String,
     val email: String,
     val age: Int,

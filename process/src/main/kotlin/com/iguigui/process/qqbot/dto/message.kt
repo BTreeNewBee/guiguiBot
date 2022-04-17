@@ -13,68 +13,68 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-internal sealed class MessagePacketDTO : EventDTO() {
+sealed class MessagePacketDTO : EventDTO() {
     lateinit var messageChain: MessageChainDTO
 }
 
-internal typealias MessageChainDTO = List<MessageDTO>
+typealias MessageChainDTO = List<MessageDTO>
 
 @Serializable
 @SerialName("FriendMessage")
-internal data class FriendMessagePacketDTO(val sender: QQDTO) : MessagePacketDTO()
+data class FriendMessagePacketDTO(val sender: QQDTO) : MessagePacketDTO()
 
 @Serializable
 @SerialName("FriendSyncMessage")
-internal data class FriendSyncMessagePacketDTO(val subject: QQDTO) : MessagePacketDTO()
+data class FriendSyncMessagePacketDTO(val subject: QQDTO) : MessagePacketDTO()
 
 @Serializable
 @SerialName("GroupMessage")
-internal data class GroupMessagePacketDTO(val sender: MemberDTO) : MessagePacketDTO()
+data class GroupMessagePacketDTO(val sender: MemberDTO) : MessagePacketDTO()
 
 @Serializable
 @SerialName("GroupSyncMessage")
-internal data class GroupSyncMessagePacketDTO(val subject: GroupDTO) : MessagePacketDTO()
+data class GroupSyncMessagePacketDTO(val subject: GroupDTO) : MessagePacketDTO()
 
 @Serializable
 @SerialName("TempMessage")
-internal data class TempMessagePacketDTO(val sender: MemberDTO) : MessagePacketDTO()
+data class TempMessagePacketDTO(val sender: MemberDTO) : MessagePacketDTO()
 
 @Serializable
 @SerialName("TempSyncMessage")
-internal data class TempSyncMessagePacketDTO(val subject: MemberDTO) : MessagePacketDTO()
+data class TempSyncMessagePacketDTO(val subject: MemberDTO) : MessagePacketDTO()
 
 @Serializable
 @SerialName("StrangerMessage")
-internal data class StrangerMessagePacketDTO(val sender: QQDTO) : MessagePacketDTO()
+data class StrangerMessagePacketDTO(val sender: QQDTO) : MessagePacketDTO()
 
 @Serializable
 @SerialName("StrangerSyncMessage")
-internal data class StrangerSyncMessagePacketDTO(val subject: QQDTO) : MessagePacketDTO()
+data class StrangerSyncMessagePacketDTO(val subject: QQDTO) : MessagePacketDTO()
 
 @Serializable
 @SerialName("OtherClientMessage")
-internal data class OtherClientMessagePacketDTO(val sender: OtherClientDTO) : MessagePacketDTO()
+data class OtherClientMessagePacketDTO(val sender: OtherClientDTO) : MessagePacketDTO()
 
 // Message
 @Serializable
 @SerialName("Source")
-internal data class MessageSourceDTO(val id: Int, val time: Int) : MessageDTO()
+data class MessageSourceDTO(val id: Int, val time: Int) : MessageDTO()
 
 @Serializable
 @SerialName("At")
-internal data class AtDTO(val target: Long, val display: String = "") : MessageDTO()
+data class AtDTO(val target: Long, val display: String = "") : MessageDTO()
 
 @Serializable
 @SerialName("AtAll")
-internal data class AtAllDTO(val target: Long = 0) : MessageDTO() // target为保留字段
+data class AtAllDTO(val target: Long = 0) : MessageDTO() // target为保留字段
 
 @Serializable
 @SerialName("Face")
-internal data class FaceDTO(val faceId: Int = -1, val name: String = "") : MessageDTO()
+data class FaceDTO(val faceId: Int = -1, val name: String = "") : MessageDTO()
 
 @Serializable
 @SerialName("Plain")
-internal data class PlainDTO(val text: String) : MessageDTO()
+data class PlainDTO(val text: String) : MessageDTO()
 
 internal interface ImageLikeDTO {
     val imageId: String?
@@ -93,7 +93,7 @@ internal interface VoiceLikeDTO {
 
 @Serializable
 @SerialName("Image")
-internal data class ImageDTO(
+data class ImageDTO(
     override val imageId: String? = null,
     override val url: String? = null,
     override val path: String? = null,
@@ -102,7 +102,7 @@ internal data class ImageDTO(
 
 @Serializable
 @SerialName("FlashImage")
-internal data class FlashImageDTO(
+data class FlashImageDTO(
     override val imageId: String? = null,
     override val url: String? = null,
     override val path: String? = null,
@@ -111,7 +111,7 @@ internal data class FlashImageDTO(
 
 @Serializable
 @SerialName("Voice")
-internal data class VoiceDTO(
+data class VoiceDTO(
     override val voiceId: String? = null,
     override val url: String? = null,
     override val path: String? = null,
@@ -121,19 +121,19 @@ internal data class VoiceDTO(
 
 @Serializable
 @SerialName("Xml")
-internal data class XmlDTO(val xml: String) : MessageDTO()
+data class XmlDTO(val xml: String) : MessageDTO()
 
 @Serializable
 @SerialName("Json")
-internal data class JsonDTO(val json: String) : MessageDTO()
+data class JsonDTO(val json: String) : MessageDTO()
 
 @Serializable
 @SerialName("App")
-internal data class AppDTO(val content: String) : MessageDTO()
+data class AppDTO(val content: String) : MessageDTO()
 
 @Serializable
 @SerialName("Quote")
-internal data class QuoteDTO(
+data class QuoteDTO(
     val id: Int,
     val senderId: Long,
     val targetId: Long,
@@ -143,26 +143,26 @@ internal data class QuoteDTO(
 
 @Serializable
 @SerialName("Poke")
-internal data class PokeMessageDTO(
+data class PokeMessageDTO(
     val name: String
 ) : MessageDTO()
 
 @Serializable
 @SerialName("Dice")
-internal data class DiceDTO(
+data class DiceDTO(
     val value: Int
 ) : MessageDTO()
 
 @Serializable
 @SerialName("MarketFace")
-internal data class MarketFaceDTO(
+data class MarketFaceDTO(
     val id: Int, 
     val name: String,
 ) : MessageDTO()
 
 @Serializable
 @SerialName("MusicShare")
-internal data class MusicShareDTO(
+data class MusicShareDTO(
     val kind: String,
     val title: String,
     val summary: String,
@@ -174,12 +174,12 @@ internal data class MusicShareDTO(
 
 @Serializable
 @SerialName("Forward")
-internal data class ForwardMessageDTO(
+data class ForwardMessageDTO(
     val nodeList: List<ForwardMessageNode>
 ) : MessageDTO()
 
 @Serializable
-internal data class ForwardMessageNode(
+data class ForwardMessageNode(
     val senderId: Long? = null,
     val time: Int? = null,
     val senderName: String? = null,
@@ -189,7 +189,7 @@ internal data class ForwardMessageNode(
 
 @Serializable
 @SerialName("File")
-internal data class FileDTO(
+data class FileDTO(
     val id: String,
     val name: String,
     val size: Long,
@@ -197,7 +197,7 @@ internal data class FileDTO(
 
 @Serializable
 @SerialName("MiraiCode")
-internal data class MiraiCodeDTO(
+data class MiraiCodeDTO(
     val code: String
 ) : MessageDTO()
 

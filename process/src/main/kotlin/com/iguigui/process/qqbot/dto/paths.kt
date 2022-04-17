@@ -71,6 +71,10 @@ object Paths {
     // command
     const val commandExecute = "cmd_execute"
     const val commandRegister = "cmd_register"
+
+    // command
+    const val verifyRet = "verifyRet"
+    const val close = "close"
     
     // announcement
     const val announcementList = "anno_list"

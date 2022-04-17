@@ -15,19 +15,19 @@ import net.mamoe.mirai.contact.MemberPermission
 import net.mamoe.mirai.event.events.*
 
 @Serializable
-internal sealed class BotEventDTO : EventDTO()
+sealed class BotEventDTO : EventDTO()
 
 @Serializable
 @SerialName("BotOnlineEvent")
-internal data class BotOnlineEventDTO(val qq: Long) : BotEventDTO()
+data class BotOnlineEventDTO(val qq: Long) : BotEventDTO()
 
 @Serializable
 @SerialName("BotOfflineEventActive")
-internal data class BotOfflineEventActiveDTO(val qq: Long) : BotEventDTO()
+data class BotOfflineEventActiveDTO(val qq: Long) : BotEventDTO()
 
 @Serializable
 @SerialName("BotOfflineEventForce")
-internal data class BotOfflineEventForceDTO(
+data class BotOfflineEventForceDTO(
     val qq: Long,
     val title: String,
     val message: String
@@ -35,16 +35,16 @@ internal data class BotOfflineEventForceDTO(
 
 @Serializable
 @SerialName("BotOfflineEventDropped")
-internal data class BotOfflineEventDroppedDTO(val qq: Long) : BotEventDTO()
+data class BotOfflineEventDroppedDTO(val qq: Long) : BotEventDTO()
 
 @Suppress("SpellCheckingInspection")
 @Serializable
 @SerialName("BotReloginEvent")
-internal data class BotReloginEventDTO(val qq: Long) : BotEventDTO()
+data class BotReloginEventDTO(val qq: Long) : BotEventDTO()
 
 @Serializable
 @SerialName("GroupRecallEvent")
-internal data class GroupRecallEventDTO(
+data class GroupRecallEventDTO(
     val authorId: Long,
     val messageId: Int,
     val time: Long,
@@ -54,7 +54,7 @@ internal data class GroupRecallEventDTO(
 
 @Serializable
 @SerialName("FriendRecallEvent")
-internal data class FriendRecallEventDTO(
+data class FriendRecallEventDTO(
     val authorId: Long,
     val messageId: Int,
     val time: Long,
@@ -63,7 +63,7 @@ internal data class FriendRecallEventDTO(
 
 @Serializable
 @SerialName("BotGroupPermissionChangeEvent")
-internal data class BotGroupPermissionChangeEventDTO(
+data class BotGroupPermissionChangeEventDTO(
     val origin: MemberPermission,
     val current: MemberPermission,
     val group: GroupDTO
@@ -71,38 +71,38 @@ internal data class BotGroupPermissionChangeEventDTO(
 
 @Serializable
 @SerialName("BotMuteEvent")
-internal data class BotMuteEventDTO(
+data class BotMuteEventDTO(
     val durationSeconds: Int,
     val operator: MemberDTO
 ) : BotEventDTO()
 
 @Serializable
 @SerialName("BotUnmuteEvent")
-internal data class BotUnmuteEventDTO(val operator: MemberDTO) : BotEventDTO()
+data class BotUnmuteEventDTO(val operator: MemberDTO) : BotEventDTO()
 
 @Serializable
 @SerialName("BotJoinGroupEvent")
-internal data class BotJoinGroupEventDTO(
+data class BotJoinGroupEventDTO(
     val group: GroupDTO,
     val invitor: MemberDTO? = null
 ) : BotEventDTO()
 
 @Serializable
 @SerialName("BotLeaveEventActive")
-internal data class BotLeaveEventActiveDTO(
+data class BotLeaveEventActiveDTO(
     val group: GroupDTO
 ) : BotEventDTO()
 
 @Serializable
 @SerialName("BotLeaveEventKick")
-internal data class BotLeaveEventKickDTO(
+data class BotLeaveEventKickDTO(
     val group: GroupDTO,
     val operator: MemberDTO
 ) : BotEventDTO()
 
 @Serializable
 @SerialName("GroupNameChangeEvent")
-internal data class GroupNameChangeEventDTO(
+data class GroupNameChangeEventDTO(
     val origin: String,
     val current: String,
     val group: GroupDTO,
@@ -111,7 +111,7 @@ internal data class GroupNameChangeEventDTO(
 
 @Serializable
 @SerialName("GroupEntranceAnnouncementChangeEvent")
-internal data class GroupEntranceAnnouncementChangeEventDTO(
+data class GroupEntranceAnnouncementChangeEventDTO(
     val origin: String,
     val current: String,
     val group: GroupDTO,
@@ -120,7 +120,7 @@ internal data class GroupEntranceAnnouncementChangeEventDTO(
 
 @Serializable
 @SerialName("GroupMuteAllEvent")
-internal data class GroupMuteAllEventDTO(
+data class GroupMuteAllEventDTO(
     val origin: Boolean,
     val current: Boolean,
     val group: GroupDTO,
@@ -129,7 +129,7 @@ internal data class GroupMuteAllEventDTO(
 
 @Serializable
 @SerialName("GroupAllowAnonymousChatEvent")
-internal data class GroupAllowAnonymousChatEventDTO(
+data class GroupAllowAnonymousChatEventDTO(
     val origin: Boolean,
     val current: Boolean,
     val group: GroupDTO,
@@ -138,7 +138,7 @@ internal data class GroupAllowAnonymousChatEventDTO(
 
 @Serializable
 @SerialName("GroupAllowConfessTalkEvent")
-internal data class GroupAllowConfessTalkEventDTO(
+data class GroupAllowConfessTalkEventDTO(
     val origin: Boolean,
     val current: Boolean,
     val group: GroupDTO,
@@ -147,7 +147,7 @@ internal data class GroupAllowConfessTalkEventDTO(
 
 @Serializable
 @SerialName("GroupAllowMemberInviteEvent")
-internal data class GroupAllowMemberInviteEventDTO(
+data class GroupAllowMemberInviteEventDTO(
     val origin: Boolean,
     val current: Boolean,
     val group: GroupDTO,
@@ -156,25 +156,25 @@ internal data class GroupAllowMemberInviteEventDTO(
 
 @Serializable
 @SerialName("MemberJoinEvent")
-internal data class MemberJoinEventDTO(
+data class MemberJoinEventDTO(
     val member: MemberDTO,
     val invitor: MemberDTO? = null
 ) : BotEventDTO()
 
 @Serializable
 @SerialName("MemberLeaveEventKick")
-internal data class MemberLeaveEventKickDTO(
+data class MemberLeaveEventKickDTO(
     val member: MemberDTO,
     val operator: MemberDTO?
 ) : BotEventDTO()
 
 @Serializable
 @SerialName("MemberLeaveEventQuit")
-internal data class MemberLeaveEventQuitDTO(val member: MemberDTO) : BotEventDTO()
+data class MemberLeaveEventQuitDTO(val member: MemberDTO) : BotEventDTO()
 
 @Serializable
 @SerialName("MemberCardChangeEvent")
-internal data class MemberCardChangeEventDTO(
+data class MemberCardChangeEventDTO(
     val origin: String,
     val current: String,
     val member: MemberDTO,
@@ -182,7 +182,7 @@ internal data class MemberCardChangeEventDTO(
 
 @Serializable
 @SerialName("MemberSpecialTitleChangeEvent")
-internal data class MemberSpecialTitleChangeEventDTO(
+data class MemberSpecialTitleChangeEventDTO(
     val origin: String,
     val current: String,
     val member: MemberDTO
@@ -190,7 +190,7 @@ internal data class MemberSpecialTitleChangeEventDTO(
 
 @Serializable
 @SerialName("MemberPermissionChangeEvent")
-internal data class MemberPermissionChangeEventDTO(
+data class MemberPermissionChangeEventDTO(
     val origin: MemberPermission,
     val current: MemberPermission,
     val member: MemberDTO
@@ -198,7 +198,7 @@ internal data class MemberPermissionChangeEventDTO(
 
 @Serializable
 @SerialName("MemberMuteEvent")
-internal data class MemberMuteEventDTO(
+data class MemberMuteEventDTO(
     val durationSeconds: Int,
     val member: MemberDTO,
     val operator: MemberDTO?
@@ -206,14 +206,14 @@ internal data class MemberMuteEventDTO(
 
 @Serializable
 @SerialName("MemberUnmuteEvent")
-internal data class MemberUnmuteEventDTO(
+data class MemberUnmuteEventDTO(
     val member: MemberDTO,
     val operator: MemberDTO?
 ) : BotEventDTO()
 
 @Serializable
 @SerialName("NewFriendRequestEvent")
-internal data class NewFriendRequestEventDTO(
+data class NewFriendRequestEventDTO(
     val eventId: Long,
     val message: String,
     val fromId: Long,
@@ -223,7 +223,7 @@ internal data class NewFriendRequestEventDTO(
 
 @Serializable
 @SerialName("MemberJoinRequestEvent")
-internal data class MemberJoinRequestEventDTO(
+data class MemberJoinRequestEventDTO(
     val eventId: Long,
     val message: String,
     val fromId: Long,
@@ -234,7 +234,7 @@ internal data class MemberJoinRequestEventDTO(
 
 @Serializable
 @SerialName("BotInvitedJoinGroupRequestEvent")
-internal data class BotInvitedJoinGroupRequestEventDTO(
+data class BotInvitedJoinGroupRequestEventDTO(
     val eventId: Long,
     val message: String,
     val fromId: Long,
@@ -245,7 +245,7 @@ internal data class BotInvitedJoinGroupRequestEventDTO(
 
 @Serializable
 @SerialName("NudgeEvent")
-internal data class NudgeEventDTO(
+data class NudgeEventDTO(
     val fromId: Long,
     val target: Long,
     val subject: ComplexSubjectDTO,
@@ -255,14 +255,14 @@ internal data class NudgeEventDTO(
 
 @Serializable
 @SerialName("FriendInputStatusChangedEvent")
-internal data class FriendInputStatusChangedEventDTO(
+data class FriendInputStatusChangedEventDTO(
     val friend: QQDTO,
     val inputting: Boolean,
 ) : BotEventDTO()
 
 @Serializable
 @SerialName("FriendNickChangedEvent")
-internal data class FriendNickChangedEventDTO(
+data class FriendNickChangedEventDTO(
     val friend: QQDTO,
     val from: String,
     val to: String,
@@ -270,7 +270,7 @@ internal data class FriendNickChangedEventDTO(
 
 @Serializable
 @SerialName("MemberHonorChangeEvent")
-internal data class MemberHonorChangeEventDTO(
+data class MemberHonorChangeEventDTO(
     val member: MemberDTO,
     val action: String,
     val honor: String,
@@ -278,19 +278,19 @@ internal data class MemberHonorChangeEventDTO(
 
 @Serializable
 @SerialName("OtherClientOnlineEvent")
-internal data class OtherClientOnlineEventDTO(
+data class OtherClientOnlineEventDTO(
     val client: OtherClientDTO,
 ) : BotEventDTO()
 
 @Serializable
 @SerialName("OtherClientOfflineEvent")
-internal data class OtherClientOfflineEventDTO(
+data class OtherClientOfflineEventDTO(
     val client: OtherClientDTO,
 ) : BotEventDTO()
 
 @Serializable
 @SerialName("CommandExecutedEvent")
-internal data class CommandExecutedEventDTO(
+data class CommandExecutedEventDTO(
     val name: String,
     val friend: QQDTO?,
     val member: MemberDTO?,

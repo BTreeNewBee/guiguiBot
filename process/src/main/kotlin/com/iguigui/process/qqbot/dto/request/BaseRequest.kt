@@ -8,7 +8,7 @@ import kotlinx.serialization.json.Json
 @Serializable
 open class BaseRequest(
     val command: String,
-    val content: MemberListRequestContent,
+    val content: Content,
     val subCommand: String,
     val syncId: Int
 )

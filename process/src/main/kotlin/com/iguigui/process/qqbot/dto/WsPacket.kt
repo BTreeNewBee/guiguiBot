@@ -9,16 +9,23 @@
 
 package com.iguigui.process.qqbot.dto
 
-import com.iguigui.process.qqbot.dto.request.BaseRequest
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
 
-interface DTO
-
-@Serializable
-abstract class EventDTO : DTO
-
-object IgnoreEventDTO : EventDTO()
-
-fun DTO.toJson(): String = Json.encodeToString(this)
+/**
+ * web socket 命令对象
+ */
+//@Serializable
+//data class BaseRequest(
+//    val syncId: String?,
+//    val command: String,
+//    val subCommand: String? = null,
+//    val content: DTO? = null,
+//) : DTO
+//
+//@Serializable
+//data class BaseResponse(
+//    val syncId: String?,
+//    val command: String,
+//    val data: JsonElement
+//) : DTO

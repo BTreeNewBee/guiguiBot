@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service
 @Service
 open class GdKillerImpl : GdKiller {
 
-    @DubboReference
+    @Autowired
     lateinit var bot : Bot
 
     @Autowired
