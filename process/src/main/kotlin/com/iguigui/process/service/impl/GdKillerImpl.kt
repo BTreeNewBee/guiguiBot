@@ -9,16 +9,15 @@ import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.message.data.At
 import net.mamoe.mirai.message.data.PlainText
 import net.mamoe.mirai.message.data.buildMessageChain
-import org.apache.dubbo.config.annotation.DubboReference
 import org.springframework.amqp.rabbit.core.RabbitTemplate
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 
 @Service
 open class GdKillerImpl : GdKiller {
-
-    @Autowired
-    lateinit var bot : Bot
+//
+//    @Autowired
+//    lateinit var bot : Bot
 
     @Autowired
     lateinit var rabbitTemplate: RabbitTemplate
@@ -35,23 +34,23 @@ open class GdKillerImpl : GdKiller {
     }
 
     override suspend fun listeningMQMessage(message: CclMessage) {
-        if (message.groupId == 1049125084L) {
-            return
-        }
-        val group = bot.getGroup(message.groupId)
-        if (group == null) {
-            println("group not found message $message")
-            return
-        }
-        if(message.atAction == 1) {
-            val chain = buildMessageChain {
-                +At(message.id)
-                +PlainText(message.content)
-            }
-            group.sendMessage(chain)
-        } else {
-            group.sendMessage(message.content)
-        }
+//        if (message.groupId == 1049125084L) {
+//            return
+//        }
+//        val group = bot.getGroup(message.groupId)
+//        if (group == null) {
+//            println("group not found message $message")
+//            return
+//        }
+//        if(message.atAction == 1) {
+//            val chain = buildMessageChain {
+//                +At(message.id)
+//                +PlainText(message.content)
+//            }
+//            group.sendMessage(chain)
+//        } else {
+//            group.sendMessage(message.content)
+//        }
     }
 
 

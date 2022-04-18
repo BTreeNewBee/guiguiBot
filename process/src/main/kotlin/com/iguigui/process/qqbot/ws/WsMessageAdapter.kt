@@ -1,6 +1,6 @@
 package com.iguigui.process.qqbot.ws
 
-import com.iguigui.process.qqbot.MessageAdapt
+import com.iguigui.process.qqbot.MessageAdapter
 import com.iguigui.process.qqbot.dto.*
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.json.Json
@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
 @Component
-class WsMessageAdapt : MessageAdapt {
+class WsMessageAdapter : MessageAdapter {
 
     /**
      * Json解析规则，需要注册支持的多态的类
@@ -43,11 +43,11 @@ class WsMessageAdapt : MessageAdapt {
     @OptIn(InternalSerializationApi::class)
     private fun messageConverter(message: String): BaseResponse {
         val baseResponse = json.decodeFromString(BaseResponse::class.serializer(), message)
-        println(baseResponse)
+        println("baseResponse ${baseResponse.toJson()}")
         return when (baseResponse.command) {
             Paths.groupList -> json.decodeFromString(GroupListResponse::class.serializer(), message)
             Paths.memberList -> json.decodeFromString(MemberListResponse::class.serializer(), message)
-            Paths.groupList -> json.decodeFromString(GroupListResponse::class.serializer(), message)
+            Paths.reservedMessage -> json.decodeFromString(GroupListResponse::class.serializer(), message)
             Paths.groupList -> json.decodeFromString(GroupListResponse::class.serializer(), message)
             Paths.groupList -> json.decodeFromString(GroupListResponse::class.serializer(), message)
             Paths.groupList -> json.decodeFromString(GroupListResponse::class.serializer(), message)

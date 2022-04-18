@@ -60,8 +60,8 @@ subprojects {
 			exclude("net.mamoe", "mirai-core-utils")
 		}
 		implementation("org.springframework.boot:spring-boot-starter:2.6.0")
-		implementation("org.apache.dubbo:dubbo-spring-boot-starter:2.7.8")
-		implementation("org.apache.dubbo:dubbo-dependencies-zookeeper:2.7.8")
+//		implementation("org.apache.dubbo:dubbo-spring-boot-starter:2.7.8")
+//		implementation("org.apache.dubbo:dubbo-dependencies-zookeeper:2.7.8")
 		implementation("de.javakaffee:kryo-serializers:0.45")
 		implementation("com.esotericsoftware:kryo:4.0.2")
 	}

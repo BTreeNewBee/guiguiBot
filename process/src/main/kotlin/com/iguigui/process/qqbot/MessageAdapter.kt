@@ -4,7 +4,7 @@ import com.iguigui.process.qqbot.dto.BaseRequest
 import com.iguigui.process.qqbot.dto.BaseResponse
 
 
-interface MessageAdapt {
+interface MessageAdapter {
 
     fun registerHandler(handler: (message: BaseResponse) -> Unit)
 

@@ -1,6 +1,6 @@
 package com.iguigui.process.service
 
-import com.iguigui.process.qqbot.dto.response.BaseResponse
+import com.iguigui.process.qqbot.dto.BaseResponse
 
 interface MessageHandler {
 

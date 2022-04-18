@@ -67,10 +67,6 @@ class QqBotWsClient constructor(serverURI: URI = URI("ws://192.168.50.185:8637/a
     }
 
 
-    @PostConstruct
-    fun start() {
-        connect()
-    }
 
     fun sendMessage(text : String) {
         send(text)
@@ -100,6 +96,7 @@ class QqBotWsClient constructor(serverURI: URI = URI("ws://192.168.50.185:8637/a
 
     fun registerHandler(handler: (message: String) -> Unit) {
         this.handler = handler
+        connect()
     }
 
 

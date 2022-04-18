@@ -81,6 +81,8 @@ object Paths {
     const val announcementPublish = "anno_publish"
     const val announcementDelete = "anno_delete"
 
+    const val reservedMessage = "reservedMessage"
+
     fun httpPath(s: String): String {
         val t = s.replace("_", "/")
         if (t.startsWith('/')) {

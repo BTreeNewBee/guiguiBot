@@ -25,22 +25,22 @@ spring:
           enabled: true
       default-requeue-rejected: true
 
-dubbo:
-  application:
-    name: process
-  registry:
-    address: zookeeper://localhost:2181
-    timeout: 15000
-  protocol:
-    name: dubbo
-    serialization: kryo
-    port: 8877
-  provider:
-    retries: 0
-  consumer:
-    check: false
-  scan:
-    base-packages: com.iguigui.process.service.impl
+#dubbo:
+#  application:
+#    name: process
+#  registry:
+#    address: zookeeper://localhost:2181
+#    timeout: 15000
+#  protocol:
+#    name: dubbo
+#    serialization: kryo
+#    port: 8877
+#  provider:
+#    retries: 0
+#  consumer:
+#    check: false
+#  scan:
+#    base-packages: com.iguigui.process.service.impl
 
 logging:
   level:

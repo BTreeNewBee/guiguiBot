@@ -2,12 +2,17 @@ package com.iguigui.process.qqbot.dto
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 @Serializable
 open class BaseResponse(
     val syncId: String?,
     val command: String,
 )
+
+fun BaseResponse.toJson() = Json.encodeToString(this)
+
 
 @Serializable
 data class MemberListResponse(

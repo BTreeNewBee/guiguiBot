@@ -3,7 +3,6 @@ package com.iguigui.process.schedule.daily
 import com.iguigui.common.service.MessageService
 import net.mamoe.mirai.Bot
 import org.apache.commons.logging.LogFactory
-import org.apache.dubbo.config.annotation.DubboReference
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
@@ -12,13 +11,13 @@ import org.springframework.stereotype.Component
 class DailyGroupMessageCount {
 
     val log = LogFactory.getLog(DailyGroupMessageCount::class.java)!!
-
-    @DubboReference
-    lateinit var messageService: MessageService
+//
+//    @DubboReference
+//    lateinit var messageService: MessageService
 
     @Scheduled(cron = "5 0 0 * * ?")
     fun dailyGroupMessageCount() {
-        messageService.dailyGroupMessageCount()
+//        messageService.dailyGroupMessageCount()
     }
 
 //    @Scheduled(fixedDelay = 1000L)

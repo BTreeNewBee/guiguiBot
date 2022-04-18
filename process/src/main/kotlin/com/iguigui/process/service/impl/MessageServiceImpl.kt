@@ -27,8 +27,6 @@ import net.mamoe.mirai.event.events.MessageRecallEvent
 import net.mamoe.mirai.message.data.*
 import net.mamoe.mirai.message.data.Image.Key.queryUrl
 import net.mamoe.mirai.utils.ExternalResource.Companion.toExternalResource
-import org.apache.dubbo.config.annotation.DubboReference
-import org.apache.dubbo.config.annotation.DubboService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Service
@@ -44,11 +42,10 @@ import javax.annotation.Resource
 import kotlin.collections.LinkedHashMap
 
 
-@DubboService
 open class MessageServiceImpl : MessageService {
-
-    @DubboReference
-    lateinit var qqBotService: QQBotService
+//
+//    @DubboReference
+//    lateinit var qqBotService: QQBotService
 
     @Autowired
     lateinit var qqGroupMapper: QqGroupMapper
