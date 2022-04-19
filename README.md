@@ -7,6 +7,8 @@ SpringBoot 2.4.0
 MyBatis-plus 3.4.1
 MySQL 8.0 
 
+曾经基于Mirai原生开发，现在全部改成Mirai-HTTP WS接口开发
+
 
 
 wechat依赖此项目实现[wechat-bot](https://github.com/cixingguangming55555/wechat-bot)
