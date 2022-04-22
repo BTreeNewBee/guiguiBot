@@ -4,6 +4,7 @@ import com.iguigui.process.qqbot.MessageAdapter
 import com.iguigui.process.qqbot.dto.*
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.serializer
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -47,7 +48,7 @@ class WsMessageAdapter : MessageAdapter {
         return when (baseResponse.command) {
             Paths.groupList -> json.decodeFromString(GroupListResponse::class.serializer(), message)
             Paths.memberList -> json.decodeFromString(MemberListResponse::class.serializer(), message)
-            Paths.reservedMessage -> json.decodeFromString(GroupListResponse::class.serializer(), message)
+            Paths.reservedMessage -> decodeReservedMessage(message)
             Paths.groupList -> json.decodeFromString(GroupListResponse::class.serializer(), message)
             Paths.groupList -> json.decodeFromString(GroupListResponse::class.serializer(), message)
             Paths.groupList -> json.decodeFromString(GroupListResponse::class.serializer(), message)
@@ -57,6 +58,15 @@ class WsMessageAdapter : MessageAdapter {
                 BaseResponse("", "")
             }
         }
+    }
+
+    private fun decodeReservedMessage(message : String):BaseResponse {
+        val parseToJsonElement = json.parseToJsonElement(message)
+        val command = parseToJsonElement.jsonObject["data"]?.jsonObject?.get("command")
+        println(command)
+        when (command) {
+        }
+        return BaseResponse("","")
     }
 
 }

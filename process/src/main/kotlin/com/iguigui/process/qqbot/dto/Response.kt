@@ -47,3 +47,4 @@ data class GroupListData(
     @SerialName("msg")
     val msg: String
 )
+
