@@ -4,9 +4,40 @@ import com.iguigui.process.qqbot.MessageAdapter
 import com.iguigui.process.qqbot.dto.*
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.serializer
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import java.io.File
+import java.net.URL
+import java.util.*
+import kotlin.collections.ArrayList
+
+
+fun main() {
+    val classLoader = String.javaClass.classLoader
+    val packageName = "com.iguigui.process.qqbot.dto";
+    val packageResource: String = packageName.replace(".", "/")
+    val url: URL = classLoader.getResource(packageResource)
+    val root = File(url.toURI())
+    val classList: MutableList<String> = ArrayList()
+    scanClassesInner(root, packageName, classList)
+
+    println(classList)
+
+}
+
+private fun scanClassesInner(root: File, packageName: String, result: MutableList<String>) {
+    for (child in Objects.requireNonNull(root.listFiles())) {
+        val name = child.name
+        if (child.isDirectory) {
+            scanClassesInner(child, "$packageName.$name", result)
+        } else if (name.endsWith(".class")) {
+            val className = packageName + "." + name.replace(".class", "")
+            result.add(className)
+        }
+    }
+}
 
 @Component
 class WsMessageAdapter : MessageAdapter {
@@ -42,21 +73,26 @@ class WsMessageAdapter : MessageAdapter {
 
     @OptIn(InternalSerializationApi::class)
     private fun messageConverter(message: String): BaseResponse {
+        val parseToJsonElement = json.parseToJsonElement(message)
+        val command = parseToJsonElement.jsonObject["command"].toString()
         val baseResponse = json.decodeFromString(BaseResponse::class.serializer(), message)
         println("baseResponse ${baseResponse.toJson()}")
-        return when (baseResponse.command) {
-            Paths.groupList -> json.decodeFromString(GroupListResponse::class.serializer(), message)
-            Paths.memberList -> json.decodeFromString(MemberListResponse::class.serializer(), message)
-            Paths.reservedMessage -> json.decodeFromString(GroupListResponse::class.serializer(), message)
-            Paths.groupList -> json.decodeFromString(GroupListResponse::class.serializer(), message)
-            Paths.groupList -> json.decodeFromString(GroupListResponse::class.serializer(), message)
-            Paths.groupList -> json.decodeFromString(GroupListResponse::class.serializer(), message)
-            Paths.groupList -> json.decodeFromString(GroupListResponse::class.serializer(), message)
-            Paths.groupList -> json.decodeFromString(GroupListResponse::class.serializer(), message)
+        return when (command) {
+            Paths.reservedMessage -> reservedMessageConverter(message)
             else -> {
-                BaseResponse("", "")
+                commandMessageConverter(message)
             }
         }
+    }
+
+    private fun reservedMessageConverter(message: String) : BaseResponse {
+
+        return BaseResponse("", "",null)
+    }
+
+    private fun commandMessageConverter(message: String) : BaseResponse {
+
+        return BaseResponse("", "",null)
     }
 
 }
