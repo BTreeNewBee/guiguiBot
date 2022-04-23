@@ -296,3 +296,11 @@ data class CommandExecutedEventDTO(
     val member: MemberDTO?,
     val args: MessageChainDTO
 ) : BotEventDTO()
+
+
+@Serializable
+@SerialName("verifyRet")
+data class VerifyRetEventDTO(
+    val code: Int,
+    val session: String,
+) : BotEventDTO()

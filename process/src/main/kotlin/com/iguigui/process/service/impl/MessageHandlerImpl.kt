@@ -75,8 +75,8 @@ class MessageHandlerImpl : MessageHandler {
 
     override fun handler(message: BaseResponse) {
         when (message) {
-            is GroupListResponse -> syncGrouppList(message)
-            is MemberListResponse -> syncMemberList(message)
+//            is GroupListResponse -> syncGrouppList(message)
+//            is MemberListResponse -> syncMemberList(message)
         }
     }
 
@@ -371,13 +371,13 @@ class MessageHandlerImpl : MessageHandler {
 
 
 
-
-    private fun syncMemberList(message: MemberListResponse) {
-        message.data.data.forEach {
-            syncMember(it)
-        }
-    }
-
+//
+//    private fun syncMemberList(message: MemberListResponse) {
+//        message.data.data.forEach {
+//            syncMember(it)
+//        }
+//    }
+//
 
 
     private fun syncMember(member: MemberDTO) {
@@ -393,12 +393,12 @@ class MessageHandlerImpl : MessageHandler {
             groupHasQqUserMapper.updateById(groupHasQqUser)
         }
     }
-
-    private fun syncGrouppList(groupListResponse: GroupListResponse) {
-        groupListResponse.data.data.forEach {
-            syncGroup(it)
-        }
-    }
+//
+//    private fun syncGrouppList(groupListResponse: GroupListResponse) {
+//        groupListResponse.data.data.forEach {
+//            syncGroup(it)
+//        }
+//    }
 
     private fun syncGroup(group: GroupDTO) {
         var qqGroup = qqGroupMapper.selectById(group.id)

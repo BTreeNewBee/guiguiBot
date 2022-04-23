@@ -11,17 +11,17 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 
 @Component
-@RabbitListener(queues = ["exchangeinfo"], concurrency = "1")
+//@RabbitListener(queues = ["exchangeinfo"], concurrency = "1")
 class MQListener {
 
     @Autowired
     lateinit var gdKiller: GdKiller
 
-    @RabbitHandler
-    fun process(message: String) {
-        val gson = Gson()
-        val message = gson.fromJson<CclMessage>(message)
-        runBlocking { gdKiller.listeningMQMessage(message) }
-    }
+//    @RabbitHandler
+//    fun process(message: String) {
+//        val gson = Gson()
+//        val message = gson.fromJson<CclMessage>(message)
+//        runBlocking { gdKiller.listeningMQMessage(message) }
+//    }
 
 }

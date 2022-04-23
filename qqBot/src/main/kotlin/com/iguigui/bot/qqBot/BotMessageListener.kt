@@ -9,7 +9,7 @@ import net.mamoe.mirai.event.events.FriendMessageEvent
 import net.mamoe.mirai.event.events.GroupMessageEvent
 import net.mamoe.mirai.event.events.MemberCardChangeEvent
 import net.mamoe.mirai.event.events.MessageRecallEvent
-import org.apache.dubbo.config.annotation.DubboReference
+//import org.apache.dubbo.config.annotation.DubboReference
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import javax.annotation.PostConstruct

@@ -1,13 +1,97 @@
 package com.iguigui.process.qqbot.ws
 
 import com.iguigui.process.qqbot.MessageAdapter
-import com.iguigui.process.qqbot.dto.*
+import com.iguigui.process.qqbot.dto.BaseRequest
+import com.iguigui.process.qqbot.dto.BaseResponse
+import com.iguigui.process.qqbot.dto.Paths
+import com.iguigui.process.qqbot.dto.toJson
 import kotlinx.serialization.InternalSerializationApi
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.serializer
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import java.io.File
+import java.io.IOException
+import java.util.*
+
+
+fun main() {
+    val packageName = "com.iguigui.process.qqbot.dto";
+    val clazzs = findClass(packageName)
+    clazzs.forEach {
+        val annotationsByType = it.getAnnotationsByType(SerialName::class.java)
+        if (annotationsByType != null) {
+            if (annotationsByType.size != 0) {
+                println(it)
+                println(annotationsByType[0].value)
+            }
+        }
+    }
+}
+
+private fun scanClassesInner(root: File, packageName: String, result: MutableList<String>) {
+    for (child in Objects.requireNonNull(root.listFiles())) {
+        val name = child.name
+        if (child.isDirectory) {
+            scanClassesInner(child, "$packageName.$name", result)
+        } else if (name.endsWith(".class")) {
+            val className = packageName + "." + name.replace(".class", "")
+            result.add(className)
+        }
+    }
+}
+
+/**
+ * 提供直接调用的方法
+ * @param packageName
+ * @return
+ * @throws IOException
+ * @throws ClassNotFoundException
+ */
+@Throws(IOException::class, ClassNotFoundException::class)
+fun findClass(packageName: String): List<Class<*>> {
+    return findClass(packageName, ArrayList())
+}
+
+/**
+ *
+ * @param packageName
+ * @param clazzs
+ * @return
+ * @throws ClassNotFoundException
+ * @throws IOException
+ */
+@Throws(ClassNotFoundException::class, IOException::class)
+private fun findClass(packageName: String, clazzs: MutableList<Class<*>>): List<Class<*>> {
+    //将报名替换成目录
+    val fileName = packageName.replace("\\.".toRegex(), "/")
+    //通过classloader来获取文件列表
+    val file = File(Thread.currentThread().contextClassLoader.getResource(fileName).file)
+    val files = file.listFiles()
+    for (f in files) {
+        //如果是目录，这进一个寻找
+        if (f.isDirectory) {
+            //截取路径最后的文件夹名
+            val currentPathName = f.absolutePath.substring(f.absolutePath.lastIndexOf(File.separator) + 1)
+            //进一步寻找
+            findClass("$packageName.$currentPathName", clazzs)
+        } else {
+            //如果是class文件
+            if (f.name.endsWith(".class")) {
+                //反射出实例
+                val clazz = Thread.currentThread().contextClassLoader.loadClass(
+                    packageName + "." + f.name.replace(
+                        ".class",
+                        ""
+                    )
+                )
+                clazzs.add(clazz)
+            }
+        }
+    }
+    return clazzs
+}
 
 @Component
 class WsMessageAdapter : MessageAdapter {
@@ -41,32 +125,30 @@ class WsMessageAdapter : MessageAdapter {
         this.handler(messageConverter(message))
     }
 
-    @OptIn(InternalSerializationApi::class)
     private fun messageConverter(message: String): BaseResponse {
-        val baseResponse = json.decodeFromString(BaseResponse::class.serializer(), message)
-        println("baseResponse ${baseResponse.toJson()}")
-        return when (baseResponse.command) {
-            Paths.groupList -> json.decodeFromString(GroupListResponse::class.serializer(), message)
-            Paths.memberList -> json.decodeFromString(MemberListResponse::class.serializer(), message)
-            Paths.reservedMessage -> decodeReservedMessage(message)
-            Paths.groupList -> json.decodeFromString(GroupListResponse::class.serializer(), message)
-            Paths.groupList -> json.decodeFromString(GroupListResponse::class.serializer(), message)
-            Paths.groupList -> json.decodeFromString(GroupListResponse::class.serializer(), message)
-            Paths.groupList -> json.decodeFromString(GroupListResponse::class.serializer(), message)
-            Paths.groupList -> json.decodeFromString(GroupListResponse::class.serializer(), message)
+        val parseToJsonElement = json.parseToJsonElement(message)
+        val command = parseToJsonElement.jsonObject["command"].toString()
+//        val baseResponse = json.decodeFromString(BaseResponse::class.serializer(), message)
+//        println("baseResponse ${baseResponse.toJson()}")
+        return when (command) {
+            Paths.reservedMessage -> reservedMessageConverter(message)
             else -> {
-                BaseResponse("", "")
+                commandMessageConverter(message)
             }
         }
     }
 
-    private fun decodeReservedMessage(message : String):BaseResponse {
-        val parseToJsonElement = json.parseToJsonElement(message)
-        val command = parseToJsonElement.jsonObject["data"]?.jsonObject?.get("command")
-        println(command)
-        when (command) {
-        }
-        return BaseResponse("","")
+
+    @OptIn(InternalSerializationApi::class)
+    private fun reservedMessageConverter(message: String) : BaseResponse {
+
+        return BaseResponse("", "",null)
+    }
+
+    @OptIn(InternalSerializationApi::class)
+    private fun commandMessageConverter(message: String) : BaseResponse {
+
+        return BaseResponse("", "",null)
     }
 
 }

@@ -24,7 +24,6 @@ import javax.annotation.PostConstruct
 fun main() {
     val qqBotWsClient = QqBotWsClient()
     qqBotWsClient.connect()
-    Thread.sleep(1000)
 
     val encodeToString = MemberListRequest("984647128").toJson()
     println(encodeToString)

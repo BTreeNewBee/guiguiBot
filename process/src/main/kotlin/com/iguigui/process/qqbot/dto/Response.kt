@@ -9,42 +9,50 @@ import kotlinx.serialization.json.Json
 open class BaseResponse(
     val syncId: String?,
     val command: String,
+    val data : DTO?
 )
 
 fun BaseResponse.toJson() = Json.encodeToString(this)
 
 
-@Serializable
-data class MemberListResponse(
-    @SerialName("data")
-    var `data`: MemberListData,
-) : BaseResponse("", Paths.memberList)
 
-
-@Serializable
-data class MemberListData(
-    @SerialName("code")
-    val code: Int,
-    @SerialName("data")
-    val `data`: List<MemberDTO>,
-    @SerialName("msg")
-    val msg: String
-)
-
-
-@Serializable
-data class GroupListResponse(
-    @SerialName("data")
-    val `data`: GroupListData,
-) : BaseResponse("", Paths.groupList)
-
-@Serializable
-data class GroupListData(
-    @SerialName("code")
-    val code: Int,
-    @SerialName("data")
-    val `data`: List<GroupDTO>,
-    @SerialName("msg")
-    val msg: String
-)
-
+//
+//open class CommandEventDTO(
+//    @SerialName("data")
+//    var command: String
+//) : EventDTO()
+//
+//
+//
+//data class MemberListResponse(
+//    @SerialName("data")
+//    var `data`: MemberListData,
+//) : CommandEventDTO(Paths.memberList)
+//
+//
+//
+//data class MemberListData(
+//    @SerialName("code")
+//    val code: Int,
+//    @SerialName("data")
+//    val `data`: List<MemberDTO>,
+//    @SerialName("msg")
+//    val msg: String
+//) : CommandEventDTO(Paths.memberList)
+//
+//
+//
+//data class GroupListResponse(
+//    @SerialName("data")
+//    val `data`: GroupListData,
+//) : CommandEventDTO(Paths.groupList)
+//
+//
+//data class GroupListData(
+//    @SerialName("code")
+//    val code: Int,
+//    @SerialName("data")
+//    val `data`: List<GroupDTO>,
+//    @SerialName("msg")
+//    val msg: String
+//)
