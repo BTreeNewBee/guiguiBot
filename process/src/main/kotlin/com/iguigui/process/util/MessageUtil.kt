@@ -55,12 +55,12 @@ class MessageUtil {
         val now = LocalDateTime.now()
         val onWork = now.withHour(9).withMinute(0).withSecond(0)
         val offWork = now.withHour(18).withMinute(30).withSecond(0)
-        if (now.dayOfWeek.value < 6 && now.isBefore(offWork) && now.isAfter(onWork)) {
-            val duration: Duration = Duration.between(now, offWork)
-            stringBuilder.append("距离下班还有${duration.toHoursPart()}小时${duration.toMinutesPart()}分${duration.toSecondsPart()}秒\n")
-        } else {
-            stringBuilder.append("现在是下班时间\n")
-        }
+//        if (now.dayOfWeek.value < 6 && now.isBefore(offWork) && now.isAfter(onWork)) {
+//            val duration: Duration = Duration.between(now, offWork)
+//            stringBuilder.append("距离下班还有${duration.toHoursPart()}小时${duration.toMinutesPart()}分${duration.toSecondsPart()}秒\n")
+//        } else {
+//            stringBuilder.append("现在是下班时间\n")
+//        }
 
         val now1 = LocalDate.now()
         stringBuilder.append("今天是${now1.format(DateTimeFormatter.ISO_LOCAL_DATE)}日，今年的第${now1.dayOfYear}天，剩余${now1.lengthOfYear() - now1.dayOfYear}天\n")
