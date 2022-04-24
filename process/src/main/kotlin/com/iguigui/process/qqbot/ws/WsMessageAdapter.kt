@@ -1,10 +1,8 @@
 package com.iguigui.process.qqbot.ws
 
 import com.iguigui.process.qqbot.MessageAdapter
-import com.iguigui.process.qqbot.dto.BaseRequest
-import com.iguigui.process.qqbot.dto.BaseResponse
-import com.iguigui.process.qqbot.dto.Paths
-import com.iguigui.process.qqbot.dto.toJson
+import com.iguigui.process.qqbot.dto.*
+import io.ktor.util.*
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.json.Json
@@ -14,33 +12,30 @@ import org.springframework.stereotype.Component
 import java.io.File
 import java.io.IOException
 import java.util.*
+import kotlin.collections.HashMap
 
 
 fun main() {
     val packageName = "com.iguigui.process.qqbot.dto";
     val clazzs = findClass(packageName)
-    clazzs.forEach {
+    val map = HashMap<String,Class<*>>()
+    clazzs.forEach { it ->
         val annotationsByType = it.getAnnotationsByType(SerialName::class.java)
         if (annotationsByType != null) {
             if (annotationsByType.size != 0) {
-                println(it)
-                println(annotationsByType[0].value)
+                var clazz = it
+                while (clazz.superclass != null) {
+                    clazz = clazz.superclass
+                    print(" --> $clazz")
+                }
+                println()
+
+                map[annotationsByType[0].value] = it
             }
         }
     }
 }
 
-private fun scanClassesInner(root: File, packageName: String, result: MutableList<String>) {
-    for (child in Objects.requireNonNull(root.listFiles())) {
-        val name = child.name
-        if (child.isDirectory) {
-            scanClassesInner(child, "$packageName.$name", result)
-        } else if (name.endsWith(".class")) {
-            val className = packageName + "." + name.replace(".class", "")
-            result.add(className)
-        }
-    }
-}
 
 /**
  * 提供直接调用的方法

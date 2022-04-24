@@ -35,8 +35,6 @@ fun main() {
         val encodeToString = Json.encodeToString(baseMessage)
         println(encodeToString)
         println()
-        qqBotWsClient.sendMessage(encodeToString)
-
 
     }
 
