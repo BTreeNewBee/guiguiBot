@@ -76,6 +76,7 @@ class MessageHandlerImpl : MessageHandler {
     override fun handler(message: DTO) {
             when(message) {
                 is GroupListData -> syncGrouppList(message)
+                is MemberListData -> syncMemberList(message)
             }
 
     }
@@ -368,16 +369,11 @@ class MessageHandlerImpl : MessageHandler {
     }
 
 
-
-
-
-//
-//    private fun syncMemberList(message: MemberListResponse) {
-//        message.data.data.forEach {
-//            syncMember(it)
-//        }
-//    }
-//
+    private fun syncMemberList(message: MemberListData) {
+        message.list.forEach {
+            syncMember(it)
+        }
+    }
 
 
     private fun syncMember(member: MemberDTO) {

@@ -12,13 +12,11 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import java.io.File
 import java.io.IOException
-import java.util.*
 import javax.annotation.PostConstruct
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
 import kotlin.reflect.KClass
 import kotlin.reflect.full.findAnnotation
-import kotlin.reflect.full.findAnnotations
 
 
 fun main() {
@@ -101,7 +99,10 @@ class WsMessageAdapter : MessageAdapter {
     private fun commandMessageConverter(command: String, message: JsonElement): DTO? {
         message.jsonObject["data"]?.let {
             when (command) {
-                Paths.groupList -> json.decodeFromJsonElement(ArrayList::class.serializer(), it)
+                Paths.groupList -> {
+                    val decodeFromJsonElement = json.decodeFromJsonElement(ArrayList::class.serializer(), it)
+//                    return GroupListData(decodeFromJsonElement)
+                }
                 else -> {}
             }
         }

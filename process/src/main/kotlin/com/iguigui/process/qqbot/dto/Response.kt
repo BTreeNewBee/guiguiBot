@@ -1,9 +1,9 @@
 package com.iguigui.process.qqbot.dto
 
-import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import java.util.ArrayList
 
 @Serializable
 open class BaseResponse(
