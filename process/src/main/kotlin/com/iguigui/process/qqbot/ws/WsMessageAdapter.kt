@@ -16,6 +16,9 @@ import java.util.*
 import javax.annotation.PostConstruct
 import kotlin.collections.ArrayList
 import kotlin.collections.HashMap
+import kotlin.reflect.KClass
+import kotlin.reflect.full.findAnnotation
+import kotlin.reflect.full.findAnnotations
 
 
 fun main() {
@@ -26,22 +29,18 @@ fun main() {
 @Component
 class WsMessageAdapter : MessageAdapter {
 
-    var dtoMap = HashMap<String, Class<DTO>>()
+    var dtoMap = HashMap<String, KClass<DTO>>()
 
     //扫描DTO包寻找class注入map中
     @PostConstruct
     fun registerDTO() {
         val packageName = "com.iguigui.process.qqbot.dto";
         val clazzs = findClass(packageName)
-        val map = HashMap<String, Class<DTO>>()
+        val map = HashMap<String, KClass<DTO>>()
         clazzs.forEach { it ->
-            val annotationsByType = it.getAnnotationsByType(SerialName::class.java)
-            if (annotationsByType != null) {
-                if (annotationsByType.size != 0) {
-                    map[annotationsByType[0].value] = it
-                }
+            it.findAnnotation<SerialName>()?.let { annotation ->
+                map[annotation.value] = it
             }
-
         }
         dtoMap = map
     }
@@ -82,7 +81,7 @@ class WsMessageAdapter : MessageAdapter {
         return when (command) {
             Paths.reservedMessage -> reservedMessageConverter(parseToJsonElement)
             else -> {
-                commandMessageConverter(command,parseToJsonElement)
+                commandMessageConverter(command, parseToJsonElement)
             }
         }
     }
@@ -93,7 +92,7 @@ class WsMessageAdapter : MessageAdapter {
         message.jsonObject["data"]?.jsonObject?.let { data ->
             val type = data["type"].toString()
             val clazz = dtoMap[type]
-            return clazz?.let { json.decodeFromJsonElement(clazz.kotlin.serializer(), data) }
+            return clazz?.let { json.decodeFromJsonElement(clazz.serializer(), data) }
         }
         return null
     }
@@ -102,7 +101,7 @@ class WsMessageAdapter : MessageAdapter {
     private fun commandMessageConverter(command: String, message: JsonElement): DTO? {
         message.jsonObject["data"]?.let {
             when (command) {
-                Paths.groupList -> json.decodeFromJsonElement(ArrayList::class.serializer(),it)
+                Paths.groupList -> json.decodeFromJsonElement(ArrayList::class.serializer(), it)
                 else -> {}
             }
         }
@@ -120,7 +119,7 @@ class WsMessageAdapter : MessageAdapter {
      * @throws ClassNotFoundException
      */
     @Throws(IOException::class, ClassNotFoundException::class)
-    private fun findClass(packageName: String): List<Class<DTO>> {
+    private fun findClass(packageName: String): List<KClass<DTO>> {
         return findClass(packageName, ArrayList())
     }
 
@@ -133,13 +132,13 @@ class WsMessageAdapter : MessageAdapter {
      * @throws IOException
      */
     @Throws(ClassNotFoundException::class, IOException::class)
-    private fun findClass(packageName: String, clazzs: MutableList<Class<DTO>>): List<Class<DTO>> {
+    private fun findClass(packageName: String, clazzs: MutableList<KClass<DTO>>): List<KClass<DTO>> {
         //将报名替换成目录
         val fileName = packageName.replace("\\.".toRegex(), "/")
         //通过classloader来获取文件列表
         val file = File(Thread.currentThread().contextClassLoader.getResource(fileName).file)
         val files = file.listFiles()
-        val dtoClazz = DTO::class.java
+        val dtoClazz = DTO::class
         for (f in files) {
             //如果是目录，这进一个寻找
             if (f.isDirectory) {
@@ -156,9 +155,9 @@ class WsMessageAdapter : MessageAdapter {
                             ".class",
                             ""
                         )
-                    )
+                    ).kotlin
                     if (clazz == dtoClazz) {
-                        clazzs.add(clazz)
+                        clazzs.add(clazz as KClass<DTO>)
                     }
                 }
             }
