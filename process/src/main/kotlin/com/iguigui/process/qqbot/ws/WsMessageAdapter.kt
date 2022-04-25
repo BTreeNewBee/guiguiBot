@@ -4,9 +4,7 @@ import com.iguigui.process.qqbot.MessageAdapter
 import com.iguigui.process.qqbot.dto.*
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.SerialName
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.*
 import kotlinx.serialization.serializer
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
@@ -75,7 +73,7 @@ class WsMessageAdapter : MessageAdapter {
     //消息转换，从json string转成DTO
     private fun messageConverter(message: String): DTO? {
         val parseToJsonElement = json.parseToJsonElement(message)
-        val command = parseToJsonElement.jsonObject["command"].toString()
+        val command = parseToJsonElement.jsonObject["command"]?.jsonPrimitive?.content.orEmpty()
         return when (command) {
             Paths.reservedMessage -> reservedMessageConverter(parseToJsonElement)
             else -> {

@@ -74,6 +74,7 @@ class MessageHandlerImpl : MessageHandler {
 //    val musicQuestionRecord: LinkedHashMap<Long, MutableList<MusicShare>> = linkedMapOf()
 
     override fun handler(message: DTO) {
+        println(message)
             when(message) {
                 is GroupListData -> syncGrouppList(message)
                 is MemberListData -> syncMemberList(message)
