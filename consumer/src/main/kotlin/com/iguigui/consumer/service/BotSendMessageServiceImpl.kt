@@ -1,10 +1,7 @@
 package com.iguigui.consumer.service
 
 import com.iguigui.common.service.BotSendMessageService
-import com.iguigui.common.service.MessageHandlerService
-import org.apache.dubbo.config.annotation.DubboService
 
-@DubboService
 class BotSendMessageServiceImpl : BotSendMessageService {
 
     override fun sendMessage(message: String): String {

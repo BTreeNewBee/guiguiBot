@@ -1,7 +1,5 @@
 package com.iguigui.qqbot.qqBot
 
-import com.alibaba.fastjson.JSON
-import com.alibaba.fastjson.JSONObject
 import com.iguigui.common.service.MessageService
 import net.mamoe.mirai.Bot
 import net.mamoe.mirai.event.GlobalEventChannel
@@ -24,13 +22,13 @@ class BotMessageListener {
 //    @Autowired
 //    lateinit var messageService: MessageService
 
-    @DubboReference
+//    @DubboReference
     lateinit var messageService: MessageService
 //
 //    @Autowired
 //    lateinit var gdKiller: GdKiller
 
-    @PostConstruct
+//    @PostConstruct
     fun listenerBotMessage() {
         // 在当前协程作用域 (CoroutineScope) 下创建一个子 Job, 监听一个事件.
         //

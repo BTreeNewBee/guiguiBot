@@ -7,10 +7,8 @@ import net.mamoe.mirai.contact.Group
 import net.mamoe.mirai.message.data.Message
 import net.mamoe.mirai.message.data.OfflineAudio
 import net.mamoe.mirai.utils.ExternalResource
-import org.apache.dubbo.config.annotation.DubboService
 import org.springframework.beans.factory.annotation.Autowired
 
-@DubboService
 open class QQBotServiceImpl : QQBotService {
 
     @Autowired

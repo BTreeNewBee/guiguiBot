@@ -73,11 +73,11 @@ class MessageHandlerImpl : MessageHandler {
 
 //    val musicQuestionRecord: LinkedHashMap<Long, MutableList<MusicShare>> = linkedMapOf()
 
-    override fun handler(message: BaseResponse) {
-        when (message) {
-//            is GroupListResponse -> syncGrouppList(message)
-//            is MemberListResponse -> syncMemberList(message)
-        }
+    override fun handler(message: DTO) {
+            when(message) {
+                is GroupListData -> syncGrouppList(message)
+            }
+
     }
 
 
@@ -393,12 +393,12 @@ class MessageHandlerImpl : MessageHandler {
             groupHasQqUserMapper.updateById(groupHasQqUser)
         }
     }
-//
-//    private fun syncGrouppList(groupListResponse: GroupListResponse) {
-//        groupListResponse.data.data.forEach {
-//            syncGroup(it)
-//        }
-//    }
+
+    private fun syncGrouppList(groupListData: GroupListData) {
+        groupListData.list.forEach {
+            syncGroup(it)
+        }
+    }
 
     private fun syncGroup(group: GroupDTO) {
         var qqGroup = qqGroupMapper.selectById(group.id)
