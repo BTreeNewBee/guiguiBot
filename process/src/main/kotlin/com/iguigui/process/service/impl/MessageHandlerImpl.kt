@@ -74,14 +74,13 @@ class MessageHandlerImpl : MessageHandler {
 //    val musicQuestionRecord: LinkedHashMap<Long, MutableList<MusicShare>> = linkedMapOf()
 
     override fun handler(message: DTO) {
-        println(message)
-            when(message) {
-                is GroupListData -> syncGrouppList(message)
-                is MemberListData -> syncMemberList(message)
-            }
+        println("handler message $message")
+        when (message) {
+            is GroupListData -> syncGrouppList(message)
+            is MemberListData -> syncMemberList(message)
+        }
 
     }
-
 
 
     suspend fun processMessageChain(sender: Member, message: MessageChain, id: Int, event: GroupMessageEvent) {
@@ -312,7 +311,6 @@ class MessageHandlerImpl : MessageHandler {
     }
 
 
-
     object ago
     object time
 
@@ -340,7 +338,7 @@ class MessageHandlerImpl : MessageHandler {
     }
 
 
-    private val searchHelperMap : Map<String,String> = mapOf(
+    private val searchHelperMap: Map<String, String> = mapOf(
         "百度" to "https://www.baidu.com/baidu?wd=",
         "谷歌" to "https://www.google.com/search?q=",
         "必应" to "https://cn.bing.com/search?q=",
@@ -350,7 +348,6 @@ class MessageHandlerImpl : MessageHandler {
     )
 
 
-
     private fun searchHelper(contentToString: String, sender: Member) {
         searchHelperMap.entries.forEach {
             if (contentToString.lowercase(Locale.getDefault()).startsWith(it.key)) {
@@ -358,10 +355,12 @@ class MessageHandlerImpl : MessageHandler {
                 if (substring.trim().isNotEmpty()) {
                     runBlocking {
                         sender.group.sendMessage(
-                            "这也要我教？？？自己去看\n${it.value + URLEncoder.encode(
-                                substring.trim(),
-                                "UTF-8"
-                            )}"
+                            "这也要我教？？？自己去看\n${
+                                it.value + URLEncoder.encode(
+                                    substring.trim(),
+                                    "UTF-8"
+                                )
+                            }"
                         )
                     }
                 }

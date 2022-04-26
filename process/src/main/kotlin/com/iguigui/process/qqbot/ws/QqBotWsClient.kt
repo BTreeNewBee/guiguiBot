@@ -77,7 +77,6 @@ class QqBotWsClient constructor(serverURI: URI = URI("ws://192.168.50.185:8637/a
 
     @OptIn(InternalSerializationApi::class)
     override fun onMessage(message: String) {
-        println(message)
         handler(message)
     }
 

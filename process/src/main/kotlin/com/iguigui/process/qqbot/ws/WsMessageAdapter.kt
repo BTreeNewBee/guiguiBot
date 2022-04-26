@@ -4,13 +4,17 @@ import com.iguigui.process.qqbot.MessageAdapter
 import com.iguigui.process.qqbot.dto.*
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.SerialName
-import kotlinx.serialization.json.*
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.serializer
-import net.mamoe.mirai.message.data.MessageChain
+import org.reflections.Reflections
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import java.io.File
 import java.io.IOException
+import java.util.*
 import javax.annotation.PostConstruct
 import kotlin.reflect.KClass
 import kotlin.reflect.full.findAnnotation
@@ -18,24 +22,28 @@ import kotlin.reflect.full.findAnnotation
 
 fun main() {
 
+//    WsMessageAdapter().registerDTO()
+
 }
 
 
 @Component
 class WsMessageAdapter : MessageAdapter {
 
-    var dtoMap = HashMap<String, KClass<DTO>>()
+    var dtoMap = HashMap<String, KClass<out DTO>>()
 
     //扫描DTO包寻找class注入map中
     @PostConstruct
     fun registerDTO() {
         val packageName = "com.iguigui.process.qqbot.dto";
-        val clazzs = findClass(packageName)
-        val map = HashMap<String, KClass<DTO>>()
-        clazzs.forEach { it ->
-            it.findAnnotation<SerialName>()?.let { annotation ->
-                map[annotation.value] = it
-            }
+        val reflections = Reflections(packageName)
+        val allClasses: Set<Class<out DTO>> = reflections.getSubTypesOf(DTO::class.java)
+        val map = HashMap<String, KClass<out DTO>>()
+        allClasses.forEach {
+            val javaClass = it.kotlin
+            javaClass.findAnnotation<SerialName>()?.let { annotation ->
+                    map[annotation.value] = javaClass
+                }
         }
         dtoMap = map
     }
@@ -76,32 +84,28 @@ class WsMessageAdapter : MessageAdapter {
         return when (command) {
             Paths.reservedMessage -> reservedMessageConverter(parseToJsonElement)
             else -> {
-                commandMessageConverter(command, parseToJsonElement)
+                commandMessageConverter(command,parseToJsonElement)
             }
         }
     }
 
 
-    //这个类型下的都是bot发起的message 和 event
     @OptIn(InternalSerializationApi::class)
     private fun reservedMessageConverter(message: JsonElement): DTO? {
         message.jsonObject["data"]?.jsonObject?.let { data ->
-            val type = data["type"].toString()
+            val type = data["type"]?.jsonPrimitive?.content.orEmpty()
             val clazz = dtoMap[type]
-            return clazz?.let { json.decodeFromJsonElement(clazz.serializer(), data) }
+            val let = clazz?.let { json.decodeFromJsonElement(clazz.serializer(), data) }
+            return let
         }
         return null
     }
 
-    //这个类型下的都是客户端主动发起的命令的响应
     @OptIn(InternalSerializationApi::class)
     private fun commandMessageConverter(command: String, message: JsonElement): DTO? {
         message.jsonObject["data"]?.let {
             when (command) {
-                Paths.groupList -> {
-                    val decodeFromJsonElement = json.decodeFromJsonElement(ArrayList::class.serializer(), it)
-//                    return GroupListData(decodeFromJsonElement)
-                }
+                Paths.groupList -> json.decodeFromJsonElement(ArrayList::class.serializer(),it)
                 else -> {}
             }
         }
@@ -156,9 +160,7 @@ class WsMessageAdapter : MessageAdapter {
                             ""
                         )
                     ).kotlin
-                    if (clazz == dtoClazz) {
-                        clazzs.add(clazz as KClass<DTO>)
-                    }
+                    clazzs.add(clazz as KClass<DTO>)
                 }
             }
         }

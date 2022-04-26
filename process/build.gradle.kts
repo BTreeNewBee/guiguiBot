@@ -52,5 +52,5 @@ dependencies {
     implementation("com.github.salomonbrys.kotson:kotson:2.5.0")
     implementation(kotlin("stdlib-jdk8"))
     implementation("org.java-websocket:Java-WebSocket:1.5.3")
-
+    implementation("org.reflections:reflections:0.10.2")
 }

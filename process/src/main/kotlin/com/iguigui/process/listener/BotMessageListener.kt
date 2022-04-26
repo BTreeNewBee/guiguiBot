@@ -18,7 +18,8 @@ class BotMessageListener {
 
     @PostConstruct
     fun registerAdapt() {
-        messageAdapt.registerHandler {messageHandle}
+        println("registerAdapt")
+        messageAdapt.registerHandler(messageHandle::handler)
     }
 
 
