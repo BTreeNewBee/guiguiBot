@@ -6,13 +6,12 @@ import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.json.*
 import kotlinx.serialization.serializer
+import net.mamoe.mirai.message.data.MessageChain
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import java.io.File
 import java.io.IOException
 import javax.annotation.PostConstruct
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 import kotlin.reflect.KClass
 import kotlin.reflect.full.findAnnotation
 
@@ -83,6 +82,7 @@ class WsMessageAdapter : MessageAdapter {
     }
 
 
+    //这个类型下的都是bot发起的message 和 event
     @OptIn(InternalSerializationApi::class)
     private fun reservedMessageConverter(message: JsonElement): DTO? {
         message.jsonObject["data"]?.jsonObject?.let { data ->
@@ -93,6 +93,7 @@ class WsMessageAdapter : MessageAdapter {
         return null
     }
 
+    //这个类型下的都是客户端主动发起的命令的响应
     @OptIn(InternalSerializationApi::class)
     private fun commandMessageConverter(command: String, message: JsonElement): DTO? {
         message.jsonObject["data"]?.let {
