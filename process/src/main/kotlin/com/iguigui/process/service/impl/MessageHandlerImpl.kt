@@ -73,6 +73,8 @@ class MessageHandlerImpl : MessageHandler {
 
 //    val musicQuestionRecord: LinkedHashMap<Long, MutableList<MusicShare>> = linkedMapOf()
 
+    //所有的事件、消息都会进入这个方法
+    //所有的事件、消息都是DTO的子类
     override fun handler(message: DTO) {
         println("handler message $message")
         when (message) {

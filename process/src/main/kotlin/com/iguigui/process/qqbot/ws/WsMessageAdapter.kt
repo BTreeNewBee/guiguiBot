@@ -4,10 +4,10 @@ import com.iguigui.process.qqbot.MessageAdapter
 import com.iguigui.process.qqbot.dto.*
 import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.SerialName
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonElement
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.json.*
+import kotlinx.serialization.modules.SerializersModule
+import kotlinx.serialization.modules.SerializersModuleBuilder
 import kotlinx.serialization.serializer
 import org.reflections.Reflections
 import org.springframework.beans.factory.annotation.Autowired
@@ -22,7 +22,9 @@ import kotlin.reflect.full.findAnnotation
 
 fun main() {
 
-//    WsMessageAdapter().registerDTO()
+    val wsMessageAdapter = WsMessageAdapter()
+    wsMessageAdapter.registerDTO()
+    wsMessageAdapter.handlerMessage("""{"command":"reservedMessage","data":{"type":"FriendMessage","sender":{"id":123,"nickname":"","remark":""},"messageChain":[{"type":"Source","id":123456,"time":123456},{"type":"At","target":123456,"display":"@Mirai"}]}}""")
 
 }
 
@@ -42,8 +44,8 @@ class WsMessageAdapter : MessageAdapter {
         allClasses.forEach {
             val javaClass = it.kotlin
             javaClass.findAnnotation<SerialName>()?.let { annotation ->
-                    map[annotation.value] = javaClass
-                }
+                map[annotation.value] = javaClass
+            }
         }
         dtoMap = map
     }
@@ -51,11 +53,31 @@ class WsMessageAdapter : MessageAdapter {
     /**
      * Json解析规则，需要注册支持的多态的类
      */
+    @OptIn(InternalSerializationApi::class)
     private val json by lazy {
         Json {
             encodeDefaults = true
             isLenient = true
             ignoreUnknownKeys = true
+
+            @Suppress("UNCHECKED_CAST")
+            serializersModule = SerializersModule {
+                polymorphicSealedClass(EventDTO::class, MessagePacketDTO::class)
+                polymorphicSealedClass(EventDTO::class, BotEventDTO::class)
+            }
+        }
+    }
+
+
+    @InternalSerializationApi
+    @Suppress("UNCHECKED_CAST")
+    private fun <B : Any, S : B> SerializersModuleBuilder.polymorphicSealedClass(
+        baseClass: KClass<B>,
+        sealedClass: KClass<S>
+    ) {
+        sealedClass.sealedSubclasses.forEach {
+            val c = it as KClass<S>
+            polymorphic(baseClass, c, c.serializer())
         }
     }
 
@@ -73,7 +95,7 @@ class WsMessageAdapter : MessageAdapter {
         qqBotWsClient.sendMessage(message.toJson())
     }
 
-    private fun handlerMessage(message: String) {
+     fun handlerMessage(message: String) {
         messageConverter(message)?.let(handler)
     }
 
@@ -84,7 +106,7 @@ class WsMessageAdapter : MessageAdapter {
         return when (command) {
             Paths.reservedMessage -> reservedMessageConverter(parseToJsonElement)
             else -> {
-                commandMessageConverter(command,parseToJsonElement)
+                commandMessageConverter(command, parseToJsonElement)
             }
         }
     }
@@ -104,9 +126,16 @@ class WsMessageAdapter : MessageAdapter {
     @OptIn(InternalSerializationApi::class)
     private fun commandMessageConverter(command: String, message: JsonElement): DTO? {
         message.jsonObject["data"]?.let {
-            when (command) {
-                Paths.groupList -> json.decodeFromJsonElement(ArrayList::class.serializer(),it)
-                else -> {}
+            return@let when (command) {
+                Paths.groupList -> {
+                    GroupListData(json.decodeFromJsonElement(ListSerializer(GroupDTO.serializer()), it))
+                }
+                Paths.memberList -> {
+                    MemberListData(json.decodeFromJsonElement(ListSerializer(MemberDTO.serializer()), it))
+                }
+                else -> {
+                    return null
+                }
             }
         }
 
