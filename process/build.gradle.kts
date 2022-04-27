@@ -1,4 +1,5 @@
 plugins {
+    id("com.google.devtools.ksp") version "1.6.10-1.0.2"
     kotlin("jvm")
     id("org.springframework.boot")
     id("io.spring.dependency-management")
@@ -10,11 +11,14 @@ version = "0.0.1-SNAPSHOT"
 
 repositories {
     mavenCentral()
+    gradlePluginPortal()
 }
 
 dependencies {
     //公共包
     implementation(project(":common"))
+    //Kotlin symbol processing
+    ksp(project(":common"))
     //kotlin
     implementation(kotlin("stdlib"))
     //mysql
@@ -51,6 +55,9 @@ dependencies {
     //kotson
     implementation("com.github.salomonbrys.kotson:kotson:2.5.0")
     implementation(kotlin("stdlib-jdk8"))
+
+    //WebSocket
     implementation("org.java-websocket:Java-WebSocket:1.5.3")
     implementation("org.reflections:reflections:0.10.2")
+
 }

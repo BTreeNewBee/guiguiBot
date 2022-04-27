@@ -21,24 +21,24 @@ import java.net.URI
 import java.util.Scanner
 import javax.annotation.PostConstruct
 
-fun main() {
-    val qqBotWsClient = QqBotWsClient()
-    qqBotWsClient.connect()
-
-    val encodeToString = MemberListRequest("984647128").toJson()
-    println(encodeToString)
-    qqBotWsClient.sendMessage(encodeToString)
-
-    val scanner = Scanner(System.`in`)
-    while (true) {
-        val baseMessage = BaseRequest(scanner.nextLine(), Content(), "", 123)
-        val encodeToString = Json.encodeToString(baseMessage)
-        println(encodeToString)
-        println()
-
-    }
-
-}
+//fun main() {
+//    val qqBotWsClient = QqBotWsClient()
+//    qqBotWsClient.connect()
+//
+//    val encodeToString = MemberListRequest("984647128").toJson()
+//    println(encodeToString)
+//    qqBotWsClient.sendMessage(encodeToString)
+//
+//    val scanner = Scanner(System.`in`)
+//    while (true) {
+//        val baseMessage = BaseRequest(scanner.nextLine(), Content(), "", 123)
+//        val encodeToString = Json.encodeToString(baseMessage)
+//        println(encodeToString)
+//        println()
+//
+//    }
+//
+//}
 
 @Component
 class QqBotWsClient constructor(serverURI: URI = URI("ws://192.168.50.185:8637/all?verifyKey=&qq=3633266931")) : WebSocketClient(serverURI) {
