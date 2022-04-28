@@ -1,13 +1,16 @@
 package com.iguigui.common.kotlin
 
+import com.google.devtools.ksp.getFunctionDeclarationsByName
 import com.google.devtools.ksp.processing.*
 import com.google.devtools.ksp.symbol.*
+import com.google.devtools.ksp.*
 import java.io.OutputStream
 
 
 class TestProcessor(
     val codeGenerator: CodeGenerator,
-    val options: Map<String, String>
+    val options: Map<String, String>,
+    val logger : KSPLogger
 ) : SymbolProcessor {
     lateinit var file: OutputStream
     var invoked = false
@@ -20,26 +23,150 @@ class TestProcessor(
         if (invoked) {
             return emptyList()
         }
-        file = codeGenerator.createNewFile(Dependencies(false), "", "TestProcessor", "log")
-        emit("TestProcessor: init($options)", "")
+        val symbols = resolver
+            // Getting all symbols that are annotated with @Function.
+            .getSymbolsWithAnnotation("com.morfly.Function")
+            // Making sure we take only class declarations.
+            .filterIsInstance<KSClassDeclaration>()
+        // The generated file will be located at:
+        // build/generated/ksp/main/kotlin/com/morfly/GeneratedFunctions.kt
+        val file = codeGenerator.createNewFile(
+            // Make sure to associate the generated file with sources to keep/maintain it across incremental builds.
+            // Learn more about incremental processing in KSP from the official docs:
+            // https://kotlinlang.org/docs/ksp-incremental.html
+            dependencies = Dependencies(false, *resolver.getAllFiles().toList().toTypedArray()),
+            packageName = "com.morfly",
+            fileName = "GeneratedFunctions"
+        )
+        // Generating package statement.
+        file.appendText("package com.morfly\n")
 
-        val javaFile = codeGenerator.createNewFile(Dependencies(false), "", "Generated", "kt")
-        javaFile.appendText("class Generated {}")
-//
-//        val fileKt = codeGenerator.createNewFile(Dependencies(false), "", "HELLO", "kt")
-//        fileKt.appendText("public class HELLO{\n")
-//        fileKt.appendText("public int foo() { return 1234; }\n")
-//        fileKt.appendText("}")
-
-        val files = resolver.getAllFiles()
-        emit("TestProcessor: process()", "")
-        val visitor = TestVisitor()
-        for (file in files) {
-            emit("TestProcessor: processing ${file.fileName}", "")
-            file.accept(visitor, "")
+        // Processing each class declaration, annotated with @Function.
+        symbols.forEach {
+            logger.info("${it.classKind}")
+            it.accept(Visitor(file), Unit)
         }
-        invoked = true
-        return emptyList()
+
+        // Don't forget to close the out stream.
+        file.close()
+
+        val unableToProcess = symbols.filterNot { it.validate() }.toList()
+        return unableToProcess
+    }
+
+    inner class Visitor(private val file: OutputStream) : KSVisitorVoid() {
+
+        override fun visitClassDeclaration(classDeclaration: KSClassDeclaration, data: Unit) {
+            if (classDeclaration.classKind != ClassKind.INTERFACE) {
+                logger.error("Only interface can be annotated with @Function", classDeclaration)
+                return
+            }
+
+            // Getting the @Function annotation object.
+            val annotation: KSAnnotation = classDeclaration.annotations.first {
+                it.shortName.asString() == "Function"
+            }
+
+            // Getting the 'name' argument object from the @Function.
+            val nameArgument: KSValueArgument = annotation.arguments
+                .first { arg -> arg.name?.asString() == "name" }
+
+            // Getting the value of the 'name' argument.
+            val functionName = nameArgument.value as String
+
+            // Getting the list of member properties of the annotated interface.
+            val properties: Sequence<KSPropertyDeclaration> = classDeclaration.getAllProperties()
+                .filter { it.validate() }
+
+            // Generating function signature.
+            file += "\n"
+            if (properties.iterator().hasNext()) {
+                file += "fun $functionName(\n"
+
+                // Iterating through each property to translate them to function arguments.
+                properties.forEach { prop ->
+                    visitPropertyDeclaration(prop, Unit)
+                }
+                file += ") {\n"
+
+            } else {
+                // Otherwise, generating function with no args.
+                file += "fun $functionName() {\n"
+            }
+
+            // Generating function body.
+            file += "    println(\"Hello from $functionName\")\n"
+            file += "}\n"
+        }
+
+        override fun visitPropertyDeclaration(property: KSPropertyDeclaration, data: Unit) {
+            // Generating argument name.
+            val argumentName = property.simpleName.asString()
+            file += "    $argumentName: "
+
+            // Generating argument type.
+            val resolvedType: KSType = property.type.resolve()
+            file += resolvedType.declaration.qualifiedName?.asString() ?: run {
+                logger.error("Invalid property type", property)
+                return
+            }
+
+            // Generating generic parameters if any.
+            val genericArguments: List<KSTypeArgument> = property.type.element?.typeArguments ?: emptyList()
+            visitTypeArguments(genericArguments)
+
+            // Handling nullability.
+            file += if (resolvedType.nullability == Nullability.NULLABLE) "?" else ""
+
+            file += ",\n"
+        }
+
+        private fun visitTypeArguments(typeArguments: List<KSTypeArgument>) {
+            if (typeArguments.isNotEmpty()) {
+                file += "<"
+                typeArguments.forEachIndexed { i, arg ->
+                    visitTypeArgument(arg, data = Unit)
+                    if (i < typeArguments.lastIndex) file += ", "
+                }
+                file += ">"
+            }
+        }
+
+        override fun visitTypeArgument(typeArgument: KSTypeArgument, data: Unit) {
+            // Handling KSP options, specified in the consumer's build.gradle(.kts) file.
+            if (options["ignoreGenericArgs"] == "true") {
+                file += "*"
+                return
+            }
+
+            when (val variance: Variance = typeArgument.variance) {
+                // <*>
+                Variance.STAR -> {
+                    file += "*"
+                    return
+                }
+                // <out ...>, <in ...>
+                Variance.COVARIANT, Variance.CONTRAVARIANT -> {
+                    file += variance.label
+                    file += " "
+                }
+                Variance.INVARIANT -> {
+                    // Do nothing.
+                }
+            }
+            val resolvedType: KSType? = typeArgument.type?.resolve()
+            file += resolvedType?.declaration?.qualifiedName?.asString() ?: run {
+                logger.error("Invalid type argument", typeArgument)
+                return
+            }
+
+            // Generating nested generic parameters if any.
+            val genericArguments: List<KSTypeArgument> = typeArgument.type?.element?.typeArguments ?: emptyList()
+            visitTypeArguments(genericArguments)
+
+            // Handling nullability.
+            file += if (resolvedType?.nullability == Nullability.NULLABLE) "?" else ""
+        }
     }
 
     inner class TestVisitor : KSVisitor<String, Unit> {
@@ -254,6 +381,10 @@ class TestProcessorProvider : SymbolProcessorProvider {
     override fun create(
         env: SymbolProcessorEnvironment
     ): SymbolProcessor {
-        return TestProcessor(env.codeGenerator, env.options)
+        return TestProcessor(env.codeGenerator, env.options,env.logger)
     }
+}
+
+operator fun OutputStream.plusAssign(str: String) {
+    this.write(str.toByteArray())
 }

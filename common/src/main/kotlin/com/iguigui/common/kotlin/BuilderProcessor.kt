@@ -13,8 +13,8 @@ class BuilderProcessor(
     val codeGenerator: CodeGenerator,
     val logger: KSPLogger
 ) : SymbolProcessor {
+
     override fun process(resolver: Resolver): List<KSAnnotated> {
-        println("process SymbolProcessor")
         val symbols = resolver.getSymbolsWithAnnotation("com.iguigui.common.kotlin.Builder")
         val ret = symbols.filter { !it.validate() }.toList()
         symbols
