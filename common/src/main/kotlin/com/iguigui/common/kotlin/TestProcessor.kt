@@ -13,7 +13,10 @@ class TestProcessor(
     val options: Map<String, String>,
     val logger : KSPLogger
 ) : SymbolProcessor {
+
     lateinit var file: OutputStream
+
+    lateinit var dtoKSType: KSType
 
     fun emit(s: String, indent: String) {
         file.appendText("$indent$s\n")
@@ -46,6 +49,12 @@ class TestProcessor(
         // Generating package statement.
         file.appendText("package com.iguigui.common.kotlin\n")
 
+        val classDeclarationByName = resolver.getClassDeclarationByName("com.iguigui.common.interfaces.DTO")
+        val dtoKSType = classDeclarationByName?.asStarProjectedType()
+        if (dtoKSType == null) {
+            return ArrayList();
+        }
+        this.dtoKSType = dtoKSType
         // Processing each class declaration, annotated with @Function.
         symbols.forEach {
             logger.info("${it.functionKind}")
@@ -53,7 +62,6 @@ class TestProcessor(
         }
 
         // Don't forget to close the out stream.
-        file.close()
 
         val unableToProcess = symbols.filterNot { it.validate() }.toList()
         return unableToProcess
@@ -64,17 +72,26 @@ class TestProcessor(
         override fun visitFunctionDeclaration(function: KSFunctionDeclaration, data: Unit) {
 
             if (function.functionKind != FunctionKind.MEMBER) {
-                throw RuntimeException("Only member function can be annotated with @Function")
+                throw RuntimeException("Only member function can be annotated with @SubscribeBotMessage")
                 return
             }
-
-            function.parameters.forEach {
-//                it.type.resolve().isAssignableFrom(DTO::class)
+            if (function.parameters.size != 1) {
+                throw RuntimeException("This function be annotated with @SubscribeBotMessage must only have one parameter !")
             }
 
-            function.qualifiedName?.let { file += it.getQualifier() }
+            file += function.functionKind.name
+            file += function.parentDeclaration?.qualifiedName?.getQualifier()?:" no parentDeclaration"
+            file += function.parameters[0].type.toString()
+
+            if (!function.parameters[0].type.resolve().isAssignableFrom(dtoKSType)) {
+                throw RuntimeException("This function be annotated with @SubscribeBotMessage must only have one parameter and sub with com.iguigui.common.interfaces.DTO !")
+            }
+
+//            file += function.functionKind.name
+//            file += function.parentDeclaration?.qualifiedName?.getQualifier()?:" no parentDeclaration"
 
         }
+
 
         override fun visitClassDeclaration(classDeclaration: KSClassDeclaration, data: Unit) {
             if (classDeclaration.classKind != ClassKind.INTERFACE) {
