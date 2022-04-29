@@ -1,6 +1,6 @@
-package com.iguigui.process.annotations
+package com.iguigui.common.annotations
 
-import com.iguigui.process.qqbot.dto.DTO
+import com.iguigui.common.interfaces.DTO
 import kotlin.reflect.KClass
 
 /**

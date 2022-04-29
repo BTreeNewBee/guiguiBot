@@ -7,15 +7,13 @@
  * https://github.com/mamoe/mirai/blob/master/LICENSE
  */
 
-package com.iguigui.process.qqbot.dto
+package com.iguigui.common.interfaces
 
-import com.iguigui.common.interfaces.DTO
-import com.iguigui.process.qqbot.dto.request.BaseRequest
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
-//interface DTO
+interface DTO
 
 @Serializable
 abstract class EventDTO : DTO

@@ -1,6 +1,6 @@
 package com.iguigui.process.qqbot.dto.response
 
-import com.iguigui.process.qqbot.dto.DTO
+
 import com.iguigui.process.qqbot.dto.request.BaseRequest
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString

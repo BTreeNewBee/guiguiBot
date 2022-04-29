@@ -1,38 +1,60 @@
+@file:Suppress("UnnecessaryVariable")
+
 package com.iguigui.common.kotlin
 
-import com.google.devtools.ksp.getFunctionDeclarationsByName
 import com.google.devtools.ksp.processing.*
 import com.google.devtools.ksp.symbol.*
-import com.google.devtools.ksp.*
-import com.iguigui.common.interfaces.DTO
+import com.google.devtools.ksp.symbol.Variance.*
+import com.google.devtools.ksp.validate
 import java.io.OutputStream
 
 
-class TestProcessor(
-    val codeGenerator: CodeGenerator,
-    val options: Map<String, String>,
-    val logger : KSPLogger
+/**
+ * This processor handles interfaces annotated with @Function.
+ * It generates the function for each annotated interface. For each property of the interface it adds an argument for
+ * the generated function with the same type and name.
+ *
+ * For example, the following code:
+ *
+ * ```kotlin
+ * @Function(name = "myFunction")
+ * interface MyFunction {
+ *     val arg1: String
+ *     val arg2: List<List<*>>
+ * }
+ * ```
+ *
+ * Will generate the corresponding function:
+ *
+ * ```kotlin
+ * fun myFunction(
+ *     arg1: String,
+ *     arg2: List<List<*>>
+ * ) {
+ *     println("Hello from myFunction")
+ * }
+ * ```
+ */
+class FunctionProcessor(
+    private val options: Map<String, String>,
+    private val logger: KSPLogger,
+    private val codeGenerator: CodeGenerator,
 ) : SymbolProcessor {
-    lateinit var file: OutputStream
-
-    fun emit(s: String, indent: String) {
-        file.appendText("$indent$s\n")
-    }
-
 
     operator fun OutputStream.plusAssign(str: String) {
         this.write(str.toByteArray())
     }
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
-
-        logger.info("process KSAnnotated")
         val symbols = resolver
             // Getting all symbols that are annotated with @Function.
-            .getSymbolsWithAnnotation("com.iguigui.common.annotations.SubscribeBotMessage")
+            .getSymbolsWithAnnotation("com.iguigui.common.kotlin.Function")
             // Making sure we take only class declarations.
-            .filterIsInstance<KSFunctionDeclaration>()
+            .filterIsInstance<KSClassDeclaration>()
+
+        // Exit from the processor in case nothing is annotated with @Function.
         if (!symbols.iterator().hasNext()) return emptyList()
+
         // The generated file will be located at:
         // build/generated/ksp/main/kotlin/com/morfly/GeneratedFunctions.kt
         val file = codeGenerator.createNewFile(
@@ -44,13 +66,10 @@ class TestProcessor(
             fileName = "GeneratedFunctions"
         )
         // Generating package statement.
-        file.appendText("package com.iguigui.common.kotlin\n")
+        file += "package com.iguigui.common.kotlin\n"
 
         // Processing each class declaration, annotated with @Function.
-        symbols.forEach {
-            logger.info("${it.functionKind}")
-            it.accept(Visitor(file), Unit)
-        }
+        symbols.forEach { it.accept(Visitor(file), Unit) }
 
         // Don't forget to close the out stream.
         file.close()
@@ -60,21 +79,6 @@ class TestProcessor(
     }
 
     inner class Visitor(private val file: OutputStream) : KSVisitorVoid() {
-
-        override fun visitFunctionDeclaration(function: KSFunctionDeclaration, data: Unit) {
-
-            if (function.functionKind != FunctionKind.MEMBER) {
-                throw RuntimeException("Only member function can be annotated with @Function")
-                return
-            }
-
-            function.parameters.forEach {
-//                it.type.resolve().isAssignableFrom(DTO::class)
-            }
-
-            function.qualifiedName?.let { file += it.getQualifier() }
-
-        }
 
         override fun visitClassDeclaration(classDeclaration: KSClassDeclaration, data: Unit) {
             if (classDeclaration.classKind != ClassKind.INTERFACE) {
@@ -161,16 +165,16 @@ class TestProcessor(
 
             when (val variance: Variance = typeArgument.variance) {
                 // <*>
-                Variance.STAR -> {
+                STAR -> {
                     file += "*"
                     return
                 }
                 // <out ...>, <in ...>
-                Variance.COVARIANT, Variance.CONTRAVARIANT -> {
+                COVARIANT, CONTRAVARIANT -> {
                     file += variance.label
                     file += " "
                 }
-                Variance.INVARIANT -> {
+                INVARIANT -> {
                     // Do nothing.
                 }
             }
@@ -188,6 +192,4 @@ class TestProcessor(
             file += if (resolvedType?.nullability == Nullability.NULLABLE) "?" else ""
         }
     }
-
-
 }

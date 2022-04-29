@@ -1,5 +1,6 @@
 package com.iguigui.process.qqbot.ws
 
+import com.iguigui.common.interfaces.DTO
 import com.iguigui.process.qqbot.MessageAdapter
 import com.iguigui.process.qqbot.dto.*
 import kotlinx.serialization.InternalSerializationApi

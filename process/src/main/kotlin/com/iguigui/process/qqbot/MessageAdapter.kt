@@ -1,7 +1,7 @@
 package com.iguigui.process.qqbot
 
+import com.iguigui.common.interfaces.DTO
 import com.iguigui.process.qqbot.dto.BaseRequest
-import com.iguigui.process.qqbot.dto.DTO
 
 
 /**

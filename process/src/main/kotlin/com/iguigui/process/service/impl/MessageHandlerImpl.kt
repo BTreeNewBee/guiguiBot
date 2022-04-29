@@ -4,6 +4,7 @@ import cn.hutool.crypto.digest.MD5
 import cn.hutool.http.HttpUtil
 import com.google.gson.Gson
 import com.google.gson.JsonElement
+import com.iguigui.common.interfaces.DTO
 import com.iguigui.process.dao.GroupHasQqUserMapper
 import com.iguigui.process.dao.MessagesMapper
 import com.iguigui.process.dao.QqGroupMapper

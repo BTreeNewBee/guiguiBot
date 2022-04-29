@@ -9,6 +9,7 @@
 
 package com.iguigui.process.qqbot.dto
 
+import com.iguigui.common.interfaces.DTO
 import kotlinx.serialization.Serializable
 import net.mamoe.mirai.contact.*
 import net.mamoe.mirai.data.UserProfile

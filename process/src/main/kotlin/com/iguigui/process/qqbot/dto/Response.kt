@@ -1,5 +1,6 @@
 package com.iguigui.process.qqbot.dto
 
+import com.iguigui.common.interfaces.DTO
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json

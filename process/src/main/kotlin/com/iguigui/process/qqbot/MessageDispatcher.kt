@@ -1,6 +1,6 @@
 package com.iguigui.process.qqbot
 
-import com.iguigui.process.qqbot.dto.DTO
+import com.iguigui.common.interfaces.DTO
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import javax.annotation.PostConstruct
