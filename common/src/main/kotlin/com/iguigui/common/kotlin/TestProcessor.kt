@@ -18,6 +18,8 @@ class TestProcessor(
 
     lateinit var dtoKSType: KSType
 
+    val resultMap = HashMap<KSType,ArrayList<KSFunction>>()
+
     fun emit(s: String, indent: String) {
         file.appendText("$indent$s\n")
     }
@@ -48,11 +50,10 @@ class TestProcessor(
         )
         // Generating package statement.
         file.appendText("package com.iguigui.common.kotlin\n")
-
         val classDeclarationByName = resolver.getClassDeclarationByName("com.iguigui.common.interfaces.DTO")
         val dtoKSType = classDeclarationByName?.asStarProjectedType()
         if (dtoKSType == null) {
-            return ArrayList();
+            return ArrayList()
         }
         this.dtoKSType = dtoKSType
         // Processing each class declaration, annotated with @Function.
@@ -83,9 +84,18 @@ class TestProcessor(
             file += function.parentDeclaration?.qualifiedName?.getQualifier()?:" no parentDeclaration"
             file += function.parameters[0].type.toString()
 
-            if (!function.parameters[0].type.resolve().isAssignableFrom(dtoKSType)) {
+            if (!dtoKSType.isAssignableFrom(function.parameters[0].type.resolve())) {
                 throw RuntimeException("This function be annotated with @SubscribeBotMessage must only have one parameter and sub with com.iguigui.common.interfaces.DTO !")
             }
+            val parentDeclaration = function.parentDeclaration
+            if (parentDeclaration !is KSClassDeclaration) {
+                throw RuntimeException("This function must be a member function !")
+            }
+
+            //[ksp] java.lang.RuntimeException: CLASS + com.google.devtools.ksp.symbol.impl.kotlin.KSNameImpl@118a882f + com.google.devtools.ksp.symbol.impl.kotlin.KSNameImpl@1b287888
+            throw RuntimeException("${parentDeclaration.classKind} + ${parentDeclaration?.qualifiedName} + ${parentDeclaration?.packageName}")
+
+
 
 //            file += function.functionKind.name
 //            file += function.parentDeclaration?.qualifiedName?.getQualifier()?:" no parentDeclaration"
