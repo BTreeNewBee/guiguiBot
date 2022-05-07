@@ -1,6 +1,7 @@
 package com.iguigui.process.service
 
 import com.iguigui.common.annotations.SubscribeBotMessage
+import com.iguigui.common.interfaces.DTO
 import com.iguigui.process.qqbot.dto.GroupMessagePacketDTO
 import org.springframework.stereotype.Component
 
@@ -8,9 +9,8 @@ import org.springframework.stereotype.Component
 class Subscriber {
 
 
-    @SubscribeBotMessage(GroupMessagePacketDTO::class)
+    @SubscribeBotMessage
     fun groupMessageEvent(dto: GroupMessagePacketDTO) {
-
 
     }
 

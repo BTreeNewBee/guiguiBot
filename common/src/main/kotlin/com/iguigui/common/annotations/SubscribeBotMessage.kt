@@ -9,6 +9,5 @@ import kotlin.reflect.KClass
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.SOURCE)
 annotation class SubscribeBotMessage(
-    val clazz:KClass<out DTO>,
     val priority:Int = 10
 )

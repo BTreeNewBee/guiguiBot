@@ -6,19 +6,23 @@ import com.google.devtools.ksp.symbol.*
 import com.google.devtools.ksp.*
 import com.iguigui.common.interfaces.DTO
 import java.io.OutputStream
+import kotlin.reflect.KClass
 
 
 class TestProcessor(
     val codeGenerator: CodeGenerator,
     val options: Map<String, String>,
-    val logger : KSPLogger
+    val logger: KSPLogger
 ) : SymbolProcessor {
 
     lateinit var file: OutputStream
 
     lateinit var dtoKSType: KSType
 
-    val resultMap = HashMap<KSType,ArrayList<KSFunction>>()
+    lateinit var resolver: Resolver
+
+    val resultMap = HashMap<KSClassDeclaration, ArrayList<KSFunctionDeclaration>>()
+
 
     fun emit(s: String, indent: String) {
         file.appendText("$indent$s\n")
@@ -30,16 +34,12 @@ class TestProcessor(
     }
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
-
-        logger.info("process KSAnnotated")
+        this.resolver = resolver
+        //获取所有SubscribeBotMessage注解的function
         val symbols = resolver
-            // Getting all symbols that are annotated with @Function.
             .getSymbolsWithAnnotation("com.iguigui.common.annotations.SubscribeBotMessage")
-            // Making sure we take only class declarations.
             .filterIsInstance<KSFunctionDeclaration>()
         if (!symbols.iterator().hasNext()) return emptyList()
-        // The generated file will be located at:
-        // build/generated/ksp/main/kotlin/com/morfly/GeneratedFunctions.kt
         val file = codeGenerator.createNewFile(
             // Make sure to associate the generated file with sources to keep/maintain it across incremental builds.
             // Learn more about incremental processing in KSP from the official docs:
@@ -62,8 +62,10 @@ class TestProcessor(
             it.accept(Visitor(file), Unit)
         }
 
-        // Don't forget to close the out stream.
 
+
+        throw RuntimeException("" + resultMap.size)
+        // Don't forget to close the out stream.
         val unableToProcess = symbols.filterNot { it.validate() }.toList()
         return unableToProcess
     }
@@ -80,21 +82,53 @@ class TestProcessor(
                 throw RuntimeException("This function be annotated with @SubscribeBotMessage must only have one parameter !")
             }
 
-            file += function.functionKind.name
-            file += function.parentDeclaration?.qualifiedName?.getQualifier()?:" no parentDeclaration"
-            file += function.parameters[0].type.toString()
+//            file += function.functionKind.name
+//            file += function.parentDeclaration?.qualifiedName?.getQualifier() ?: " no parentDeclaration"
+//            file += function.parameters[0].type.toString()
 
             if (!dtoKSType.isAssignableFrom(function.parameters[0].type.resolve())) {
                 throw RuntimeException("This function be annotated with @SubscribeBotMessage must only have one parameter and sub with com.iguigui.common.interfaces.DTO !")
             }
-            val parentDeclaration = function.parentDeclaration
-            if (parentDeclaration !is KSClassDeclaration) {
+            val pclass = function.parentDeclaration
+            if (pclass !is KSClassDeclaration) {
                 throw RuntimeException("This function must be a member function !")
             }
 
-            //[ksp] java.lang.RuntimeException: CLASS + com.google.devtools.ksp.symbol.impl.kotlin.KSNameImpl@118a882f + com.google.devtools.ksp.symbol.impl.kotlin.KSNameImpl@1b287888
-            throw RuntimeException("${parentDeclaration.classKind} + ${parentDeclaration?.qualifiedName} + ${parentDeclaration?.packageName}")
+            val subscribeBotMessageAnnotation =
+                resolver.getClassDeclarationByName("com.iguigui.common.annotations.SubscribeBotMessage")
 
+            if (subscribeBotMessageAnnotation == null) {
+                throw RuntimeException("Annotation com.iguigui.common.annotations.SubscribeBotMessage load failed!!")
+            }
+
+            // Getting the @SubscribeBotMessage annotation object.
+            val annotation: KSAnnotation = function.annotations.first {
+                it.shortName.asString() == "SubscribeBotMessage"
+            }
+
+            // Getting the 'name' argument object from the @Function.
+            //此处遍历会导致奇怪的报错
+//            val nameArgument: KSValueArgument = annotation.arguments
+//                .first { arg -> arg.name?.asString() == "clazz" }
+
+            // Getting the value of the 'name' argument.
+//
+//
+//            val clazzName = nameArgument.value as KSType
+//
+//            if (function.parameters[0].type.resolve() != clazzName) {
+//                throw RuntimeException("This function be annotated with @SubscribeBotMessage , clazz is ${clazzName.toString()} but argument is  ${function.parameters[0].type.resolve()}!")
+//            }
+
+
+            //[ksp] java.lang.RuntimeException: CLASS + com.google.devtools.ksp.symbol.impl.kotlin.KSNameImpl@118a882f + com.google.devtools.ksp.symbol.impl.kotlin.KSNameImpl@1b287888
+//            val orDefault = resultMap.getOrDefault(pclass, ArrayList())
+//            orDefault.add(function)
+//            resultMap[pclass] = orDefault
+
+            resultMap.computeIfAbsent(pclass, { key -> ArrayList() }).add(function)
+
+//            throw RuntimeException("${pclass.packageName.getQualifier()} + ${pclass.packageName.getShortName()} + ${pclass.packageName.asString()}")
 
 
 //            file += function.functionKind.name
