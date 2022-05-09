@@ -1,25 +1,15 @@
 package com.iguigui.process.qqbot.ws
 
-import com.iguigui.process.qqbot.dto.request.BaseRequest
-import com.iguigui.process.qqbot.dto.request.Content
-import com.iguigui.process.qqbot.dto.request.memberList.MemberListRequest
-import com.iguigui.process.qqbot.dto.request.toJson
-import com.iguigui.process.qqbot.dto.response.BaseResponse
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.InternalSerializationApi
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.serializer
 import org.apache.commons.logging.LogFactory
 import org.java_websocket.client.WebSocketClient
 import org.java_websocket.handshake.ServerHandshake
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import java.lang.Exception
 import java.lang.Thread.sleep
 import java.net.URI
-import java.util.Scanner
-import javax.annotation.PostConstruct
 
 //fun main() {
 //    val qqBotWsClient = QqBotWsClient()

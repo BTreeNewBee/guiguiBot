@@ -15,9 +15,3 @@ import kotlinx.serialization.json.Json
 
 interface DTO
 
-@Serializable
-abstract class EventDTO : DTO
-
-object IgnoreEventDTO : EventDTO()
-
-fun DTO.toJson(): String = Json.encodeToString(this)

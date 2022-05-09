@@ -1,7 +1,6 @@
 package com.iguigui.process.qqbot.dto.response
 
 
-import com.iguigui.process.qqbot.dto.request.BaseRequest
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -13,4 +12,4 @@ open class BaseResponse(
     val command: String,
 )
 
-fun BaseRequest.toJson(): String = Json.encodeToString(this)
+fun BaseResponse.toJson(): String = Json.encodeToString(this)

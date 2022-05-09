@@ -17,7 +17,7 @@ class BotRegister {
     lateinit var messageAdapt: MessageAdapter
 
     @Autowired
-    lateinit var messageDispatcher: MessageDispatcher
+    lateinit var messageDispatcher: IMessageDispatcher
 
 
     @PostConstruct

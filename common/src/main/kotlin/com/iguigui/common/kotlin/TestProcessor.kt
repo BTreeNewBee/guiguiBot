@@ -45,11 +45,11 @@ class TestProcessor(
             // Learn more about incremental processing in KSP from the official docs:
             // https://kotlinlang.org/docs/ksp-incremental.html
             dependencies = Dependencies(false, *resolver.getAllFiles().toList().toTypedArray()),
-            packageName = "com.iguigui.common.kotlin",
+            packageName = "com.iguigui.process.kotlin",
             fileName = "BotMessageRegister"
         )
         // Generating package statement.
-        file.appendText("package com.iguigui.common.kotlin\n")
+        file.appendText("package com.iguigui.process.kotlin\n")
         val classDeclarationByName = resolver.getClassDeclarationByName("com.iguigui.common.interfaces.DTO")
         val dtoKSType = classDeclarationByName?.asStarProjectedType()
         if (dtoKSType == null) {
@@ -65,7 +65,6 @@ class TestProcessor(
         file.appendText("\n")
         file.appendText("import com.iguigui.process.qqbot.IMessageDispatcher\n")
         file.appendText("import com.iguigui.common.interfaces.DTO\n")
-        file.appendText("import com.iguigui.process.qqbot.dto.GroupMessagePacketDTO\n")
         file.appendText("import org.springframework.beans.factory.annotation.Autowired\n")
         file.appendText("import org.springframework.stereotype.Component\n")
 
@@ -74,23 +73,36 @@ class TestProcessor(
             return@reduce ac
         })
         classSet.forEach { file.appendText("import ${it.packageName.asString()}.${it.simpleName.getShortName()}\n") }
+        resultMap.entries.forEach{
+            file.appendText("import com.iguigui.process.qqbot.dto.${it.key.declaration.simpleName.asString()}\n")
+        }
 
         file.appendText("\n")
         file.appendText("@Component\n")
-        file.appendText("class MessageDispatcher : IMessageDispatcher {")
+        file.appendText("class MessageDispatcher : IMessageDispatcher {\n")
         file.appendText("\n")
 
         classSet.forEach {
             file.appendText("    @Autowired\n")
-            file.appendText("    lateinit var ${it.simpleName.getShortName().toCharArray()}: ${it.simpleName.getShortName()}\n")
+            file.appendText("    lateinit var ${it.simpleName.getShortName().firstToLowerCase()}: ${it.simpleName.getShortName()}\n")
             file.appendText("\n")
         }
 
+        file.appendText("    override fun handler(message: DTO) {\n")
+        file.appendText("        when (message) {\n")
+        resultMap.entries.forEach {
+            file.appendText("            is ${it.key.declaration.simpleName.asString()} -> {\n")
+            it.value.forEach {
+                it.value.forEach { function ->
+                    file.appendText("                ${it.key.simpleName.asString().firstToLowerCase()}.${function.simpleName.getShortName()}(message)\n")
+                }
+            }
+            file.appendText("            }\n")
+        }
+        file.appendText("        }\n")
+        file.appendText("    }\n")
+        file.appendText("}")
 
-
-
-
-        classSet.forEach { file.appendText(it.qualifiedName?.asString() + it.simpleName) }
 
         // Don't forget to close the out stream.
         val unableToProcess = symbols.filterNot { it.validate() }.toList()
@@ -284,4 +296,16 @@ class TestProcessor(
     }
 
 
+}
+
+
+fun String.firstToLowerCase():String {
+    val toCharArray = this.toCharArray()
+    if (toCharArray.isEmpty()) {
+        return this
+    }
+    if (toCharArray[0] in 'A' ..'Z') {
+        toCharArray[0] = toCharArray[0] + 0x20
+    }
+    return String(toCharArray)
 }

@@ -93,6 +93,8 @@ class WsMessageAdapter : MessageAdapter {
     }
 
     override fun sendMessage(message: BaseRequest) {
+        println(message)
+        println(message.toJson())
         qqBotWsClient.sendMessage(message.toJson())
     }
 
@@ -102,14 +104,19 @@ class WsMessageAdapter : MessageAdapter {
 
     //消息转换，从json string转成DTO
     private fun messageConverter(message: String): DTO? {
-        val parseToJsonElement = json.parseToJsonElement(message)
-        val command = parseToJsonElement.jsonObject["command"]?.jsonPrimitive?.content.orEmpty()
-        return when (command) {
-            Paths.reservedMessage -> reservedMessageConverter(parseToJsonElement)
-            else -> {
-                commandMessageConverter(command, parseToJsonElement)
+        try {
+            val parseToJsonElement = json.parseToJsonElement(message)
+            val command = parseToJsonElement.jsonObject["command"]?.jsonPrimitive?.content.orEmpty()
+            return when (command) {
+                Paths.reservedMessage -> reservedMessageConverter(parseToJsonElement)
+                else -> {
+                    commandMessageConverter(command, parseToJsonElement)
+                }
             }
+        } catch (e:Exception) {
+            println("Message decode failed,message is $message")
         }
+        return null
     }
 
 
