@@ -6,24 +6,9 @@ import org.springframework.stereotype.Component
 import javax.annotation.PostConstruct
 
 @Component
-class MessageDispatcher {
+interface IMessageDispatcher {
 
+    fun handler(message: DTO)
 
-    /**
-     * 扫描订阅方法，注册到
-      */
-    @PostConstruct
-    fun registerSubscriber() {
-
-    }
-
-
-    fun handler(message: DTO){
-
-    }
-
-    private fun dispatcherMessage(message: DTO) {
-
-    }
 
 }

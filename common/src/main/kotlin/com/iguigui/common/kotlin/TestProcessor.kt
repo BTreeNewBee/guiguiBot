@@ -21,7 +21,7 @@ class TestProcessor(
 
     lateinit var resolver: Resolver
 
-    val resultMap = HashMap<KSClassDeclaration, ArrayList<KSFunctionDeclaration>>()
+    val resultMap = HashMap<KSType, HashMap<KSClassDeclaration, ArrayList<KSFunctionDeclaration>>>()
 
 
     fun emit(s: String, indent: String) {
@@ -46,7 +46,7 @@ class TestProcessor(
             // https://kotlinlang.org/docs/ksp-incremental.html
             dependencies = Dependencies(false, *resolver.getAllFiles().toList().toTypedArray()),
             packageName = "com.iguigui.common.kotlin",
-            fileName = "GeneratedFunctions"
+            fileName = "BotMessageRegister"
         )
         // Generating package statement.
         file.appendText("package com.iguigui.common.kotlin\n")
@@ -62,9 +62,36 @@ class TestProcessor(
             it.accept(Visitor(file), Unit)
         }
 
+        file.appendText("\n")
+        file.appendText("import com.iguigui.process.qqbot.IMessageDispatcher\n")
+        file.appendText("import com.iguigui.common.interfaces.DTO\n")
+        file.appendText("import com.iguigui.process.qqbot.dto.GroupMessagePacketDTO\n")
+        file.appendText("import org.springframework.beans.factory.annotation.Autowired\n")
+        file.appendText("import org.springframework.stereotype.Component\n")
+
+        val classSet = resultMap.values.map { e -> HashSet(e.keys) }.reduce({ ac, its ->
+            ac.addAll(its)
+            return@reduce ac
+        })
+        classSet.forEach { file.appendText("import ${it.packageName.asString()}.${it.simpleName.getShortName()}\n") }
+
+        file.appendText("\n")
+        file.appendText("@Component\n")
+        file.appendText("class MessageDispatcher : IMessageDispatcher {")
+        file.appendText("\n")
+
+        classSet.forEach {
+            file.appendText("    @Autowired\n")
+            file.appendText("    lateinit var ${it.simpleName.getShortName().toCharArray()}: ${it.simpleName.getShortName()}\n")
+            file.appendText("\n")
+        }
 
 
-        throw RuntimeException("" + resultMap.size)
+
+
+
+        classSet.forEach { file.appendText(it.qualifiedName?.asString() + it.simpleName) }
+
         // Don't forget to close the out stream.
         val unableToProcess = symbols.filterNot { it.validate() }.toList()
         return unableToProcess
@@ -85,8 +112,8 @@ class TestProcessor(
 //            file += function.functionKind.name
 //            file += function.parentDeclaration?.qualifiedName?.getQualifier() ?: " no parentDeclaration"
 //            file += function.parameters[0].type.toString()
-
-            if (!dtoKSType.isAssignableFrom(function.parameters[0].type.resolve())) {
+            val parameterKstype = function.parameters[0].type.resolve()
+            if (!dtoKSType.isAssignableFrom(parameterKstype)) {
                 throw RuntimeException("This function be annotated with @SubscribeBotMessage must only have one parameter and sub with com.iguigui.common.interfaces.DTO !")
             }
             val pclass = function.parentDeclaration
@@ -101,10 +128,17 @@ class TestProcessor(
                 throw RuntimeException("Annotation com.iguigui.common.annotations.SubscribeBotMessage load failed!!")
             }
 
+
+            resultMap.computeIfAbsent(parameterKstype) { key -> HashMap() }
+                .computeIfAbsent(pclass) { key -> ArrayList() }
+                .add(function)
+
+            //com.iguigui.process.service.Subscriber
+//            throw RuntimeException("${pclass.packageName.asString()}.${pclass.simpleName.getShortName()}")
             // Getting the @SubscribeBotMessage annotation object.
-            val annotation: KSAnnotation = function.annotations.first {
-                it.shortName.asString() == "SubscribeBotMessage"
-            }
+//            val annotation: KSAnnotation = function.annotations.first {
+//                it.shortName.asString() == "SubscribeBotMessage"
+//            }
 
             // Getting the 'name' argument object from the @Function.
             //此处遍历会导致奇怪的报错
@@ -126,7 +160,6 @@ class TestProcessor(
 //            orDefault.add(function)
 //            resultMap[pclass] = orDefault
 
-            resultMap.computeIfAbsent(pclass, { key -> ArrayList() }).add(function)
 
 //            throw RuntimeException("${pclass.packageName.getQualifier()} + ${pclass.packageName.getShortName()} + ${pclass.packageName.asString()}")
 
