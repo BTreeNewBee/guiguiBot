@@ -7,6 +7,7 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.SerializersModuleBuilder
 import kotlinx.serialization.serializer
+import net.mamoe.mirai.message.data.MessageChain
 import kotlin.reflect.KClass
 
 
@@ -23,9 +24,9 @@ sealed class BaseRequest(
 
 fun BaseRequest.toJson(): String = Json.encodeToString(this)
 
-
+//获取群成员列表
 @Serializable
-data class MemberListRequest (val target: String) : BaseRequest(
+data class MemberListRequest(val target: Long) : BaseRequest(
     command = "memberList",
     content = MemberListRequestContent(target),
     subCommand = "",
@@ -33,6 +34,23 @@ data class MemberListRequest (val target: String) : BaseRequest(
 )
 
 @Serializable
-data class MemberListRequestContent (val target:String) : Content()
+data class MemberListRequestContent(val target: Long) : Content()
+
+//群消息请求
+@Serializable
+data class GroupMessageRequest(val id: Long, val messageChain: List<MessageDTO>) : BaseRequest(
+    command = "sendGroupMessage",
+    content = GroupMessageRequestContent(id, messageChain),
+    subCommand = "",
+    syncId = 1
+)
+
+
+//发送群消息
+@Serializable
+data class GroupMessageRequestContent(
+    val target: Long,
+    val messageChain: List<MessageDTO>
+) : Content()
 
 

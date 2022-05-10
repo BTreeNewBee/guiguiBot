@@ -13,8 +13,6 @@ import kotlinx.serialization.serializer
 import org.reflections.Reflections
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
-import java.io.File
-import java.io.IOException
 import java.util.*
 import javax.annotation.PostConstruct
 import kotlin.reflect.KClass
@@ -94,11 +92,23 @@ class WsMessageAdapter : MessageAdapter {
 
     override fun sendMessage(message: BaseRequest) {
         println(message)
-        println(message.toJson())
-        qqBotWsClient.sendMessage(message.toJson())
+        try {
+            println(message.toJson())
+            qqBotWsClient.sendMessage(message.toJson())
+        } catch (e: Exception) {
+            println("$e")
+        }
     }
 
-     fun handlerMessage(message: String) {
+    override fun sendGroupMessage(id: Long, message: String) {
+        sendGroupMessage(id, PlainDTO(message))
+    }
+
+    override fun sendGroupMessage(id: Long, message: MessageDTO) {
+        sendMessage(GroupMessageRequest(id, listOf(message)))
+    }
+
+    fun handlerMessage(message: String) {
         messageConverter(message)?.let(handler)
     }
 
@@ -113,7 +123,7 @@ class WsMessageAdapter : MessageAdapter {
                     commandMessageConverter(command, parseToJsonElement)
                 }
             }
-        } catch (e:Exception) {
+        } catch (e: Exception) {
             println("Message decode failed,message is $message")
         }
         return null
@@ -131,7 +141,6 @@ class WsMessageAdapter : MessageAdapter {
         return null
     }
 
-    @OptIn(InternalSerializationApi::class)
     private fun commandMessageConverter(command: String, message: JsonElement): DTO? {
         message.jsonObject["data"]?.let {
             return@let when (command) {
@@ -146,62 +155,9 @@ class WsMessageAdapter : MessageAdapter {
                 }
             }
         }
-
-
         return null
     }
 
 
-    /**
-     * 提供直接调用的方法
-     * @param packageName
-     * @return
-     * @throws IOException
-     * @throws ClassNotFoundException
-     */
-    @Throws(IOException::class, ClassNotFoundException::class)
-    private fun findClass(packageName: String): List<KClass<DTO>> {
-        return findClass(packageName, ArrayList())
-    }
-
-    /**
-     *
-     * @param packageName
-     * @param clazzs
-     * @return
-     * @throws ClassNotFoundException
-     * @throws IOException
-     */
-    @Throws(ClassNotFoundException::class, IOException::class)
-    private fun findClass(packageName: String, clazzs: MutableList<KClass<DTO>>): List<KClass<DTO>> {
-        //将报名替换成目录
-        val fileName = packageName.replace("\\.".toRegex(), "/")
-        //通过classloader来获取文件列表
-        val file = File(Thread.currentThread().contextClassLoader.getResource(fileName).file)
-        val files = file.listFiles()
-        val dtoClazz = DTO::class
-        for (f in files) {
-            //如果是目录，这进一个寻找
-            if (f.isDirectory) {
-                //截取路径最后的文件夹名
-                val currentPathName = f.absolutePath.substring(f.absolutePath.lastIndexOf(File.separator) + 1)
-                //进一步寻找
-                findClass("$packageName.$currentPathName", clazzs)
-            } else {
-                //如果是class文件
-                if (f.name.endsWith(".class")) {
-                    //反射出实例
-                    val clazz = Thread.currentThread().contextClassLoader.loadClass(
-                        packageName + "." + f.name.replace(
-                            ".class",
-                            ""
-                        )
-                    ).kotlin
-                    clazzs.add(clazz as KClass<DTO>)
-                }
-            }
-        }
-        return clazzs
-    }
 
 }
