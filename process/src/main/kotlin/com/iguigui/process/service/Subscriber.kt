@@ -20,23 +20,24 @@ class Subscriber {
 
     @SubscribeBotMessage
     fun searchHelper(dto: GroupMessagePacketDTO) {
-        println(dto.contentToString())
+        val contentToString = dto.contentToString()
         searchHelperMap.entries.forEach {
-//            if (dto.lowercase(Locale.getDefault()).startsWith(it.key)) {
-//                val substring = contentToString.substring(2)
-//                if (substring.trim().isNotEmpty()) {
-//                    runBlocking {
-//                        sender.group.sendMessage(
-//                            "这也要我教？？？自己去看\n${
-//                                it.value + URLEncoder.encode(
-//                                    substring.trim(),
-//                                    "UTF-8"
-//                                )
-//                            }"
-//                        )
-//                    }
-//                }
-//            }
+            if (contentToString.lowercase(Locale.getDefault()).startsWith(it.key)) {
+                val substring = contentToString.substring(2)
+                if (substring.trim().isNotEmpty()) {
+                    runBlocking {
+                        messageAdapter.sendGroupMessage(
+                            dto.sender.group.id,
+                            "这也要我教？？？自己去看\n${
+                                it.value + URLEncoder.encode(
+                                    substring.trim(),
+                                    "UTF-8"
+                                )
+                            }"
+                        )
+                    }
+                }
+            }
         }
     }
 
@@ -67,5 +68,5 @@ class Subscriber {
 }
 
 fun GroupMessagePacketDTO.contentToString(): String {
-    return this.messageChain.joinToString(""){it.toString()}
+    return this.messageChain.joinToString("") { it.toString() }
 }

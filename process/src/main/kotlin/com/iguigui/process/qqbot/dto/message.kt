@@ -59,23 +59,43 @@ data class OtherClientMessagePacketDTO(val sender: OtherClientDTO) : MessagePack
 // Message
 @Serializable
 @SerialName("Source")
-data class MessageSourceDTO(val id: Int, val time: Int) : MessageDTO()
+data class MessageSourceDTO(val id: Int, val time: Int) : MessageDTO() {
+    override fun toString(): String {
+        return ""
+    }
+}
 
 @Serializable
 @SerialName("At")
-data class AtDTO(val target: Long, val display: String = "") : MessageDTO()
+data class AtDTO(val target: Long, val display: String = "") : MessageDTO() {
+    override fun toString(): String {
+        return "@$target"
+    }
+}
 
 @Serializable
 @SerialName("AtAll")
-data class AtAllDTO(val target: Long = 0) : MessageDTO() // target为保留字段
+data class AtAllDTO(val target: Long = 0) : MessageDTO() {
+    override fun toString(): String {
+        return "@All"
+    }
+}
 
 @Serializable
 @SerialName("Face")
-data class FaceDTO(val faceId: Int = -1, val name: String = "") : MessageDTO()
+data class FaceDTO(val faceId: Int = -1, val name: String = "") : MessageDTO() {
+    override fun toString(): String {
+        return "FaceId $faceId"
+    }
+}
 
 @Serializable
 @SerialName("Plain")
-data class PlainDTO(val text: String) : MessageDTO()
+data class PlainDTO(val text: String) : MessageDTO(){
+    override fun toString(): String {
+        return text
+    }
+}
 
 internal interface ImageLikeDTO {
     val imageId: String?
@@ -99,7 +119,11 @@ data class ImageDTO(
     override val url: String? = null,
     override val path: String? = null,
     override val base64: String? = null,
-) : MessageDTO(), ImageLikeDTO
+) : MessageDTO(), ImageLikeDTO {
+    override fun toString(): String {
+        return "图片消息$url"
+    }
+}
 
 @Serializable
 @SerialName("FlashImage")
@@ -108,7 +132,11 @@ data class FlashImageDTO(
     override val url: String? = null,
     override val path: String? = null,
     override val base64: String? = null
-) : MessageDTO(), ImageLikeDTO
+) : MessageDTO(), ImageLikeDTO {
+    override fun toString(): String {
+        return "闪图消息$url"
+    }
+}
 
 @Serializable
 @SerialName("Voice")
@@ -118,19 +146,35 @@ data class VoiceDTO(
     override val path: String? = null,
     override val base64: String? = null,
     override val length: Long = 0L,
-) : MessageDTO(), VoiceLikeDTO
+) : MessageDTO(), VoiceLikeDTO {
+    override fun toString(): String {
+        return "语音消息$url"
+    }
+}
 
 @Serializable
 @SerialName("Xml")
-data class XmlDTO(val xml: String) : MessageDTO()
+data class XmlDTO(val xml: String) : MessageDTO() {
+    override fun toString(): String {
+        return xml
+    }
+}
 
 @Serializable
 @SerialName("Json")
-data class JsonDTO(val json: String) : MessageDTO()
+data class JsonDTO(val json: String) : MessageDTO() {
+    override fun toString(): String {
+        return json
+    }
+}
 
 @Serializable
 @SerialName("App")
-data class AppDTO(val content: String) : MessageDTO()
+data class AppDTO(val content: String) : MessageDTO() {
+    override fun toString(): String {
+        return content
+    }
+}
 
 @Serializable
 @SerialName("Quote")
@@ -140,24 +184,38 @@ data class QuoteDTO(
     val targetId: Long,
     val groupId: Long,
     val origin: MessageChainDTO
-) : MessageDTO()
+) : MessageDTO() {
+    override fun toString(): String {
+        return "回复消息 ${origin}"
+    }
+}
+
 
 @Serializable
 @SerialName("Poke")
 data class PokeMessageDTO(
     val name: String
-) : MessageDTO()
+) : MessageDTO() {
+    override fun toString(): String {
+        return name
+    }
+}
+
 
 @Serializable
 @SerialName("Dice")
 data class DiceDTO(
     val value: Int
-) : MessageDTO()
+) : MessageDTO() {
+    override fun toString(): String {
+        return "丢了一个骰子结果为{$value}点"
+    }
+}
 
 @Serializable
 @SerialName("MarketFace")
 data class MarketFaceDTO(
-    val id: Int, 
+    val id: Int,
     val name: String,
 ) : MessageDTO()
 
@@ -171,13 +229,21 @@ data class MusicShareDTO(
     val pictureUrl: String,
     val musicUrl: String,
     val brief: String,
-) : MessageDTO()
+) : MessageDTO() {
+    override fun toString(): String {
+        return "分享音乐{$title} $jumpUrl"
+    }
+}
 
 @Serializable
 @SerialName("Forward")
 data class ForwardMessageDTO(
     val nodeList: List<ForwardMessageNode>
-) : MessageDTO()
+) : MessageDTO() {
+    override fun toString(): String {
+        return "转发消息"
+    }
+}
 
 @Serializable
 data class ForwardMessageNode(
@@ -194,7 +260,11 @@ data class FileDTO(
     val id: String,
     val name: String,
     val size: Long,
-) : MessageDTO()
+) : MessageDTO() {
+    override fun toString(): String {
+        return "文件$name"
+    }
+}
 
 @Serializable
 @SerialName("MiraiCode")
@@ -204,7 +274,11 @@ data class MiraiCodeDTO(
 
 @Serializable
 @SerialName("Unknown")
-object UnknownMessageDTO : MessageDTO()
+object UnknownMessageDTO : MessageDTO() {
+    override fun toString(): String {
+        return "未知类型消息"
+    }
+}
 
 @Serializable
 sealed class MessageDTO : DTO
