@@ -2,6 +2,7 @@ package com.iguigui.process.service
 
 import cn.hutool.crypto.digest.MD5
 import cn.hutool.http.HttpUtil
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper
 import com.iguigui.common.annotations.SubscribeBotMessage
 import com.iguigui.common.interfaces.DTO
 import com.iguigui.process.dao.GroupHasQqUserMapper
@@ -14,6 +15,7 @@ import com.iguigui.process.entity.QqGroup
 import com.iguigui.process.qqbot.MessageAdapter
 import com.iguigui.process.qqbot.dto.*
 import com.iguigui.process.service.impl.MessageHandlerImpl
+import com.iguigui.process.service.impl.MessageServiceImpl
 import com.iguigui.process.util.MessageUtil
 import kotlinx.coroutines.runBlocking
 import net.mamoe.mirai.contact.Member
@@ -82,6 +84,63 @@ class Subscriber {
                 }
             }
         }
+    }
+
+    @SubscribeBotMessage
+    fun reCallMessageEvent(dto: GroupRecallEventDTO) {
+
+    }
+
+
+
+    fun dailyGroupMessageCount() {
+        val yesterday = 1 days ago
+        val startTime = yesterday at 0 hour 0 minute 0 second time
+        val endTime = yesterday at 23 hour 59 minute 59 second time
+        val selectList = qqGroupMapper.selectList(QueryWrapper())
+
+//        for (group in selectList) {
+//
+//            if (group.id != null) {
+//                break
+//            }
+//            val dailyGroupMessageCount =
+//                messagesMapper.getDailyGroupMessageCount(startTime.toString(), endTime.toString(), group.id)
+//            if (dailyGroupMessageCount.isEmpty()) {
+//                continue
+//            }
+//            val messageSum = messagesMapper.getDailyGroupMessageSum(startTime.toString(), endTime.toString(), group.id)
+//            var index = 1
+//            val stringBuilder = StringBuilder()
+//            stringBuilder.append("龙王排行榜\n")
+//
+//            val now1 = LocalDate.now()
+//            stringBuilder.append("今天是${now1.format(DateTimeFormatter.ISO_LOCAL_DATE)}日，今年的第${now1.dayOfYear}天，剩余${now1.lengthOfYear() - now1.dayOfYear}天，您的${now1.year}年使用进度条：\n")
+//            val d = now1.dayOfYear * 1.0 / now1.lengthOfYear() / 2.0
+//            var string = "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░░░░░"
+//            val d1 = (string.length * (0.5 - d)).toInt()
+//            stringBuilder.append(
+//                "${string.substring(d1, d1 + 20)} ${
+//                    String.format(
+//                        "%.2f",
+//                        now1.dayOfYear * 100.0 / now1.lengthOfYear()
+//                    )
+//                }% \n"
+//            )
+//
+//            stringBuilder.append(
+//                "本群${yesterday.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE)}日消息总量：${messageSum}条\n"
+//            )
+//            dailyGroupMessageCount.forEach {
+//                val groupHasQqUser = groupHasQqUserMapper.selectByGroupIdAndQqUserId(group.id, it.qqUserId!!)
+//                stringBuilder.append("第${index}名：${groupHasQqUser.nameCard} ，${it.messageCount}条消息\n")
+//                index++
+//            }
+//            stringBuilder.append("晚安~")
+//            runBlocking {
+//                messageAdapter.sendGroupMessage(group.id,stringBuilder.toString())
+//            }
+//        }
     }
 
     //进行群成员信息同步
