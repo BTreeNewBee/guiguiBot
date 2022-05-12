@@ -86,11 +86,17 @@ class Subscriber {
         }
     }
 
+    //消息撤回事件，进行撤回重发
     @SubscribeBotMessage
-    fun reCallMessageEvent(dto: GroupRecallEventDTO) {
-
+    fun groupRecallMessageEvent(dto: GroupRecallEventDTO) {
+        val now = LocalDateTime.now();
+        val startTime = now.plusMinutes(-5)
+        var message =
+            messagesMapper.getMessageByMessageId(startTime.toString(), now.toString(), dto.messageId, dto.group.id)
+        message?.let {
+            messageAdapter.sendGroupMessage(dto.group.id, it.senderName + ":" + it.messageDetail)
+        }
     }
-
 
 
     fun dailyGroupMessageCount() {
@@ -99,49 +105,48 @@ class Subscriber {
         val endTime = yesterday at 23 hour 59 minute 59 second time
         val selectList = qqGroupMapper.selectList(QueryWrapper())
 
-//        for (group in selectList) {
-//
-//            if (group.id != null) {
-//                break
-//            }
-//            val dailyGroupMessageCount =
-//                messagesMapper.getDailyGroupMessageCount(startTime.toString(), endTime.toString(), group.id)
-//            if (dailyGroupMessageCount.isEmpty()) {
-//                continue
-//            }
-//            val messageSum = messagesMapper.getDailyGroupMessageSum(startTime.toString(), endTime.toString(), group.id)
-//            var index = 1
-//            val stringBuilder = StringBuilder()
-//            stringBuilder.append("龙王排行榜\n")
-//
-//            val now1 = LocalDate.now()
-//            stringBuilder.append("今天是${now1.format(DateTimeFormatter.ISO_LOCAL_DATE)}日，今年的第${now1.dayOfYear}天，剩余${now1.lengthOfYear() - now1.dayOfYear}天，您的${now1.year}年使用进度条：\n")
-//            val d = now1.dayOfYear * 1.0 / now1.lengthOfYear() / 2.0
-//            var string = "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░░░░░"
-//            val d1 = (string.length * (0.5 - d)).toInt()
-//            stringBuilder.append(
-//                "${string.substring(d1, d1 + 20)} ${
-//                    String.format(
-//                        "%.2f",
-//                        now1.dayOfYear * 100.0 / now1.lengthOfYear()
-//                    )
-//                }% \n"
-//            )
-//
-//            stringBuilder.append(
-//                "本群${yesterday.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE)}日消息总量：${messageSum}条\n"
-//            )
-//            dailyGroupMessageCount.forEach {
-//                val groupHasQqUser = groupHasQqUserMapper.selectByGroupIdAndQqUserId(group.id, it.qqUserId!!)
-//                stringBuilder.append("第${index}名：${groupHasQqUser.nameCard} ，${it.messageCount}条消息\n")
-//                index++
-//            }
-//            stringBuilder.append("晚安~")
-//            runBlocking {
-//                messageAdapter.sendGroupMessage(group.id,stringBuilder.toString())
-//            }
-//        }
+        for (group in selectList) {
+            group.id?.let {
+                val dailyGroupMessageCount =
+                    messagesMapper.getDailyGroupMessageCount(startTime.toString(), endTime.toString(), it)
+                if (dailyGroupMessageCount.isEmpty()) {
+                    return@let
+                }
+                val messageSum = messagesMapper.getDailyGroupMessageSum(startTime.toString(), endTime.toString(), it)
+                var index = 1
+                val stringBuilder = StringBuilder()
+                stringBuilder.append("龙王排行榜\n")
+
+                val now1 = LocalDate.now()
+                stringBuilder.append("今天是${now1.format(DateTimeFormatter.ISO_LOCAL_DATE)}日，今年的第${now1.dayOfYear}天，剩余${now1.lengthOfYear() - now1.dayOfYear}天，您的${now1.year}年使用进度条：\n")
+                val d = now1.dayOfYear * 1.0 / now1.lengthOfYear() / 2.0
+                var string = "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░░░░░"
+                val d1 = (string.length * (0.5 - d)).toInt()
+                stringBuilder.append(
+                    "${string.substring(d1, d1 + 20)} ${
+                        String.format(
+                            "%.2f",
+                            now1.dayOfYear * 100.0 / now1.lengthOfYear()
+                        )
+                    }% \n"
+                )
+
+                stringBuilder.append(
+                    "本群${yesterday.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE)}日消息总量：${messageSum}条\n"
+                )
+                dailyGroupMessageCount.forEach { entity ->
+                    val groupHasQqUser = groupHasQqUserMapper.selectByGroupIdAndQqUserId(it, entity.qqUserId!!)
+                    stringBuilder.append("第${index}名：${groupHasQqUser.nameCard} ，${entity.messageCount}条消息\n")
+                    index++
+                }
+                stringBuilder.append("晚安~")
+                runBlocking {
+                    messageAdapter.sendGroupMessage(it, stringBuilder.toString())
+                }
+            }
+        }
     }
+
 
     //进行群成员信息同步
     @SubscribeBotMessage
@@ -156,18 +161,34 @@ class Subscriber {
         dto.list.forEach { this::syncGroup }
     }
 
-    //图片下载
+    //常规图片下载
     @SubscribeBotMessage
     fun imageDownload(dto: GroupMessagePacketDTO) {
         dto.messageChain.filter { it is ImageDTO }.map { it as ImageDTO }.forEach {
-            val digestHex = MD5.create().digestHex(it.imageId)
-            val filePath =
-                "$baseFilePath/${digestHex[digestHex.length - 2]}${digestHex[digestHex.length - 1]}/${it.imageId}"
-            if (!File(filePath).exists()) {
-                HttpUtil.downloadFile(it.url, filePath)
-            }
+            it.imageId?.let { it1 -> it.url?.let { it2 -> downloadImage(it1, it2) } }
         }
     }
+
+    //闪照事件监听
+    @SubscribeBotMessage
+    fun flashImageEvent(dto: GroupMessagePacketDTO) {
+        dto.messageChain.filter { it is FlashImageDTO }.map { it as FlashImageDTO }.forEach {
+            it.imageId?.let { it1 -> it.url?.let { it2 -> downloadImage(it1, it2) } }
+            //发现闪照就往群里当作普通图片重发一遍
+            messageAdapter.sendGroupMessage(dto.sender.group.id, ImageDTO(url = it.url))
+        }
+    }
+
+    //图片下载
+    private fun downloadImage(imageId: String, url: String) {
+        val digestHex = MD5.create().digestHex(imageId)
+        val filePath =
+            "$baseFilePath/${digestHex[digestHex.length - 2]}${digestHex[digestHex.length - 1]}/${imageId}"
+        if (!File(filePath).exists()) {
+            HttpUtil.downloadFile(url, filePath)
+        }
+    }
+
 
     //改名提醒
     @SubscribeBotMessage
@@ -175,6 +196,15 @@ class Subscriber {
         messageAdapter.sendGroupMessage(dto.member.group.id, "有人改名字了我不说是谁")
     }
 
+    //每次有消息都同步一下
+    @SubscribeBotMessage
+    fun groupEvent(dto: GroupMessagePacketDTO) {
+        val group = dto.sender.group
+        syncGroup(group)
+        syncMember(dto.sender)
+    }
+
+    //有啥都给存数据库
     @SubscribeBotMessage
     fun messageLogger(dto: GroupMessagePacketDTO) {
         val sender = dto.sender
@@ -185,7 +215,7 @@ class Subscriber {
         messages.groupId = sender.group.id
         messages.groupName = sender.group.name
         messages.messageDetail = dto.contentToString()
-//        messages.messageId = dto.messageChain
+        messages.messageId = dto.sourceId
         messagesMapper.insert(messages)
     }
 
@@ -232,7 +262,7 @@ class Subscriber {
                 index++
             }
             runBlocking {
-                messageAdapter.sendGroupMessage(group.id,stringBuilder.toString())
+                messageAdapter.sendGroupMessage(group.id, stringBuilder.toString())
             }
         }
     }

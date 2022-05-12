@@ -304,3 +304,9 @@ data class VerifyRetEventDTO(
     val code: Int,
     val session: String,
 ) : BotEventDTO()
+
+
+//获取消息ID
+var GroupMessagePacketDTO.sourceId : Int
+    get() = (this.messageChain.first() as MessageSourceDTO).id
+    set(value) {}

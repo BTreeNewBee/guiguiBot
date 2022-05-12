@@ -9,7 +9,7 @@ package com.iguigui.process.entity
  * @author iguigui
  * @since 2020-11-21
  */
-class Messages : BaseEntity() {
+class Messages() : BaseEntity() {
 
 
     /**
@@ -50,6 +50,28 @@ class Messages : BaseEntity() {
      * 消息id
      * */
     var messageId: Int? = null
+
+    public constructor(
+        messageType: Int?,
+        senderId: Long?,
+        receiverId: Long?,
+        groupId: Long?,
+        senderName: String?,
+        receiverName: String?,
+        groupName: String?,
+        messageDetail: String?,
+        messageId: Int?
+    ) : this() {
+        this.messageType = messageType
+        this.senderId = senderId
+        this.receiverId = receiverId
+        this.groupId = groupId
+        this.senderName = senderName
+        this.receiverName = receiverName
+        this.groupName = groupName
+        this.messageDetail = messageDetail
+        this.messageId = messageId
+    }
 
 
     override fun toString(): String {
