@@ -59,7 +59,6 @@ dependencies {
 
     //WebSocket
     implementation("org.java-websocket:Java-WebSocket:1.5.3")
-    implementation("org.reflections:reflections:0.10.2")
 
 }
 

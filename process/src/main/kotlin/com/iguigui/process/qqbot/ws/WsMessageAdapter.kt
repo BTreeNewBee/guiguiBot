@@ -10,8 +10,10 @@ import kotlinx.serialization.json.*
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.SerializersModuleBuilder
 import kotlinx.serialization.serializer
-import org.reflections.Reflections
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.config.BeanDefinition
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider
+import org.springframework.core.type.filter.AssignableTypeFilter
 import org.springframework.stereotype.Component
 import java.util.*
 import javax.annotation.PostConstruct
@@ -36,14 +38,15 @@ class WsMessageAdapter : MessageAdapter {
     //扫描DTO包寻找class注入map中
     @PostConstruct
     fun registerDTO() {
-        val packageName = "com.iguigui.process.qqbot.dto";
-        val reflections = Reflections(packageName)
-        val allClasses: Set<Class<out DTO>> = reflections.getSubTypesOf(DTO::class.java)
         val map = HashMap<String, KClass<out DTO>>()
-        allClasses.forEach {
-            val javaClass = it.kotlin
+        val provider = ClassPathScanningCandidateComponentProvider(false)
+        provider.addIncludeFilter(AssignableTypeFilter(DTO::class.java))
+        val components: Set<BeanDefinition> = provider.findCandidateComponents("com/iguigui/process/qqbot/dto")
+        for (component in components) {
+            val cls = Class.forName(component.getBeanClassName())
+            val javaClass = cls.kotlin
             javaClass.findAnnotation<SerialName>()?.let { annotation ->
-                map[annotation.value] = javaClass
+                map[annotation.value] = javaClass as KClass<out DTO>
             }
         }
         dtoMap = map
