@@ -46,7 +46,7 @@ class TestProcessor(
             // https://kotlinlang.org/docs/ksp-incremental.html
             dependencies = Dependencies(false, *resolver.getAllFiles().toList().toTypedArray()),
             packageName = "com.iguigui.process.kotlin",
-            fileName = "BotMessageRegister"
+            fileName = "MessageDispatcher"
         )
         // Generating package statement.
         file.appendText("package com.iguigui.process.kotlin\n")
