@@ -2,29 +2,31 @@ package com.iguigui.process.service
 
 import cn.hutool.crypto.digest.MD5
 import cn.hutool.http.HttpUtil
+import com.alibaba.fastjson.JSONObject
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper
 import com.iguigui.common.annotations.SubscribeBotMessage
-import com.iguigui.common.interfaces.DTO
 import com.iguigui.process.dao.GroupHasQqUserMapper
 import com.iguigui.process.dao.MessagesMapper
 import com.iguigui.process.dao.QqGroupMapper
 import com.iguigui.process.dao.QqUserMapper
+import com.iguigui.process.dto.neteasecloudmusic.search.SearchResult
+import com.iguigui.process.dto.neteasecloudmusic.songsDetail.SongDetail
 import com.iguigui.process.entity.GroupHasQqUser
 import com.iguigui.process.entity.Messages
 import com.iguigui.process.entity.QqGroup
 import com.iguigui.process.qqbot.MessageAdapter
 import com.iguigui.process.qqbot.dto.*
-import com.iguigui.process.service.impl.MessageHandlerImpl
-import com.iguigui.process.service.impl.MessageServiceImpl
+import com.iguigui.process.qqbot.dto.response.appDTO.AppEntity
 import com.iguigui.process.util.MessageUtil
+import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
-import net.mamoe.mirai.contact.Member
-import net.mamoe.mirai.contact.nameCardOrNick
-import net.mamoe.mirai.message.data.Image
-import net.mamoe.mirai.message.data.Image.Key.queryUrl
+import kotlinx.serialization.json.Json
+import org.koin.ext.isInt
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
+import top.yumbo.util.music.MusicEnum
+import top.yumbo.util.music.musicImpl.netease.NeteaseCloudMusicInfo
 import java.io.File
 import java.net.URLEncoder
 import java.time.LocalDate
@@ -32,6 +34,7 @@ import java.time.LocalDateTime
 import java.time.Period
 import java.time.format.DateTimeFormatter
 import java.util.*
+import javax.annotation.PostConstruct
 import javax.annotation.Resource
 
 @Component
@@ -62,6 +65,14 @@ class Subscriber {
     @Autowired
     lateinit var messageAdapter: MessageAdapter
 
+    lateinit var neteaseCloudMusicInfo: NeteaseCloudMusicInfo
+
+    @PostConstruct
+    fun initNeteaseCloudMusic() {
+        MusicEnum.setBASE_URL_163Music("http://192.168.50.185:3000")
+        neteaseCloudMusicInfo = NeteaseCloudMusicInfo()
+    }
+
 
     @SubscribeBotMessage
     fun searchHelper(dto: GroupMessagePacketDTO) {
@@ -72,11 +83,9 @@ class Subscriber {
                 if (substring.trim().isNotEmpty()) {
                     runBlocking {
                         messageAdapter.sendGroupMessage(
-                            dto.sender.group.id,
-                            "这也要我教？？？自己去看\n${
+                            dto.sender.group.id, "这也要我教？？？自己去看\n${
                                 it.value + URLEncoder.encode(
-                                    substring.trim(),
-                                    "UTF-8"
+                                    substring.trim(), "UTF-8"
                                 )
                             }"
                         )
@@ -89,7 +98,7 @@ class Subscriber {
     //消息撤回事件，进行撤回重发
     @SubscribeBotMessage
     fun groupRecallMessageEvent(dto: GroupRecallEventDTO) {
-        val now = LocalDateTime.now();
+        val now = LocalDateTime.now()
         val startTime = now.plusMinutes(-5)
         var message =
             messagesMapper.getMessageByMessageId(startTime.toString(), now.toString(), dto.messageId, dto.group.id)
@@ -125,8 +134,7 @@ class Subscriber {
                 stringBuilder.append(
                     "${string.substring(d1, d1 + 20)} ${
                         String.format(
-                            "%.2f",
-                            now1.dayOfYear * 100.0 / now1.lengthOfYear()
+                            "%.2f", now1.dayOfYear * 100.0 / now1.lengthOfYear()
                         )
                     }% \n"
                 )
@@ -182,8 +190,7 @@ class Subscriber {
     //图片下载
     private fun downloadImage(imageId: String, url: String) {
         val digestHex = MD5.create().digestHex(imageId)
-        val filePath =
-            "$baseFilePath/${digestHex[digestHex.length - 2]}${digestHex[digestHex.length - 1]}/${imageId}"
+        val filePath = "$baseFilePath/${digestHex[digestHex.length - 2]}${digestHex[digestHex.length - 1]}/${imageId}"
         if (!File(filePath).exists()) {
             HttpUtil.downloadFile(url, filePath)
         }
@@ -220,6 +227,84 @@ class Subscriber {
     }
 
 
+    val musicQuestionRecord: LinkedHashMap<Long, MutableList<Int>> = linkedMapOf()
+
+    //点歌台
+    @SubscribeBotMessage
+    fun musicEvent(dto: GroupMessagePacketDTO) {
+        val contentToString = dto.contentToString()
+        if (!contentToString.startsWith("点歌")) {
+            return
+        }
+        val senderId = dto.sender.id
+        val groupId = dto.sender.group.id
+        musicQuestionRecord.remove(senderId)
+        val substring = contentToString.substring(2)
+        if (substring.isNotEmpty()) {
+            val json = JSONObject()
+            json["keywords"] = substring
+            json["limit"] = 10
+            val toJSONString = neteaseCloudMusicInfo.search(json).toJSONString()
+            val searchResult = Json.decodeFromString(SearchResult.serializer(), toJSONString)
+            val songCount = searchResult.result.songCount
+            if (songCount == 0) {
+                messageAdapter.sendGroupMessage(groupId, "暂时没有哦")
+                return
+            }
+            var ms = "请输入序号选择：\n"
+            val musicList: MutableList<Int> = mutableListOf()
+            searchResult.result.songs.forEachIndexed { index, song ->
+                run {
+                    musicList.add(song.id)
+                    ms += "${index + 1}. ${song.artists.map { e -> e.name }.joinToString(" ")} : ${song.name}\n"
+                }
+            }
+            musicQuestionRecord[senderId] = musicList
+            messageAdapter.sendGroupMessage(groupId, ms)
+        }
+    }
+
+
+    @SubscribeBotMessage
+    fun musicChoseEvent(dto: GroupMessagePacketDTO) {
+        val senderId = dto.sender.id
+        val groupId = dto.sender.group.id
+        val contentToString = dto.contentToString()
+        if (contentToString.isInt()) {
+            musicQuestionRecord[senderId]?.get(contentToString.toInt() - 1)?.let {
+                musicQuestionRecord.remove(senderId)
+                val json = JSONObject()
+                json["ids"] = it.toString()
+                val toJSONString = neteaseCloudMusicInfo.songDetail(json).toJSONString()
+                val songsDetail = Json.decodeFromString(SongDetail.serializer(), toJSONString)
+                val first = songsDetail.songs.first()
+                val musicShareDTO = MusicShareDTO(
+                    "NeteaseCloudMusic",
+                    first.name,
+                    first.ar.map { e -> e.name }.joinToString(" "),
+                    "https://y.music.163.com/m/song?id=$it&userid=59690957",
+                    first.al.picUrl,
+                    "http://music.163.com/song/media/outer/url?id=$it&userid=59690957",
+                    "[分享]${first.name}",
+                )
+                messageAdapter.sendGroupMessage(groupId, musicShareDTO)
+            }
+        }
+    }
+
+
+    //歌单分析器
+    @SubscribeBotMessage
+    fun musicShareEvent(dto: GroupMessagePacketDTO) {
+        val appDTOMessage = dto.messageChain.filter { e -> e is AppDTO }.map { e -> e as AppDTO }.firstOrNull()
+        appDTOMessage?.content?.let {
+            val appDTO = Json.decodeFromString(AppEntity.serializer(), it)
+            val jumpUrl = appDTO.meta.news.jumpUrl
+            val id = Url(jumpUrl).parameters["id"]
+        }
+    }
+
+
     @SubscribeBotMessage
     fun currentGroupMessageCount(dto: GroupMessagePacketDTO) {
         val group = dto.sender.group
@@ -248,8 +333,7 @@ class Subscriber {
             stringBuilder.append(
                 "${string.substring(d1, d1 + 20)} ${
                     String.format(
-                        "%.2f",
-                        now1.dayOfYear * 100.0 / now1.lengthOfYear()
+                        "%.2f", now1.dayOfYear * 100.0 / now1.lengthOfYear()
                     )
                 }% \n"
             )
@@ -275,6 +359,7 @@ class Subscriber {
         "淘宝" to "https://s.taobao.com/search?q=",
         "github" to "https://github.com/search?q=",
         "b站" to "https://search.bilibili.com/all?keyword=",
+        "不会百度" to "https://buhuibaidu.me/?s=",
     )
 
 

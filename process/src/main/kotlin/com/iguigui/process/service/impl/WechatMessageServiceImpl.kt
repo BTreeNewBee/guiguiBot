@@ -10,7 +10,6 @@ import com.iguigui.bot.wechatBot.Constant
 import com.iguigui.bot.wechatBot.WechatBot
 import com.iguigui.bot.wechatBot.WechatGroupBO
 import com.iguigui.bot.wechatBot.dto.*
-import com.iguigui.process.wechatBot.dto.*
 import com.iguigui.process.dao.WechatGroupHasWechatUserMapper
 import com.iguigui.process.dao.WechatGroupMapper
 import com.iguigui.process.dao.WechatMessagesMapper

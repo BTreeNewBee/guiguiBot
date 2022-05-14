@@ -22,7 +22,6 @@ class BotRegister {
 
     @PostConstruct
     fun registerAdapt() {
-        println("registerAdapt")
         messageAdapt.registerHandler(messageDispatcher::handler)
     }
 

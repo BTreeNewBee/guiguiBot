@@ -26,7 +26,6 @@ open class WechatBotStarter {
             delay(1000 * 5L)
             wechatBot.loadContactInfo()
         }
-        println("wechat login success")
     }
 
 }
