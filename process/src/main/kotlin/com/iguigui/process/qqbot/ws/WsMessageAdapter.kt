@@ -94,9 +94,7 @@ class WsMessageAdapter : MessageAdapter {
     }
 
     override fun sendMessage(message: BaseRequest) {
-        println(message)
         try {
-            println(message.toJson())
             qqBotWsClient.sendMessage(message.toJson())
         } catch (e: Exception) {
             println("$e")
@@ -107,27 +105,27 @@ class WsMessageAdapter : MessageAdapter {
         sendGroupMessage(id, PlainDTO(message))
     }
 
-    override fun sendGroupMessage(id: Long, message: MessageDTO) {
-        sendMessage(GroupMessageRequest(id, listOf(message)))
+    override fun sendGroupMessage(id: Long, vararg message: MessageDTO ) {
+        sendMessage(GroupMessageRequest(id, listOf(*message)))
     }
 
     fun handlerMessage(message: String) {
-        messageConverter(message)?.let(handler)
+        try {
+            messageConverter(message)?.let(handler)
+        } catch (e: Exception) {
+            println("Message decode failed,message is $message")
+        }
     }
 
     //消息转换，从json string转成DTO
     private fun messageConverter(message: String): DTO? {
-        try {
-            val parseToJsonElement = json.parseToJsonElement(message)
-            val command = parseToJsonElement.jsonObject["command"]?.jsonPrimitive?.content.orEmpty()
-            return when (command) {
-                Paths.reservedMessage -> reservedMessageConverter(parseToJsonElement)
-                else -> {
-                    commandMessageConverter(command, parseToJsonElement)
-                }
+        val parseToJsonElement = json.parseToJsonElement(message)
+        val command = parseToJsonElement.jsonObject["command"]?.jsonPrimitive?.content.orEmpty()
+        return when (command) {
+            Paths.reservedMessage -> reservedMessageConverter(parseToJsonElement)
+            else -> {
+                commandMessageConverter(command, parseToJsonElement)
             }
-        } catch (e: Exception) {
-            println("Message decode failed,message is $message")
         }
         return null
     }
@@ -160,7 +158,6 @@ class WsMessageAdapter : MessageAdapter {
         }
         return null
     }
-
 
 
 }

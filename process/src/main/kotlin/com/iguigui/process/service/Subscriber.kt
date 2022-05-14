@@ -24,6 +24,9 @@ import kotlinx.serialization.json.Json
 import org.koin.ext.isInt
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.data.mongodb.core.MongoTemplate
+import org.springframework.data.mongodb.core.query.Criteria
+import org.springframework.data.mongodb.core.query.Query
 import org.springframework.stereotype.Component
 import top.yumbo.util.music.MusicEnum
 import top.yumbo.util.music.musicImpl.netease.NeteaseCloudMusicInfo
@@ -67,6 +70,9 @@ class Subscriber {
 
     lateinit var neteaseCloudMusicInfo: NeteaseCloudMusicInfo
 
+    @Autowired
+    lateinit var mongoTemplate: MongoTemplate
+
     @PostConstruct
     fun initNeteaseCloudMusic() {
         MusicEnum.setBASE_URL_163Music("http://192.168.50.185:3000")
@@ -98,13 +104,49 @@ class Subscriber {
     //消息撤回事件，进行撤回重发
     @SubscribeBotMessage
     fun groupRecallMessageEvent(dto: GroupRecallEventDTO) {
-        val now = LocalDateTime.now()
-        val startTime = now.plusMinutes(-5)
-        var message =
-            messagesMapper.getMessageByMessageId(startTime.toString(), now.toString(), dto.messageId, dto.group.id)
-        message?.let {
-            messageAdapter.sendGroupMessage(dto.group.id, it.senderName + ":" + it.messageDetail)
+        //非自己撤回的不重发
+        val id = dto.operator?.id
+        if (dto.authorId != id) {
+            return
         }
+//        val now = LocalDateTime.now()
+//        val startTime = now.plusMinutes(-5)
+//        var message =
+//            messagesMapper.getMessageByMessageId(startTime.toString(), now.toString(), dto.messageId, dto.group.id)
+//        message?.let {
+//            messageAdapter.sendGroupMessage(dto.group.id, it.senderName + ":" + it.messageDetail)
+//        }
+
+        var find = mongoTemplate.find(
+            Query.query(
+                Criteria.where("messageChain._id").`is`(dto.messageId).and("messageChain.time")
+                    .gt(System.currentTimeMillis() / 1000 - 120)
+            ),
+            GroupMessagePacketDTO::class.java, "messages"
+        )
+        find.firstOrNull()?.let {
+            val filter = it.messageChain.filter { e -> e !is MessageSourceDTO }
+            val count = filter.filter { e -> e !is PlainDTO && e !is AtDTO && e !is ImageDTO && e !is FaceDTO }.count()
+            //存在高级消息，拆行发
+            if (count > 0) {
+                messageAdapter.sendGroupMessage(
+                    dto.group.id,
+                    PlainDTO("${it.sender.memberName}:"),
+                )
+                messageAdapter.sendGroupMessage(
+                    dto.group.id,
+                    *filter.toTypedArray()
+                )
+            } else {
+                messageAdapter.sendGroupMessage(
+                    dto.group.id,
+                    PlainDTO("${it.sender.memberName}:"),
+                    *filter.toTypedArray()
+                )
+            }
+
+        }
+
     }
 
 
@@ -224,6 +266,15 @@ class Subscriber {
         messages.messageDetail = dto.contentToString()
         messages.messageId = dto.sourceId
         messagesMapper.insert(messages)
+
+        mongoTemplate.save(dto, "messages")
+
+//        find = mongoTemplate.find(
+//            Query.query(Criteria.where("sender._id").`is`(1342478281)),
+//            GroupMessagePacketDTO::class.java, "messages"
+//        )
+//        println(find)
+
     }
 
 

@@ -57,7 +57,7 @@ data class Song(
     @SerialName("resourceState")
     val resourceState: Boolean,
     @SerialName("rt")
-    val rt: String,
+    val rt: String = "",
     @SerialName("rtUrls")
     val rtUrls: List<String>,
     @SerialName("rtype")

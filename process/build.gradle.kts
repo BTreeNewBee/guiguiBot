@@ -59,6 +59,8 @@ dependencies {
 
     //WebSocket
     implementation("org.java-websocket:Java-WebSocket:1.5.3")
+    //mongodb
+    implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
 
 }
 
