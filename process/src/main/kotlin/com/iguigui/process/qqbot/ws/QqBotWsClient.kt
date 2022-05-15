@@ -6,6 +6,7 @@ import kotlinx.serialization.json.Json
 import org.apache.commons.logging.LogFactory
 import org.java_websocket.client.WebSocketClient
 import org.java_websocket.handshake.ServerHandshake
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import java.lang.Exception
 import java.lang.Thread.sleep
@@ -31,7 +32,8 @@ import java.net.URI
 //}
 
 @Component
-class QqBotWsClient constructor(serverURI: URI = URI("ws://192.168.50.185:8637/all?verifyKey=&qq=3633266931")) : WebSocketClient(serverURI) {
+class QqBotWsClient constructor(serverURI: URI = URI("ws://192.168.50.185:8637/all?verifyKey=&qq=3633266931")) :
+    WebSocketClient(serverURI) {
 
 
     val log = LogFactory.getLog(QqBotWsClient::class.java)!!
@@ -54,8 +56,7 @@ class QqBotWsClient constructor(serverURI: URI = URI("ws://192.168.50.185:8637/a
     }
 
 
-
-    fun sendMessage(text : String) {
+    fun sendMessage(text: String) {
         send(text)
     }
 
@@ -89,8 +90,15 @@ class QqBotWsClient constructor(serverURI: URI = URI("ws://192.168.50.185:8637/a
         if (retryConnectionTimes < retryConnectionMaxTimes) {
             runBlocking {
                 sleep(1000 * 10)
-                connect()
+                reconnect()
             }
+        }
+    }
+
+    @Scheduled(fixedDelay = 10 * 1000)
+    fun checkConnection() {
+        if (this.isClosed) {
+            retryConnection()
         }
     }
 

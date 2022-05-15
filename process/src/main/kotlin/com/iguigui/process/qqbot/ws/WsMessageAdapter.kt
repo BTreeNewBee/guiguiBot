@@ -113,6 +113,7 @@ class WsMessageAdapter : MessageAdapter {
         try {
             messageConverter(message)?.let(handler)
         } catch (e: Exception) {
+            e.printStackTrace()
             println("Message decode failed,message is $message")
         }
     }

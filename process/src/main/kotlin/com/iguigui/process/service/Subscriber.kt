@@ -11,9 +11,12 @@ import com.iguigui.process.dao.QqGroupMapper
 import com.iguigui.process.dao.QqUserMapper
 import com.iguigui.process.dto.neteasecloudmusic.search.SearchResult
 import com.iguigui.process.dto.neteasecloudmusic.songsDetail.SongDetail
+import com.iguigui.process.entity.ExpressSubscriberInfo
 import com.iguigui.process.entity.GroupHasQqUser
 import com.iguigui.process.entity.Messages
 import com.iguigui.process.entity.QqGroup
+import com.iguigui.process.express.ExpressStatusEnum
+import com.iguigui.process.express.ExpressUtil
 import com.iguigui.process.qqbot.MessageAdapter
 import com.iguigui.process.qqbot.dto.*
 import com.iguigui.process.qqbot.dto.response.appDTO.AppEntity
@@ -32,13 +35,12 @@ import top.yumbo.util.music.MusicEnum
 import top.yumbo.util.music.musicImpl.netease.NeteaseCloudMusicInfo
 import java.io.File
 import java.net.URLEncoder
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.Period
+import java.time.*
 import java.time.format.DateTimeFormatter
 import java.util.*
 import javax.annotation.PostConstruct
 import javax.annotation.Resource
+import kotlin.collections.ArrayList
 
 @Component
 class Subscriber {
@@ -68,10 +70,14 @@ class Subscriber {
     @Autowired
     lateinit var messageAdapter: MessageAdapter
 
-    lateinit var neteaseCloudMusicInfo: NeteaseCloudMusicInfo
-
     @Autowired
     lateinit var mongoTemplate: MongoTemplate
+
+    @Autowired
+    lateinit var expressUtil: ExpressUtil
+
+    lateinit var neteaseCloudMusicInfo: NeteaseCloudMusicInfo
+
 
     @PostConstruct
     fun initNeteaseCloudMusic() {
@@ -218,6 +224,153 @@ class Subscriber {
             it.imageId?.let { it1 -> it.url?.let { it2 -> downloadImage(it1, it2) } }
         }
     }
+
+
+    //自动快递查询
+    @SubscribeBotMessage
+    fun expressEvent(dto: GroupMessagePacketDTO) {
+        val contentToString = dto.contentToString()
+        if (contentToString.startsWith("订阅快递")) {
+            val substring = contentToString.substring(4)
+            if (substring.isEmpty()) {
+                return
+            }
+            var find = mongoTemplate.find(
+                Query.query(
+                    Criteria.where("postNumber").`is`(substring)
+                ),
+                ExpressSubscriberInfo::class.java
+            )
+            if (find.isNotEmpty()) {
+                messageAdapter.sendGroupMessage(dto.sender.group.id, "订阅成功!")
+                val first = find.first()
+                first.subscriberList.computeIfAbsent(dto.sender.group.id, { e -> ArrayList() }).add(dto.sender.id)
+                mongoTemplate.save(find)
+                sendExpressInfo(first, dto.sender.group.id, dto.sender.id)
+                return
+            }
+            val expressInfo = expressUtil.getExpressInfo(substring)
+            if (expressInfo == null) {
+                messageAdapter.sendGroupMessage(
+                    dto.sender.group.id,
+                    "订阅失败,查询不到此快递的信息!"
+                )
+                return
+            }
+            val info = expressInfo.data.info
+            val statusEnum = ExpressStatusEnum.values().filter { e -> e.status == info.currentStatus.toInt() }.firstOrNull()
+            if (statusEnum == null) {
+                throw RuntimeException("快递订单信息转换失败 ! $expressInfo")
+            }
+            //0在途，1揽收，2疑难，3签收，4退签，5派件，8清关，14拒签
+            when (statusEnum) {
+                ExpressStatusEnum.FAILED -> messageAdapter.sendGroupMessage(dto.sender.group.id, "订阅失败,查询不到此快递的信息!")
+                ExpressStatusEnum.DELIVERED -> messageAdapter.sendGroupMessage(dto.sender.group.id, "订阅失败,此快递已签收!")
+                ExpressStatusEnum.BUYER_REFUSED_TO_SIGN -> messageAdapter.sendGroupMessage(
+                    dto.sender.group.id,
+                    "订阅失败,此快递已拒签!"
+                )
+                else -> {
+                    messageAdapter.sendGroupMessage(dto.sender.group.id, "订阅成功!")
+                    val expressSubscriberInfo = ExpressSubscriberInfo(
+                        null,
+                        substring,
+                        expressInfo.data,
+                        mutableMapOf(dto.sender.group.id to Arrays.asList(dto.sender.id))
+                    )
+                    mongoTemplate.save(
+                        expressSubscriberInfo
+                    )
+                    sendExpressInfo(expressSubscriberInfo, dto.sender.group.id, dto.sender.id)
+                }
+            }
+        }
+    }
+
+
+
+    //
+    @SubscribeBotMessage
+    fun groupMessageEventTemplate(dto: GroupMessagePacketDTO) {
+        val contentToString = dto.contentToString()
+    }
+
+
+    //
+    @SubscribeBotMessage
+    fun testGroupMessageEvent(dto: GroupMessagePacketDTO) {
+        val contentToString = dto.contentToString()
+        if (contentToString == "测试快递") {
+            expressScan()
+        }
+    }
+
+
+    //扫描快递信息
+    fun expressScan() {
+        var find = mongoTemplate.find(
+            Query.query(
+                Criteria.where("exoressData.info.status").`is`("1")
+            ),
+            ExpressSubscriberInfo::class.java
+        )
+        find.forEach {
+            val expressInfo = expressUtil.getExpressInfo(it.postNumber)
+            if (expressInfo == null) {
+                return@forEach
+            }
+            if (expressInfo.data.info.latestTime != it.exoressData.info.latestTime) {
+                println("监测到快递信息更新")
+                it.exoressData = expressInfo.data
+                mongoTemplate.save(it)
+                sendExpressInfo(it,null,null)
+            } else {
+                println("啥也没发生")
+            }
+        }
+    }
+
+    //发送快递信息
+    fun sendExpressInfo(expressInfo: ExpressSubscriberInfo, groupId: Long?, senderId: Long?) {
+        val stringBuilder = StringBuilder()
+        val data = expressInfo.exoressData
+        val now = LocalDateTime.now()
+        val pattern1 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+        val pattern2 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+        val parse = LocalDateTime.parse(data.info.sendTime, pattern1)
+        val duration: Duration = Duration.between(parse, now)
+        stringBuilder.append(" 单号: ${expressInfo.postNumber} ,${data.company.shortname} ,当前状态: ${data.info.current},已耗时${duration.toDays()}天${duration.toHoursPart()}小时${duration.toMinutesPart()}分钟\n")
+        for (context in data.info.context) {
+            stringBuilder.append(
+                LocalDateTime.ofEpochSecond(context.time.toLong(),0, ZoneOffset.UTC).format(pattern2),
+                " ",
+                context.desc,
+                "\n"
+            )
+        }
+        stringBuilder.substring(0, stringBuilder.length - 1)
+        groupId?.let {
+            senderId?.let {
+                sendExpressInfo(stringBuilder.toString(), groupId, senderId)
+                return
+            }
+        }
+        expressInfo.subscriberList.entries.forEach {
+            sendExpressInfo(
+                stringBuilder.toString(),
+                it.key,
+                *it.value.toLongArray()
+            )
+        }
+
+    }
+
+    fun sendExpressInfo(expressInfo: String, groupId: Long, vararg senderId: Long) {
+        val list = senderId.toTypedArray().map { AtDTO(it) }.map { it as MessageDTO }.toMutableList()
+        list.add(PlainDTO(expressInfo))
+        messageAdapter.sendGroupMessage(groupId, *list.toTypedArray())
+    }
+
 
     //闪照事件监听
     @SubscribeBotMessage
