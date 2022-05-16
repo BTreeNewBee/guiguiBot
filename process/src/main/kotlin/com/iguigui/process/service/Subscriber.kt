@@ -125,7 +125,9 @@ class Subscriber {
 
         var find = mongoTemplate.find(
             Query.query(
-                Criteria.where("messageChain._id").`is`(dto.messageId).and("messageChain.time")
+                Criteria.where("messageChain._id").`is`(dto.messageId)
+                    .and("sender.group._id").`is`(dto.group.id)
+                    .and("messageChain.time")
                     .gt(System.currentTimeMillis() / 1000 - 120)
             ),
             GroupMessagePacketDTO::class.java, "messages"
