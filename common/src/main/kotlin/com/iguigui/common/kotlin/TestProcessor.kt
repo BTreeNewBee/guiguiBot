@@ -28,6 +28,9 @@ class TestProcessor(
         file.appendText("$indent$s\n")
     }
 
+    fun OutputStream.appendText(str: String) {
+        this.write(str.toByteArray())
+    }
 
     operator fun OutputStream.plusAssign(str: String) {
         this.write(str.toByteArray())

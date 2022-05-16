@@ -310,7 +310,7 @@ class Subscriber {
     fun expressScan() {
         var find = mongoTemplate.find(
             Query.query(
-                Criteria.where("exoressData.info.status").`is`("1")
+                Criteria.where("exoressData.info.currentStatus").`is`("2")
             ),
             ExpressSubscriberInfo::class.java
         )
@@ -320,12 +320,9 @@ class Subscriber {
                 return@forEach
             }
             if (expressInfo.data.info.latestTime != it.exoressData.info.latestTime) {
-                println("监测到快递信息更新")
                 it.exoressData = expressInfo.data
                 mongoTemplate.save(it)
                 sendExpressInfo(it,null,null)
-            } else {
-                println("啥也没发生")
             }
         }
     }
@@ -342,7 +339,7 @@ class Subscriber {
         stringBuilder.append(" 单号: ${expressInfo.postNumber} ,${data.company.shortname} ,当前状态: ${data.info.current},已耗时${duration.toDays()}天${duration.toHoursPart()}小时${duration.toMinutesPart()}分钟\n")
         for (context in data.info.context) {
             stringBuilder.append(
-                LocalDateTime.ofEpochSecond(context.time.toLong(),0, ZoneOffset.UTC).format(pattern2),
+                LocalDateTime.ofEpochSecond(context.time.toLong(),0, ZoneOffset.ofHours(8)).format(pattern2),
                 " ",
                 context.desc,
                 "\n"
