@@ -21,26 +21,26 @@ class MessageUtil {
 
     fun getWeather(city: String) : String {
         var res = ""
-        if (!city.isBlank()) {
-            val watherResponse = HttpUtil.get("http://wthrcdn.etouch.cn/weather_mini?city=$city")
-            try {
-                val weatherResponse: WeatherResponse = Gson().fromJson(watherResponse, WeatherResponse::class.java)
-                val today: Weather = weatherResponse.data.forecast[0]
-                val tomorrow: Weather = weatherResponse.data.forecast[1]
-                today.fengli = today.fengli.replace("<![CDATA[", "").replace("]]>", "")
-                res = city + today.type + "，" +
-                        today.low + "~" +
-                        today.high + "，" +
-                        today.fengxiang +
-                        today.fengli + "\n明天" +
-                        tomorrow.type + "，" +
-                        tomorrow.low + "~" +
-                        tomorrow.high + "，" +
-                        weatherResponse.data.ganmao
-            } catch (e: Exception) {
-                println(e)
-            }
-        }
+//        if (!city.isBlank()) {
+//            val watherResponse = HttpUtil.get("http://wthrcdn.etouch.cn/weather_mini?city=$city")
+//            try {
+//                val weatherResponse: WeatherResponse = Gson().fromJson(watherResponse, WeatherResponse::class.java)
+//                val today: Weather = weatherResponse.data.forecast[0]
+//                val tomorrow: Weather = weatherResponse.data.forecast[1]
+//                today.fengli = today.fengli.replace("<![CDATA[", "").replace("]]>", "")
+//                res = city + today.type + "，" +
+//                        today.low + "~" +
+//                        today.high + "，" +
+//                        today.fengxiang +
+//                        today.fengli + "\n明天" +
+//                        tomorrow.type + "，" +
+//                        tomorrow.low + "~" +
+//                        tomorrow.high + "，" +
+//                        weatherResponse.data.ganmao
+//            } catch (e: Exception) {
+//                println(e)
+//            }
+//        }
         return res
     }
 

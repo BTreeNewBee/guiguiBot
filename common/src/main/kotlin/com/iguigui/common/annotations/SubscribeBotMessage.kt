@@ -9,5 +9,8 @@ import kotlin.reflect.KClass
 @Target(AnnotationTarget.FUNCTION)
 @Retention(AnnotationRetention.SOURCE)
 annotation class SubscribeBotMessage(
+    val name:String, //功能名称
+    val desc:String = "", //功能描述
+    val isFunction: Boolean = false,
     val priority:Int = 10
 )

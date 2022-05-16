@@ -97,7 +97,7 @@ class Subscriber {
     }
 
 
-    @SubscribeBotMessage
+    @SubscribeBotMessage(name = "搜索辅助")
     fun searchHelper(dto: GroupMessagePacketDTO) {
         val contentToString = dto.contentToString()
         searchHelperMap.entries.forEach {
@@ -119,7 +119,7 @@ class Subscriber {
     }
 
     //消息撤回事件，进行撤回重发
-    @SubscribeBotMessage
+    @SubscribeBotMessage(name = "撤回重发")
     fun groupRecallMessageEvent(dto: GroupRecallEventDTO) {
         //非自己撤回的不重发
         val id = dto.operator?.id
@@ -218,20 +218,20 @@ class Subscriber {
 
 
     //进行群成员信息同步
-    @SubscribeBotMessage
+    @SubscribeBotMessage(name = "", isFunction = false)
     fun memberListEvent(dto: MemberListData) {
         dto.list.forEach { this::syncMember }
     }
 
 
     //群信息同步
-    @SubscribeBotMessage
+    @SubscribeBotMessage(name = "", isFunction = false)
     fun groupListEvent(dto: GroupListData) {
         dto.list.forEach { this::syncGroup }
     }
 
     //常规图片下载
-    @SubscribeBotMessage
+    @SubscribeBotMessage(name = "", isFunction = false)
     fun imageDownload(dto: GroupMessagePacketDTO) {
         dto.messageChain.filter { it is ImageDTO }.map { it as ImageDTO }.forEach {
             it.imageId?.let { it1 -> it.url?.let { it2 -> downloadImage(it1, it2) } }
@@ -240,7 +240,7 @@ class Subscriber {
 
 
     //自动快递查询
-    @SubscribeBotMessage
+    @SubscribeBotMessage(name = "快递订阅")
     fun expressEvent(dto: GroupMessagePacketDTO) {
         val contentToString = dto.contentToString()
         if (contentToString.startsWith("订阅快递")) {
@@ -303,14 +303,14 @@ class Subscriber {
 
 
     //
-    @SubscribeBotMessage
+    @SubscribeBotMessage(name = "", isFunction = false)
     fun groupMessageEventTemplate(dto: GroupMessagePacketDTO) {
         val contentToString = dto.contentToString()
     }
 
 
     //
-    @SubscribeBotMessage
+    @SubscribeBotMessage(name = "", isFunction = false)
     fun testGroupMessageEvent(dto: GroupMessagePacketDTO) {
         val contentToString = dto.contentToString()
         if (contentToString == "测试快递") {
@@ -383,7 +383,7 @@ class Subscriber {
 
 
     //闪照事件监听
-    @SubscribeBotMessage
+    @SubscribeBotMessage(name = "闪照重发")
     fun flashImageEvent(dto: GroupMessagePacketDTO) {
         dto.messageChain.filter { it is FlashImageDTO }.map { it as FlashImageDTO }.forEach {
             it.imageId?.let { it1 -> it.url?.let { it2 -> downloadImage(it1, it2) } }
@@ -403,13 +403,13 @@ class Subscriber {
 
 
     //改名提醒
-    @SubscribeBotMessage
+    @SubscribeBotMessage(name = "改名提醒")
     fun memberCardChangeEvent(dto: MemberCardChangeEventDTO) {
         messageAdapter.sendGroupMessage(dto.member.group.id, "有人改名字了我不说是谁")
     }
 
     //每次有消息都同步一下
-    @SubscribeBotMessage
+    @SubscribeBotMessage(name = "", isFunction = false)
     fun groupEvent(dto: GroupMessagePacketDTO) {
         val group = dto.sender.group
         syncGroup(group)
@@ -417,7 +417,7 @@ class Subscriber {
     }
 
     //有啥都给存数据库
-    @SubscribeBotMessage
+    @SubscribeBotMessage(name = "", isFunction = false)
     fun messageLogger(dto: GroupMessagePacketDTO) {
         val sender = dto.sender
         var messages = Messages()
@@ -444,7 +444,7 @@ class Subscriber {
     val musicQuestionRecord: LinkedHashMap<Long, MutableList<Int>> = linkedMapOf()
 
     //点歌台
-    @SubscribeBotMessage
+    @SubscribeBotMessage(name = "点歌台")
     fun musicEvent(dto: GroupMessagePacketDTO) {
         val contentToString = dto.contentToString()
         if (!contentToString.startsWith("点歌")) {
@@ -479,7 +479,7 @@ class Subscriber {
     }
 
 
-    @SubscribeBotMessage
+    @SubscribeBotMessage(name = "", isFunction = false)
     fun musicChoseEvent(dto: GroupMessagePacketDTO) {
         val senderId = dto.sender.id
         val groupId = dto.sender.group.id
@@ -508,7 +508,7 @@ class Subscriber {
 
 
     //歌单分析器
-    @SubscribeBotMessage
+    @SubscribeBotMessage(name = "", isFunction = false)
     fun musicShareEvent(dto: GroupMessagePacketDTO) {
         val appDTOMessage = dto.messageChain.filter { e -> e is AppDTO }.map { e -> e as AppDTO }.firstOrNull()
         appDTOMessage?.content?.let {
@@ -519,7 +519,7 @@ class Subscriber {
     }
 
 
-    @SubscribeBotMessage
+    @SubscribeBotMessage(name = "消息统计", isFunction = false)
     fun currentGroupMessageCount(dto: GroupMessagePacketDTO) {
         val group = dto.sender.group
         if (dto.contentToString() == "实时") {

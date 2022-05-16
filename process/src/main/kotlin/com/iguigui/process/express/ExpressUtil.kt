@@ -56,6 +56,7 @@ class ExpressUtil {
     }
 
 
+    //白嫖的百度快递接口，顺丰不能查，以后拉黑了不发顺丰了
     fun getExpressInfo(postNumber: String): ExpressResult? {
         val url = "https://express.baidu.com/express/api/express"
         val parameter = HashMap<String, Any>()
