@@ -76,6 +76,17 @@ class Subscriber {
     @Autowired
     lateinit var expressUtil: ExpressUtil
 
+    /**
+     * Json解析规则，需要注册支持的多态的类
+     */
+    private val json by lazy {
+        Json {
+            encodeDefaults = true
+            isLenient = true
+            ignoreUnknownKeys = true
+        }
+    }
+
     lateinit var neteaseCloudMusicInfo: NeteaseCloudMusicInfo
 
 
@@ -476,10 +487,10 @@ class Subscriber {
         if (contentToString.isInt()) {
             musicQuestionRecord[senderId]?.get(contentToString.toInt() - 1)?.let {
                 musicQuestionRecord.remove(senderId)
-                val json = JSONObject()
-                json["ids"] = it.toString()
-                val toJSONString = neteaseCloudMusicInfo.songDetail(json).toJSONString()
-                val songsDetail = Json.decodeFromString(SongDetail.serializer(), toJSONString)
+                val parameter = JSONObject()
+                parameter["ids"] = it.toString()
+                val toJSONString = neteaseCloudMusicInfo.songDetail(parameter).toJSONString()
+                val songsDetail = json.decodeFromString(SongDetail.serializer(), toJSONString)
                 val first = songsDetail.songs.first()
                 val musicShareDTO = MusicShareDTO(
                     "NeteaseCloudMusic",
