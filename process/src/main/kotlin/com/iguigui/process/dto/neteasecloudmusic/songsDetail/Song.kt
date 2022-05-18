@@ -29,7 +29,7 @@ data class Song(
     @SerialName("ftype")
     val ftype: Int,
     @SerialName("h")
-    val h: H,
+    val h: H?,
     @SerialName("id")
     val id: Int,
     @SerialName("l")
