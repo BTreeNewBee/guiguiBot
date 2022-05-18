@@ -205,7 +205,7 @@ class Subscriber {
                 )
                 dailyGroupMessageCount.forEach { entity ->
                     val groupHasQqUser = groupHasQqUserMapper.selectByGroupIdAndQqUserId(it, entity.qqUserId!!)
-                    stringBuilder.append("第${index}名：${groupHasQqUser.nameCard} ，${entity.messageCount}条消息\n")
+                    stringBuilder.append("第${index}名：${groupHasQqUser.nickName} ，${entity.messageCount}条消息\n")
                     index++
                 }
                 stringBuilder.append("晚安~")
@@ -556,7 +556,7 @@ class Subscriber {
             )
             dailyGroupMessageCount.forEach {
                 val groupHasQqUser = groupHasQqUserMapper.selectByGroupIdAndQqUserId(group.id, it.qqUserId!!)
-                stringBuilder.append("第${index}名：${groupHasQqUser.nameCard} ，${it.messageCount}条消息\n")
+                stringBuilder.append("第${index}名：${groupHasQqUser.nickName} ，${it.messageCount}条消息\n")
                 index++
             }
             runBlocking {
