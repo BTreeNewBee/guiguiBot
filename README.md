@@ -8,10 +8,15 @@ Kotlin 1.6.10
 Gradle 6.5.1
 SpringBoot 2.4.0
 MyBatis-plus 3.4.1
-MySQL 8.0 
-MongoDB 5.0.7
 Mirai-HTTP(进行了个人改造)
 KSP(Kotlin Symbol Processing)
+
+环境依赖
+MySQL 8.0
+MongoDB 5.0.7
+
+
+
 
 
 之前基于Mirai原生开发，现改成Mirai-HTTP WS接口开发.

@@ -271,7 +271,8 @@ class Subscriber {
                 return
             }
             val info = expressInfo.data.info
-            val statusEnum = ExpressStatusEnum.values().filter { e -> e.status == info.currentStatus.toInt() }.firstOrNull()
+            val statusEnum =
+                ExpressStatusEnum.values().filter { e -> e.status == info.currentStatus.toInt() }.firstOrNull()
             if (statusEnum == null) {
                 throw RuntimeException("快递订单信息转换失败 ! $expressInfo")
             }
@@ -299,7 +300,6 @@ class Subscriber {
             }
         }
     }
-
 
 
     //
@@ -335,7 +335,7 @@ class Subscriber {
             if (expressInfo.data.info.latestTime != it.exoressData.info.latestTime) {
                 it.exoressData = expressInfo.data
                 mongoTemplate.save(it)
-                sendExpressInfo(it,null,null)
+                sendExpressInfo(it, null, null)
             }
         }
     }
@@ -352,7 +352,7 @@ class Subscriber {
         stringBuilder.append(" 单号: ${expressInfo.postNumber} ,${data.company.shortname} ,当前状态: ${data.info.current},已耗时${duration.toDays()}天${duration.toHoursPart()}小时${duration.toMinutesPart()}分钟\n")
         for (context in data.info.context) {
             stringBuilder.append(
-                LocalDateTime.ofEpochSecond(context.time.toLong(),0, ZoneOffset.ofHours(8)).format(pattern2),
+                LocalDateTime.ofEpochSecond(context.time.toLong(), 0, ZoneOffset.ofHours(8)).format(pattern2),
                 " ",
                 context.desc,
                 "\n"
@@ -474,7 +474,7 @@ class Subscriber {
                 }
             }
             musicQuestionRecord[senderId] = musicList
-            messageAdapter.sendGroupMessage(groupId, ms)
+            messageAdapter.sendGroupMessage(groupId, ms.trimEnd('\n'))
         }
     }
 
