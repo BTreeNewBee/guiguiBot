@@ -4,6 +4,7 @@ import com.iguigui.common.annotations.SubscribeBotMessage
 import com.iguigui.process.entity.AngelicBitchInfo
 import com.iguigui.process.entity.ExpressSubscriberInfo
 import com.iguigui.process.entity.FlattererInfo
+import com.iguigui.process.entity.GirlInfo
 import com.iguigui.process.qqbot.MessageAdapter
 import com.iguigui.process.qqbot.dto.GroupMessagePacketDTO
 import kotlinx.coroutines.runBlocking
@@ -59,10 +60,10 @@ class Flatterer {
             Query.query(
                 Criteria()
             ),
-            AngelicBitchInfo::class.java
+            GirlInfo::class.java
         )
         find3.firstOrNull()?.run {
-            angelicBitchInfoList = this.data
+            girlInfoList = this.data
         }
     }
 
@@ -94,12 +95,12 @@ class Flatterer {
     @SubscribeBotMessage(name = "丫头文学")
     fun girl(dto: GroupMessagePacketDTO) {
         val contentToString = dto.contentToString()
-        if (contentToString == "丫头文学" || contentToString == "油腻语录") {
-            if (girlInfoList.size == 0) {
-                return
-            }
-            messageAdapter.sendGroupMessage(dto.sender.group.id, girlInfoList.random())
+        if (contentToString != "丫头文学" && contentToString != "油腻语录") {                return
+            return
         }
-
+        if (girlInfoList.size == 0) {
+            return
+        }
+        messageAdapter.sendGroupMessage(dto.sender.group.id, girlInfoList.random())
     }
 }
