@@ -94,12 +94,12 @@ class Flatterer {
     @SubscribeBotMessage(name = "丫头文学")
     fun girl(dto: GroupMessagePacketDTO) {
         val contentToString = dto.contentToString()
-        if (contentToString != "丫头文学" && contentToString != "油腻语录") {
-            return
+        if (contentToString == "丫头文学" || contentToString == "油腻语录") {
+            if (girlInfoList.size == 0) {
+                return
+            }
+            messageAdapter.sendGroupMessage(dto.sender.group.id, girlInfoList.random())
         }
-        if (girlInfoList.size == 0) {
-            return
-        }
-        messageAdapter.sendGroupMessage(dto.sender.group.id, girlInfoList.random())
+
     }
 }
