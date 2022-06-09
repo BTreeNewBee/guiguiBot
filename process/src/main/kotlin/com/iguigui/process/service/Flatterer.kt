@@ -95,7 +95,7 @@ class Flatterer {
     @SubscribeBotMessage(name = "丫头文学")
     fun girl(dto: GroupMessagePacketDTO) {
         val contentToString = dto.contentToString()
-        if (contentToString != "丫头文学" && contentToString != "油腻语录") {                return
+        if (contentToString != "丫头文学" && contentToString != "油腻语录") {
             return
         }
         if (girlInfoList.size == 0) {
