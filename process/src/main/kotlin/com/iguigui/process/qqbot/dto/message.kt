@@ -268,18 +268,6 @@ data class FileDTO(
 
 
 @Serializable
-@SerialName("Nudge")
-data class NudgeDTO(
-    val target: Long,
-    val subject: Long,
-    val kind: String,
-) : MessageDTO() {
-    override fun toString(): String {
-        return "戳了戳$target"
-    }
-}
-
-@Serializable
 @SerialName("MiraiCode")
 data class MiraiCodeDTO(
     val code: String

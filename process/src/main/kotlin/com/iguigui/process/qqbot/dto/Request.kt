@@ -1,12 +1,9 @@
 package com.iguigui.process.qqbot.dto
 
-import kotlinx.serialization.InternalSerializationApi
-import kotlinx.serialization.Serializable
-import kotlinx.serialization.encodeToString
+import kotlinx.serialization.*
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.SerializersModuleBuilder
-import kotlinx.serialization.serializer
 import net.mamoe.mirai.message.data.MessageChain
 import kotlin.reflect.KClass
 
@@ -45,6 +42,22 @@ data class GroupMessageRequest(val id: Long, val messageChain: List<MessageDTO>)
     syncId = 1
 )
 
+
+@Serializable
+data class NudgeRequest(val target: Long, val subject: Long, val kind: String) : BaseRequest(
+    command = "sendNudge",
+    content = NudgeRequestContent(target, subject, kind),
+    subCommand = "",
+    syncId = 1
+)
+
+
+@Serializable
+data class NudgeRequestContent(
+    val target: Long,
+    val subject: Long,
+    val kind: String,
+) : Content()
 
 //发送群消息
 @Serializable
