@@ -105,7 +105,7 @@ class WsMessageAdapter : MessageAdapter {
         sendGroupMessage(id, PlainDTO(message))
     }
 
-    override fun sendGroupMessage(id: Long, vararg message: MessageDTO ) {
+    override fun sendGroupMessage(id: Long, vararg message: MessageDTO) {
         sendMessage(GroupMessageRequest(id, listOf(*message)))
     }
 
