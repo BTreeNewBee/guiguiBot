@@ -33,6 +33,7 @@ class Repeater {
 
     @SubscribeBotMessage(name = "自动复读")
     fun repeater(dto: GroupMessagePacketDTO) {
+        val id = dto.sender.group.id
         if (!isRepeatMessage(dto)) {
             return
         }
