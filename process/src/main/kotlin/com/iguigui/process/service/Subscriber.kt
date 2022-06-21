@@ -258,7 +258,7 @@ class Subscriber {
                 messageAdapter.sendGroupMessage(dto.sender.group.id, "订阅成功!")
                 val first = find.first()
                 first.subscriberList.computeIfAbsent(dto.sender.group.id, { e -> ArrayList() }).add(dto.sender.id)
-                mongoTemplate.save(find)
+                mongoTemplate.save(first)
                 sendExpressInfo(first, dto.sender.group.id, dto.sender.id)
                 return
             }
@@ -347,7 +347,7 @@ class Subscriber {
         val pattern2 = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
         val parse = LocalDateTime.parse(data.info.sendTime, pattern1)
         val duration: Duration = Duration.between(parse, now)
-        stringBuilder.append(" 单号: ${expressInfo.postNumber} ,${data.company.shortname} ,当前状态: ${data.info.current},已耗时${duration.toDays()}天${duration.toHoursPart()}小时${duration.toMinutesPart()}分钟\n")
+        stringBuilder.append(" 单号: ${expressInfo.postNumber},${data.company.shortname},当前状态: ${data.info.current},已耗时${duration.toDays()}天${duration.toHoursPart()}小时${duration.toMinutesPart()}分钟\n")
         for (context in data.info.context) {
             stringBuilder.append(
                 LocalDateTime.ofEpochSecond(context.time.toLong(), 0, ZoneOffset.ofHours(8)).format(pattern2),
@@ -356,10 +356,10 @@ class Subscriber {
                 "\n"
             )
         }
-        stringBuilder.substring(0, stringBuilder.length - 1)
+        val substring = stringBuilder.substring(0, stringBuilder.length - 1)
         groupId?.let {
             senderId?.let {
-                sendExpressInfo(stringBuilder.toString(), groupId, senderId)
+                sendExpressInfo(substring, groupId, senderId)
                 return
             }
         }
