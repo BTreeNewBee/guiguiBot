@@ -273,9 +273,7 @@ class Subscriber {
             val info = expressInfo.data.info
             val statusEnum =
                 ExpressStatusEnum.values().filter { e -> e.status == info.currentStatus.toInt() }.firstOrNull()
-            if (statusEnum == null) {
-                throw RuntimeException("快递订单信息转换失败 ! $expressInfo")
-            }
+                    ?: throw RuntimeException("快递订单信息转换失败 ! $expressInfo")
             //0在途，1揽收，2疑难，3签收，4退签，5派件，8清关，14拒签
             when (statusEnum) {
                 ExpressStatusEnum.FAILED -> messageAdapter.sendGroupMessage(dto.sender.group.id, "订阅失败,查询不到此快递的信息!")

@@ -75,6 +75,7 @@ class ExpressUtil {
             .header("Referer", "https://www.baidu.com/baidu?tn=monline_4_dg&ie=utf-8&wd=" + postNumber)
             .execute()
         val body = execute.body()
+        println("express body $body")
         val parseToJsonElement = Json.parseToJsonElement(body)
         val content = parseToJsonElement?.jsonObject["status"]?.jsonPrimitive?.content.toString()
         if ("0" != content) {
