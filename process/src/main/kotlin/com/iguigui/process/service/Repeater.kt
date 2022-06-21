@@ -22,6 +22,11 @@ class Repeater {
     @SubscribeBotMessage(name = "自动复读")
     fun girl(dto: GroupMessagePacketDTO) {
         val contentToString = dto.contentToString()
+
+
+
+
+
     }
 
     fun isRepeatMessage(dto: GroupMessagePacketDTO) =
