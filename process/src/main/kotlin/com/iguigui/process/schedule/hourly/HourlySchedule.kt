@@ -11,7 +11,7 @@ class HourlySchedule {
     @Autowired
     lateinit var subscriber: Subscriber
 
-    @Scheduled(initialDelay = 3600 * 1000, fixedDelay = 3600 * 1000)
+    @Scheduled(initialDelay = 60 * 1000 * 40 , fixedDelay =  60 * 1000 * 30)
     fun scanExpressInfo() {
         subscriber.expressScan()
     }

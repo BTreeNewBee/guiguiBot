@@ -9,6 +9,7 @@
 
 package com.iguigui.process.qqbot.dto
 
+import com.github.houbb.opencc4j.util.ZhConverterUtil
 import com.iguigui.common.interfaces.DTO
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
@@ -284,3 +285,6 @@ object UnknownMessageDTO : MessageDTO() {
 @Serializable
 sealed class MessageDTO : DTO
 
+fun GroupMessagePacketDTO.contentToString(): String {
+    return ZhConverterUtil.toSimple(this.messageChain.joinToString("") { it.toString() })
+}

@@ -4,6 +4,7 @@ import cn.hutool.crypto.digest.MD5
 import cn.hutool.http.HttpUtil
 import com.alibaba.fastjson.JSONObject
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper
+import com.github.houbb.opencc4j.util.ZhConverterUtil
 import com.iguigui.common.annotations.SubscribeBotMessage
 import com.iguigui.process.dao.GroupHasQqUserMapper
 import com.iguigui.process.dao.MessagesMapper
@@ -21,9 +22,11 @@ import com.iguigui.process.qqbot.MessageAdapter
 import com.iguigui.process.qqbot.dto.*
 import com.iguigui.process.qqbot.dto.response.appDTO.AppEntity
 import com.iguigui.process.util.MessageUtil
+import com.iguigui.qqbot.service.impl.WechatMessageServiceImpl
 import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
+import org.apache.commons.logging.LogFactory
 import org.koin.ext.isInt
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -45,6 +48,7 @@ import kotlin.collections.ArrayList
 @Component
 class Subscriber {
 
+    val log = LogFactory.getLog(Subscriber::class.java)!!
 
     @Autowired
     lateinit var qqGroupMapper: QqGroupMapper
@@ -244,7 +248,7 @@ class Subscriber {
     fun expressEvent(dto: GroupMessagePacketDTO) {
         val contentToString = dto.contentToString()
         if (contentToString.startsWith("订阅快递")) {
-            val substring = contentToString.substring(4)
+            val substring = contentToString.substring(4).lowercase()
             if (substring.isEmpty()) {
                 return
             }
@@ -257,7 +261,11 @@ class Subscriber {
             if (find.isNotEmpty()) {
                 messageAdapter.sendGroupMessage(dto.sender.group.id, "订阅成功!")
                 val first = find.first()
-                first.subscriberList.computeIfAbsent(dto.sender.group.id, { e -> ArrayList() }).add(dto.sender.id)
+                first.subscriberList.computeIfAbsent(dto.sender.group.id) { ArrayList() }.let {
+                    if (!it.contains(dto.sender.id)) {
+                        it.add(dto.sender.id)
+                    }
+                }
                 mongoTemplate.save(first)
                 sendExpressInfo(first, dto.sender.group.id, dto.sender.id)
                 return
@@ -295,6 +303,37 @@ class Subscriber {
                     )
                     sendExpressInfo(expressSubscriberInfo, dto.sender.group.id, dto.sender.id)
                 }
+            }
+        }
+    }
+
+
+    @SubscribeBotMessage(name = "取消快递")
+    fun expressCancelEvent(dto: GroupMessagePacketDTO) {
+        val contentToString = dto.contentToString()
+        if (contentToString.startsWith("取消快递")) {
+            val substring = contentToString.substring(4).lowercase()
+            if (substring.isEmpty()) {
+                return
+            }
+            var find = mongoTemplate.find(
+                Query.query(
+                    Criteria.where("postNumber").`is`(substring)
+                ),
+                ExpressSubscriberInfo::class.java
+            )
+            if (find.isNotEmpty()) {
+                messageAdapter.sendGroupMessage(dto.sender.group.id, "取消成功!")
+                val first = find.first()
+                first.subscriberList[dto.sender.group.id]?.also {
+                    it.remove(dto.sender.id)
+                }?.let {
+                    if (it.size == 0) {
+                        first.subscriberList.remove(dto.sender.group.id)
+                    }
+                }
+                mongoTemplate.save(first)
+                return
             }
         }
     }
@@ -563,12 +602,14 @@ class Subscriber {
         }
     }
 
-
+    //一大堆没啥用的搜索辅助
     private val searchHelperMap: Map<String, String> = mapOf(
         "百度" to "https://www.baidu.com/baidu?wd=",
         "谷歌" to "https://www.google.com/search?q=",
         "必应" to "https://cn.bing.com/search?q=",
         "淘宝" to "https://s.taobao.com/search?q=",
+        "京东" to "https://search.jd.com/Search?keyword=",
+        "微博" to "https://s.weibo.com/weibo?q=",
         "github" to "https://github.com/search?q=",
         "b站" to "https://search.bilibili.com/all?keyword=",
         "不会百度" to "https://buhuibaidu.me/?s=",
@@ -630,8 +671,4 @@ class Subscriber {
     }
 
 
-}
-
-fun GroupMessagePacketDTO.contentToString(): String {
-    return this.messageChain.joinToString("") { it.toString() }
 }

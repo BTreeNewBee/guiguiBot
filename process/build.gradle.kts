@@ -61,6 +61,8 @@ dependencies {
     implementation("org.java-websocket:Java-WebSocket:1.5.3")
     //mongodb
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
+    //opencc4j
+    implementation("com.github.houbb:opencc4j:1.7.2")
 
 }
 
