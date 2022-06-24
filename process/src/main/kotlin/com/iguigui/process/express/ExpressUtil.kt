@@ -66,12 +66,12 @@ class ExpressUtil {
         parameter["tokenV2"] = tokenV2
         parameter["appid"] = 4001
         parameter["nu"] = postNumber
-        parameter["qid"] = "ad1339960007131e"
+//        parameter["qid"] = "ad1339960007131e"
         parameter["_"] = System.currentTimeMillis()
         val execute = HttpUtil.createGet(url)
             .form(parameter)
             .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:100.0) Gecko/20100101 Firefox/100.0")
-            .header("Cookie", cookie)
+//            .header("Cookie", cookie)
             .header("Referer", "https://www.baidu.com/baidu?tn=monline_4_dg&ie=utf-8&wd=" + postNumber)
             .execute()
         val body = execute.body()
