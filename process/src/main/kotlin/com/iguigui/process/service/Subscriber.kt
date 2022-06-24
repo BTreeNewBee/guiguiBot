@@ -672,3 +672,7 @@ class Subscriber {
 
 
 }
+
+fun GroupMessagePacketDTO.contentToString(): String {
+    return ZhConverterUtil.toSimple(this.messageChain.joinToString("") { it.toString() })
+}

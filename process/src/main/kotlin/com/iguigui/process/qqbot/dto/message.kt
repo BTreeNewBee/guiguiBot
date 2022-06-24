@@ -285,6 +285,3 @@ object UnknownMessageDTO : MessageDTO() {
 @Serializable
 sealed class MessageDTO : DTO
 
-fun GroupMessagePacketDTO.contentToString(): String {
-    return ZhConverterUtil.toSimple(this.messageChain.joinToString("") { it.toString() })
-}
