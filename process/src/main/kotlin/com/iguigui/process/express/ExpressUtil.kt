@@ -46,6 +46,7 @@ class ExpressUtil {
             HttpRequest.get("https://www.baidu.com/baidu?isource=infinity&iname=baidu&itype=web&tn=02003390_42_hao_pg&ie=utf-8&wd=%E5%BF%AB%E9%80%92")
                 .execute()
         val headers = token.headers()
+        cookie = token.cookies.joinToString(";") { it.name + "=" + it.value }
         var matcher = patternTokenV2.matcher(token.body())
         if (matcher.find()) {
             val group = matcher.group()
@@ -101,8 +102,7 @@ class ExpressUtil {
             .header("Referer", "https://www.baidu.com/baidu?tn=monline_4_dg&ie=utf-8&wd=" + postNumber)
             .execute()
         val body = execute.body()
-        log.info("express parameter $parameter")
-        log.info("express body $body")
+        println("express body $body")
         val parseToJsonElement = Json.parseToJsonElement(body)
         val content = parseToJsonElement?.jsonObject["status"]?.jsonPrimitive?.content.toString()
         if ("0" != content) {
