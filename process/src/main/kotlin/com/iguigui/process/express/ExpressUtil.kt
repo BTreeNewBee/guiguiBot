@@ -70,16 +70,7 @@ class ExpressUtil {
         } else {
             throw RuntimeException("百度tokenV2获取失败")
         }
-
-        val first: Optional<MutableMap.MutableEntry<String, MutableList<String>>> =
-            headers.entries.stream().filter { (key): Map.Entry<String, List<String>> -> "Set-Cookie" == key }
-                .findFirst()
-        for (s in first.get().value) {
-            if (s.startsWith("BAIDUID")) {
-                val split = s.split(";".toRegex()).dropLastWhile { it.isEmpty() }.toTypedArray()
-                cookie = split[0]
-            }
-        }
+        log.info("refreshCookieToken $cookie $tokenV2 $qid")
     }
 
 
@@ -94,12 +85,27 @@ class ExpressUtil {
         parameter["appid"] = 4001
         parameter["nu"] = postNumber
         parameter["qid"] = qid
+        parameter["vcode"] = ""
+        parameter["token"] = ""
         parameter["_"] = System.currentTimeMillis()
+
+        log.info("query param $parameter")
+
         val execute = HttpUtil.createGet(url)
             .form(parameter)
-            .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:100.0) Gecko/20100101 Firefox/100.0")
+            .header("Host", "express.baidu.com")
+            .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:101.0) Gecko/20100101 Firefox/101.0")
+            .header("Accept", "*/*")
+            .header("Accept-Language", "zh-CN,zh;q=0.8,zh-TW;q=0.7,zh-HK;q=0.5,en-US;q=0.3,en;q=0.2")
+            .header("Accept-Encoding", "gzip, deflate, br")
+            .header("Referer", "https://www.baidu.com/baidu?tn=monline_4_dg&ie=utf-8&wd=$postNumber")
+            .header("Connection", "keep-alive")
             .header("Cookie", cookie)
-            .header("Referer", "https://www.baidu.com/baidu?tn=monline_4_dg&ie=utf-8&wd=" + postNumber)
+            .header("Sec-Fetch-Dest", "script")
+            .header("Sec-Fetch-Mode", "no-cors")
+            .header("Sec-Fetch-Site", "same-site")
+            .header("Pragma", "no-cache")
+            .header("Cache-Control", "no-cache")
             .execute()
         val body = execute.body()
         println("express body $body")
