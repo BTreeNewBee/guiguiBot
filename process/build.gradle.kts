@@ -7,6 +7,10 @@ plugins {
     idea
 }
 
+
+val ktor_version = "2.0.2"
+val logback_version = "1.2.11"
+
 group = "com.iguigui"
 version = "0.0.1-SNAPSHOT"
 
@@ -63,6 +67,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
     //opencc4j
     implementation("com.github.houbb:opencc4j:1.7.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
 
 }
 

@@ -34,13 +34,13 @@ class ExpressUtil {
     }
 
 
-    @PostConstruct
+//    @PostConstruct
     fun initParameter() {
         refreshCookieToken()
     }
 
     //定期刷新cookie
-    @Scheduled(fixedDelay = 60 * 1000 * 20)
+//    @Scheduled(fixedDelay = 60 * 1000 * 20)
     fun refreshCookieToken() {
         val token =
             HttpRequest.get("https://www.baidu.com/baidu?isource=infinity&iname=baidu&itype=web&tn=02003390_42_hao_pg&ie=utf-8&wd=%E5%BF%AB%E9%80%92")
