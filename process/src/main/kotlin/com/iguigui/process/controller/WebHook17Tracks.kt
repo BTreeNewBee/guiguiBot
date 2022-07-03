@@ -61,7 +61,6 @@ class WebHook17Tracks {
         while (hexString.length < 64) {
             hexString.insert(0, '0')
         }
-        log.info("requestStr $requestText right sign $hexString")
         return hexString.toString()
     }
 
