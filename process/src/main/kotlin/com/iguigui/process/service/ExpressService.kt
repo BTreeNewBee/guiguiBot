@@ -189,11 +189,13 @@ class ExpressService {
             return
         }
         val first = find.first()
-        first.trackData?.run {
-        }
-
         first.trackData = webHookTracks17.data
         mongoTemplate.save(first)
+        first.trackData?.run {
+            if (this.trackInfo.tracking.providersHash == webHookTracks17.data.trackInfo.tracking.providersHash) {
+                return
+            }
+        }
         first.subscriberList.forEach { (groupId, subscriberList) ->
             subscriberList.forEach { subscriberId ->
                 sendExpressInfo(first, groupId, subscriberId)
@@ -216,7 +218,7 @@ class ExpressService {
             LocalDateTime.parse(
                 it.timeIso,
                 DateTimeFormatter.ISO_OFFSET_DATE_TIME
-            ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm")) + "  " + it.description.replace(Regex("\\d{11}"),"***********").replace(Regex("\\d{3}-\\d{8}|\\d{4}-\\{7,8}"),"****-*******")
+            ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) + "  " + it.description.replace(Regex("\\d{11}"),"***********").replace(Regex("\\d{3}-\\d{8}|\\d{4}-\\{7,8}"),"****-*******")
         }
         stringBuilder.append(joinToString)
         groupId?.let {
