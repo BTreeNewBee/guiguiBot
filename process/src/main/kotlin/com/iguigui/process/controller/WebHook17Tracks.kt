@@ -52,7 +52,7 @@ class WebHook17Tracks {
 
 
     @Throws(NoSuchAlgorithmException::class)
-    private fun getGeneratedSignature(requestText: String, key: String): String? {
+    private fun getGeneratedSignature(requestText: String, key: String): String {
         val src = "$requestText/$key"
         val md: MessageDigest = MessageDigest.getInstance("SHA-256")
         val hash: ByteArray = md.digest(src.toByteArray(StandardCharsets.UTF_8))
@@ -61,6 +61,7 @@ class WebHook17Tracks {
         while (hexString.length < 64) {
             hexString.insert(0, '0')
         }
+        log.info("hexString: $hexString")
         return hexString.toString()
     }
 

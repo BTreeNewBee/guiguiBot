@@ -71,17 +71,19 @@ class ExpressService {
         if (contentToString.startsWith("订阅快递")) {
             var postNumber = contentToString.substring(4).lowercase().trim()
             if (postNumber.isEmpty()) {
-                messageAdapter.sendGroupMessage(dto.sender.group.id, """
+                messageAdapter.sendGroupMessage(
+                    dto.sender.group.id, """
                     使用方法：
                     1. 简易模式自动识别快递公司, 例如: 订阅快递 123456789
                     2. 如果出现"快递公司不能被识别。",请指定快递公司订阅,例如: 订阅快递 中通快递 123456789
-                    3. 取消订阅快递, 例如: 取消订阅快递 123456789
+                    3. 取消订阅快递, 例如: 取消快递 123456789
                     4. 注意参数间需要空格隔开
-                """.trimIndent())
+                """.trimIndent()
+                )
                 return
             }
             val split = postNumber.split(" ")
-            var carrierKey : Int? = null
+            var carrierKey: Int? = null
             if (split.size > 1) {
                 var carrier = split.subList(0, split.size - 1).joinToString(" ").trim()
                 postNumber = split[split.size - 1]
@@ -122,7 +124,7 @@ class ExpressService {
                     it.add(dto.sender.id)
                 }
             }
-            val asList = listOf(RegisterRequest(postNumber,carrierKey))
+            val asList = listOf(RegisterRequest(postNumber, carrierKey))
             HttpUtil.createPost("https://api.17track.net/track/v2/register").header("Content-Type", "application/json")
                 .header("17token", track17Key).body(
                     Json.encodeToString(asList)
@@ -130,15 +132,23 @@ class ExpressService {
                     if (it.isNotEmpty()) {
                         log.info(it)
                         val registerResponse = Json.decodeFromString<RegisterResponse>(it)
-                        registerResponse.data.rejected.firstOrNull { it.number.lowercase() == postNumber.lowercase() }?.run {
-                            messageAdapter.sendGroupMessage(dto.sender.group.id, "订阅失败!${errorMessageParse(error.code)}")
-                            return
-                        }
-                        registerResponse.data.accepted.firstOrNull { it.number.lowercase() == postNumber.lowercase() }?.let {
-                            expressSubscriberInfo.carrier = it.carrier
-                            mongoTemplate.save(expressSubscriberInfo)
-                            messageAdapter.sendGroupMessage(dto.sender.group.id, "订阅成功! ${carrierInfo[it.carrier]?.nameZhCn} : ${it.number}")
-                        } ?: return@let
+                        registerResponse.data.rejected.firstOrNull { it.number.lowercase() == postNumber.lowercase() }
+                            ?.run {
+                                messageAdapter.sendGroupMessage(
+                                    dto.sender.group.id,
+                                    "订阅失败!${errorMessageParse(error.code)}"
+                                )
+                                return
+                            }
+                        registerResponse.data.accepted.firstOrNull { it.number.lowercase() == postNumber.lowercase() }
+                            ?.let {
+                                expressSubscriberInfo.carrier = it.carrier
+                                mongoTemplate.save(expressSubscriberInfo)
+                                messageAdapter.sendGroupMessage(
+                                    dto.sender.group.id,
+                                    "订阅成功! ${carrierInfo[it.carrier]?.nameZhCn} : ${it.number}"
+                                )
+                            } ?: return@let
                     }
                 }
         }
@@ -189,17 +199,16 @@ class ExpressService {
             return
         }
         val first = find.first()
+        val oldTrackData = first.trackData
         first.trackData = webHookTracks17.data
         mongoTemplate.save(first)
-        first.trackData?.run {
+        oldTrackData?.run {
             if (this.trackInfo.tracking.providersHash == webHookTracks17.data.trackInfo.tracking.providersHash) {
                 return
             }
         }
-        first.subscriberList.forEach { (groupId, subscriberList) ->
-            subscriberList.forEach { subscriberId ->
-                sendExpressInfo(first, groupId, subscriberId)
-            }
+        first.subscriberList.forEach { (groupId) ->
+            sendExpressInfo(first, groupId, null)
         }
     }
 
@@ -208,19 +217,28 @@ class ExpressService {
     fun sendExpressInfo(expressInfo: ExpressSubscriberInfo, groupId: Long?, senderId: Long?) {
         val stringBuilder = StringBuilder()
         val data = expressInfo.trackData ?: return
-        val timeIso = data.trackInfo.tracking.providers.first().events.last().timeIso
-        val startTime = LocalDateTime.parse(timeIso, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-        val duration: Duration = Duration.between(startTime, LocalDateTime.now())
         val first = data.trackInfo.tracking.providers.first()
-        stringBuilder.append(" 单号: ${data.number},${first.provider.name}, 当前状态: ${statusParse(data.trackInfo.latestStatus.status)}, 已耗时${duration.toDays()}天${duration.toHoursPart()}小时${duration.toMinutesPart()}分钟\n")
-        val tracking = data.trackInfo.tracking
-        val joinToString = tracking.providers.first().events.joinToString("\n") {
-            LocalDateTime.parse(
-                it.timeIso,
-                DateTimeFormatter.ISO_OFFSET_DATE_TIME
-            ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) + "  " + it.description.replace(Regex("\\d{11}"),"***********").replace(Regex("\\d{3}-\\d{8}|\\d{4}-\\{7,8}"),"****-*******")
+        stringBuilder.append(" 单号: ${data.number},${first.provider.name}, 当前状态: ${statusParse(data.trackInfo.latestStatus.status)}")
+
+        if (data.trackInfo.tracking.providers.first().events.size > 0) {
+            val timeIso = data.trackInfo.tracking.providers.first().events.last().timeIso
+            val startTime = LocalDateTime.parse(timeIso, DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+            val duration: Duration = Duration.between(startTime, LocalDateTime.now())
+            stringBuilder.append(", 已耗时${duration.toDays()}天${duration.toHoursPart()}小时${duration.toMinutesPart()}分钟\n")
+            val tracking = data.trackInfo.tracking
+            val joinToString = tracking.providers.first().events.joinToString("\n") {
+                LocalDateTime.parse(
+                    it.timeIso,
+                    DateTimeFormatter.ISO_OFFSET_DATE_TIME
+                ).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")) + "  " + it.description.replace(
+                    Regex("\\d{11}"),
+                    "***********"
+                ).replace(Regex("\\d{3}-\\d{8}|\\d{4}-\\{7,8}"), "****-*******")
+            }
+            stringBuilder.append(joinToString)
+            return
         }
-        stringBuilder.append(joinToString)
+
         groupId?.let {
             senderId?.let {
                 sendExpressInfo(stringBuilder.toString(), groupId, senderId)
@@ -259,8 +277,8 @@ class ExpressService {
     }
 
 
-    private fun errorMessageParse(code:Int) : String{
-        return when(code) {
+    private fun errorMessageParse(code: Int): String {
+        return when (code) {
             0 -> "成功"
             -18010001 -> "IP 地址不在白名单内。"
             -18010002 -> "访问密钥无效。"

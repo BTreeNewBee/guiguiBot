@@ -11,7 +11,7 @@ data class LatestEvent(
     @SerialName("description")
     val description: String,
     @SerialName("location")
-    val location: String,
+    val location: String?,
     @SerialName("stage")
     val stage: String?,
     @SerialName("time_iso")

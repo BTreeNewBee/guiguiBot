@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class TrackInfo(
     @SerialName("latest_event")
-    val latestEvent: LatestEvent,
+    val latestEvent: LatestEvent?,
     @SerialName("latest_status")
     val latestStatus: LatestStatus,
     @SerialName("milestone")
