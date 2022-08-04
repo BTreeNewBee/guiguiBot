@@ -21,15 +21,6 @@ import kotlin.reflect.KClass
 import kotlin.reflect.full.findAnnotation
 
 
-//fun main() {
-//
-//    val wsMessageAdapter = WsMessageAdapter()
-//    wsMessageAdapter.registerDTO()
-//    wsMessageAdapter.handlerMessage("""{"command":"reservedMessage","data":{"type":"FriendMessage","sender":{"id":123,"nickname":"","remark":""},"messageChain":[{"type":"Source","id":123456,"time":123456},{"type":"At","target":123456,"display":"@Mirai"}]}}""")
-//
-//}
-
-
 @Component
 class WsMessageAdapter : MessageAdapter {
 
