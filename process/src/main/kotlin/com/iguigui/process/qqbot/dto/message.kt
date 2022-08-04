@@ -9,7 +9,6 @@
 
 package com.iguigui.process.qqbot.dto
 
-import com.github.houbb.opencc4j.util.ZhConverterUtil
 import com.iguigui.common.interfaces.DTO
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
