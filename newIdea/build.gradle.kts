@@ -1,6 +1,6 @@
-val ktor_version: String by project
-val kotlin_version: String by project
-val logback_version: String by project
+val ktor_version = "2.0.2"
+val kotlin_version = "1.6.10"
+val logback_version = "1.2.11"
 
 plugins {
     application
@@ -26,7 +26,6 @@ dependencies {
     implementation("io.ktor:ktor-server-core-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-websockets-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-content-negotiation-jvm:$ktor_version")
-    implementation("io.ktor:ktor-serialization-jackson-jvm:$ktor_version")
     implementation("io.ktor:ktor-serialization-kotlinx-json-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-netty-jvm:$ktor_version")
     implementation("io.ktor:ktor-server-call-logging:$ktor_version")
