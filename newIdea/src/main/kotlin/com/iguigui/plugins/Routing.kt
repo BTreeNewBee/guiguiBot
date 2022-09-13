@@ -1,5 +1,8 @@
 package com.iguigui.plugins
 
+import com.iguigui.dto.HeartBeat
+import com.iguigui.dto.StartResponse
+import com.iguigui.dto.wapperToHttpResponse
 import io.ktor.server.routing.*
 import io.ktor.http.*
 import io.ktor.server.application.*
@@ -13,7 +16,9 @@ fun Application.configureRouting() {
             call.respondText("Hello World!")
         }
         post("/submitBandInfo") {
-            call.response
+            with(call.receive<HeartBeat>()) {
+                call.respond(StartResponse("OK",true).wapperToHttpResponse())
+            }
         }
     }
 }
