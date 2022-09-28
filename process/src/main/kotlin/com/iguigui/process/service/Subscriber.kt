@@ -106,7 +106,7 @@ class Subscriber {
         val contentToString = dto.contentToString()
         searchHelperMap.entries.forEach {
             if (contentToString.lowercase(Locale.getDefault()).startsWith(it.key)) {
-                val substring = contentToString.substring(2)
+                val substring = contentToString.substring(it.key.length)
                 if (substring.trim().isNotEmpty()) {
                     runBlocking {
                         messageAdapter.sendGroupMessage(
