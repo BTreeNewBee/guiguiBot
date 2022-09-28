@@ -401,7 +401,6 @@ class Subscriber {
                 return
             }
             val messageSum = messagesMapper.getDailyGroupMessageSum(startTime.toString(), endTime.toString(), group.id)
-            var index = 1
             val stringBuilder = StringBuilder()
             stringBuilder.append("龙王排行榜\n")
             val now1 = LocalDate.now()
@@ -423,10 +422,8 @@ class Subscriber {
             stringBuilder.append(
                 "本群${now.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE)}日消息总量：${messageSum}条\n"
             )
-            dailyGroupMessageCount.forEach {
-                val groupHasQqUser = groupHasQqUserMapper.selectByGroupIdAndQqUserId(group.id, it.qqUserId!!)
-                stringBuilder.append("第${index}名：${groupHasQqUser.nickName} ，${it.messageCount}条消息\n")
-                index++
+            dailyGroupMessageCount.forEachIndexed { index, groupMessageCountEntity ->
+                stringBuilder.append("第${index + 1}名：${groupHasQqUserMapper.selectByGroupIdAndQqUserId(group.id, groupMessageCountEntity.qqUserId!!).nickName} ，${groupMessageCountEntity.messageCount}条消息\n")
             }
             runBlocking {
                 messageAdapter.sendGroupMessage(group.id, stringBuilder.toString())
