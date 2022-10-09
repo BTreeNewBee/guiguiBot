@@ -130,15 +130,8 @@ class Subscriber {
         if (dto.authorId != id) {
             return
         }
-//        val now = LocalDateTime.now()
-//        val startTime = now.plusMinutes(-5)
-//        var message =
-//            messagesMapper.getMessageByMessageId(startTime.toString(), now.toString(), dto.messageId, dto.group.id)
-//        message?.let {
-//            messageAdapter.sendGroupMessage(dto.group.id, it.senderName + ":" + it.messageDetail)
-//        }
 
-        var find = mongoTemplate.find(
+        mongoTemplate.find(
             Query.query(
                 Criteria.where("messageChain._id").`is`(dto.messageId)
                     .and("sender.group._id").`is`(dto.group.id)
@@ -146,28 +139,33 @@ class Subscriber {
                     .gt(System.currentTimeMillis() / 1000 - 120)
             ),
             GroupMessagePacketDTO::class.java, "messages"
-        )
-        find.firstOrNull()?.let {
-            val filter = it.messageChain.filter { e -> e !is MessageSourceDTO }
-            val count = filter.filter { e -> e !is PlainDTO && e !is AtDTO && e !is ImageDTO && e !is FaceDTO }.count()
-            //存在高级消息，拆行发
-            if (count > 0) {
-                messageAdapter.sendGroupMessage(
-                    dto.group.id,
-                    PlainDTO("${it.sender.memberName}:"),
-                )
-                messageAdapter.sendGroupMessage(
-                    dto.group.id,
-                    *filter.toTypedArray()
-                )
-            } else {
-                messageAdapter.sendGroupMessage(
-                    dto.group.id,
-                    PlainDTO("${it.sender.memberName}:"),
-                    *filter.toTypedArray()
-                )
+        ).firstOrNull()?.let { groupMessagePacketDTO ->
+            val filter = groupMessagePacketDTO.messageChain.filter { e -> e !is MessageSourceDTO }
+            //Check for the presence of advanced messages, cut into multiple lines and send
+            filter.count { e ->
+                e !is PlainDTO
+                        && e !is AtDTO
+                        && e !is ImageDTO
+                        && e !is FaceDTO
             }
+                .takeIf { it > 0 }
+                ?.run {
+                    messageAdapter.sendGroupMessage(
+                        dto.group.id,
+                        PlainDTO("${groupMessagePacketDTO.sender.memberName}:"),
+                    )
+                    messageAdapter.sendGroupMessage(
+                        dto.group.id,
+                        *filter.toTypedArray()
+                    )
+                    return@let
+                }
 
+            messageAdapter.sendGroupMessage(
+                dto.group.id,
+                PlainDTO("${groupMessagePacketDTO.sender.memberName}:"),
+                *filter.toTypedArray()
+            )
         }
 
     }
@@ -247,8 +245,6 @@ class Subscriber {
     fun groupMessageEventTemplate(dto: GroupMessagePacketDTO) {
         val contentToString = dto.contentToString()
     }
-
-
 
 
     //闪照事件监听
@@ -423,7 +419,14 @@ class Subscriber {
                 "本群${now.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE)}日消息总量：${messageSum}条\n"
             )
             dailyGroupMessageCount.forEachIndexed { index, groupMessageCountEntity ->
-                stringBuilder.append("第${index + 1}名：${groupHasQqUserMapper.selectByGroupIdAndQqUserId(group.id, groupMessageCountEntity.qqUserId!!).nickName} ，${groupMessageCountEntity.messageCount}条消息\n")
+                stringBuilder.append(
+                    "第${index + 1}名：${
+                        groupHasQqUserMapper.selectByGroupIdAndQqUserId(
+                            group.id,
+                            groupMessageCountEntity.qqUserId!!
+                        ).nickName
+                    } ，${groupMessageCountEntity.messageCount}条消息\n"
+                )
             }
             runBlocking {
                 messageAdapter.sendGroupMessage(group.id, stringBuilder.toString())
