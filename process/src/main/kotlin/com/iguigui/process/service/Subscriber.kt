@@ -104,21 +104,15 @@ class Subscriber {
     @SubscribeBotMessage(name = "搜索辅助")
     fun searchHelper(dto: GroupMessagePacketDTO) {
         val contentToString = dto.contentToString()
-        searchHelperMap.entries.forEach {
-            if (contentToString.lowercase(Locale.getDefault()).startsWith(it.key)) {
-                val substring = contentToString.substring(it.key.length)
-                if (substring.trim().isNotEmpty()) {
-                    runBlocking {
-                        messageAdapter.sendGroupMessage(
-                            dto.sender.group.id, "这也要我教？？？自己去看\n${
-                                it.value + URLEncoder.encode(
-                                    substring.trim(), "UTF-8"
-                                )
-                            }"
-                        )
-                    }
-                }
-            }
+        val lowercase = contentToString.lowercase(Locale.getDefault())
+        searchHelperMap.entries.firstOrNull { lowercase.startsWith(it.key) && lowercase.length > it.key.length }?.let {
+            messageAdapter.sendGroupMessage(
+                dto.sender.group.id, "这也要我教？？？自己去看\n${
+                    it.value + URLEncoder.encode(
+                        contentToString.substring(it.key.length).trim(), "UTF-8"
+                    )
+                }"
+            )
         }
     }
 
@@ -126,8 +120,7 @@ class Subscriber {
     @SubscribeBotMessage(name = "撤回重发")
     fun groupRecallMessageEvent(dto: GroupRecallEventDTO) {
         //非自己撤回的不重发
-        val id = dto.operator?.id
-        if (dto.authorId != id) {
+        dto.operator?.id.takeIf { it != dto.authorId }?.let {
             return
         }
 
@@ -318,10 +311,9 @@ class Subscriber {
         val senderId = dto.sender.id
         val groupId = dto.sender.group.id
         musicQuestionRecord.remove(senderId)
-        val substring = contentToString.substring(2)
-        if (substring.isNotEmpty()) {
+        contentToString.substring(2).takeIf { it.isNotEmpty() }?.let {
             val json = JSONObject()
-            json["keywords"] = substring
+            json["keywords"] = it
             json["limit"] = 10
             val toJSONString = neteaseCloudMusicInfo.search(json).toJSONString()
             val searchResult = Json.decodeFromString(SearchResult.serializer(), toJSONString)
@@ -333,10 +325,8 @@ class Subscriber {
             var ms = "请输入序号选择：\n"
             val musicList: MutableList<Int> = mutableListOf()
             searchResult.result.songs.forEachIndexed { index, song ->
-                run {
-                    musicList.add(song.id)
-                    ms += "${index + 1}. ${song.artists.map { e -> e.name }.joinToString(" ")} : ${song.name}\n"
-                }
+                musicList.add(song.id)
+                ms += "${index + 1}. ${song.artists.joinToString(" ") { e -> e.name }} : ${song.name}\n"
             }
             musicQuestionRecord[senderId] = musicList
             messageAdapter.sendGroupMessage(groupId, ms.trimEnd('\n'))
