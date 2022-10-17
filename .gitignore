@@ -42,3 +42,4 @@ gradle.properties
 /qqBot/src/main/resources/application-local.yml
 /qqBot/src/main/resources/application-prod.yml
 /process/src/main/resources/application-prod.yml
+/process/src/main/resources/application-local.yml

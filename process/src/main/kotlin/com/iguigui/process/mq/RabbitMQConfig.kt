@@ -9,7 +9,7 @@ open class RabbitMQConfig {
 
     @Bean
     open fun helloQueue(): Queue {
-        return Queue("botinfo")
+        return Queue("serverInfo")
     }
 
 }
