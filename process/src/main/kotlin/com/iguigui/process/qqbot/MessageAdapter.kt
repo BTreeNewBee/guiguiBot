@@ -21,9 +21,9 @@ interface MessageAdapter {
     fun sendMessage(message: BaseRequest)
 
     //给群发送文本消息
-    fun sendGroupMessage(id: Long, message: String)
+    fun sendGroupMessage(groupId: Long, message: String)
 
     //群发送复杂消息
-    fun sendGroupMessage(id: Long,vararg message: MessageDTO)
+    fun sendGroupMessage(groupId: Long,vararg message: MessageDTO)
 
 }
