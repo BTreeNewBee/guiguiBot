@@ -1,14 +1,11 @@
 package com.iguigui.process.mq
 
-import com.iguigui.bot.wechatBot.WechatBot
 import org.apache.commons.logging.LogFactory
 import org.springframework.amqp.rabbit.annotation.*
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import org.springframework.amqp.rabbit.core.RabbitTemplate
-import org.springframework.scheduling.annotation.Scheduled
 import javax.annotation.PostConstruct
-import kotlin.math.log
 
 @Component
 @RabbitListener(
@@ -18,9 +15,9 @@ import kotlin.math.log
         key = arrayOf("clientInfo")
     )]
 )
-class MQListener {
+class MyBandMQListener {
 
-    val log = LogFactory.getLog(MQListener::class.java)!!
+    val log = LogFactory.getLog(MyBandMQListener::class.java)!!
 
     @Autowired
     lateinit var rabbitTemplate: RabbitTemplate
