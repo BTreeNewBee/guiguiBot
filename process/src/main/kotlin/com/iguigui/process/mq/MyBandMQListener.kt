@@ -26,10 +26,10 @@ class MyBandMQListener {
     @Autowired
     lateinit var messageAdapter: MessageAdapter
 
-    @PostConstruct
-    fun init() {
-        rabbitTemplate.convertAndSend("amq.direct", "serverInfo", "Hello from server!")
-    }
+//    @PostConstruct
+//    fun init() {
+//        rabbitTemplate.convertAndSend("amq.direct", "serverInfo", "Hello from server!")
+//    }
 
 //    @Scheduled(fixedDelay = 1000 * 10)
 //    fun send() {
