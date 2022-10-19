@@ -54,10 +54,7 @@ class TestProcessor(
         // Generating package statement.
         file.appendText("package com.iguigui.process.kotlin\n")
         val classDeclarationByName = resolver.getClassDeclarationByName("com.iguigui.common.interfaces.DTO")
-        val dtoKSType = classDeclarationByName?.asStarProjectedType()
-        if (dtoKSType == null) {
-            return ArrayList()
-        }
+        val dtoKSType = classDeclarationByName?.asStarProjectedType() ?: return ArrayList()
         this.dtoKSType = dtoKSType
         // Processing each class declaration, annotated with @Function.
         symbols.forEach {
@@ -71,10 +68,10 @@ class TestProcessor(
         file.appendText("import org.springframework.beans.factory.annotation.Autowired\n")
         file.appendText("import org.springframework.stereotype.Component\n")
 
-        val classSet = resultMap.values.map { e -> HashSet(e.keys) }.reduce({ ac, its ->
+        val classSet = resultMap.values.map { e -> HashSet(e.keys) }.reduce { ac, its ->
             ac.addAll(its)
             return@reduce ac
-        })
+        }
         classSet.forEach { file.appendText("import ${it.packageName.asString()}.${it.simpleName.getShortName()}\n") }
         resultMap.entries.forEach{
             file.appendText("import com.iguigui.process.qqbot.dto.${it.key.declaration.simpleName.asString()}\n")
@@ -147,40 +144,6 @@ class TestProcessor(
             resultMap.computeIfAbsent(parameterKstype) { key -> HashMap() }
                 .computeIfAbsent(pclass) { key -> ArrayList() }
                 .add(function)
-
-            //com.iguigui.process.service.Subscriber
-//            throw RuntimeException("${pclass.packageName.asString()}.${pclass.simpleName.getShortName()}")
-            // Getting the @SubscribeBotMessage annotation object.
-//            val annotation: KSAnnotation = function.annotations.first {
-//                it.shortName.asString() == "SubscribeBotMessage"
-//            }
-
-            // Getting the 'name' argument object from the @Function.
-            //此处遍历会导致奇怪的报错
-//            val nameArgument: KSValueArgument = annotation.arguments
-//                .first { arg -> arg.name?.asString() == "clazz" }
-
-            // Getting the value of the 'name' argument.
-//
-//
-//            val clazzName = nameArgument.value as KSType
-//
-//            if (function.parameters[0].type.resolve() != clazzName) {
-//                throw RuntimeException("This function be annotated with @SubscribeBotMessage , clazz is ${clazzName.toString()} but argument is  ${function.parameters[0].type.resolve()}!")
-//            }
-
-
-            //[ksp] java.lang.RuntimeException: CLASS + com.google.devtools.ksp.symbol.impl.kotlin.KSNameImpl@118a882f + com.google.devtools.ksp.symbol.impl.kotlin.KSNameImpl@1b287888
-//            val orDefault = resultMap.getOrDefault(pclass, ArrayList())
-//            orDefault.add(function)
-//            resultMap[pclass] = orDefault
-
-
-//            throw RuntimeException("${pclass.packageName.getQualifier()} + ${pclass.packageName.getShortName()} + ${pclass.packageName.asString()}")
-
-
-//            file += function.functionKind.name
-//            file += function.parentDeclaration?.qualifiedName?.getQualifier()?:" no parentDeclaration"
 
         }
 
