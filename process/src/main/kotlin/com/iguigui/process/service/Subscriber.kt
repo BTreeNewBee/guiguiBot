@@ -12,17 +12,14 @@ import com.iguigui.process.dao.QqGroupMapper
 import com.iguigui.process.dao.QqUserMapper
 import com.iguigui.process.dto.neteasecloudmusic.search.SearchResult
 import com.iguigui.process.dto.neteasecloudmusic.songsDetail.SongDetail
-import com.iguigui.process.entity.ExpressSubscriberInfo
 import com.iguigui.process.entity.GroupHasQqUser
 import com.iguigui.process.entity.Messages
 import com.iguigui.process.entity.QqGroup
-import com.iguigui.process.express.ExpressStatusEnum
 import com.iguigui.process.express.ExpressUtil
 import com.iguigui.process.qqbot.MessageAdapter
 import com.iguigui.process.qqbot.dto.*
 import com.iguigui.process.qqbot.dto.response.appDTO.AppEntity
 import com.iguigui.process.util.MessageUtil
-import com.iguigui.qqbot.service.impl.WechatMessageServiceImpl
 import io.ktor.http.*
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
@@ -43,7 +40,6 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 import javax.annotation.PostConstruct
 import javax.annotation.Resource
-import kotlin.collections.ArrayList
 
 @Component
 class Subscriber {
