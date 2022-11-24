@@ -17,7 +17,7 @@ class MessageDispatcher1 : ApplicationContextAware, IMessageDispatcher {
 
     private val messageHandlers = mutableMapOf<KClass<out DTO>, MutableList<Method>>()
 
-    private val handlerBeans = mutableMapOf<Method, Any>()
+    val handlerBeans = mutableMapOf<Method, Any>()
 
     //Inject the application context
     override fun setApplicationContext(applicationContext: ApplicationContext) {
