@@ -44,7 +44,7 @@ class MessageDispatcher1 : ApplicationContextAware, IMessageDispatcher {
             return
         }
         val subscribeBotMessage = findAnnotations.first()
-        if (!subscribeBotMessage.isFunction) {
+        if (!subscribeBotMessage.export) {
             return
         }
         val parameters = method.parameters

@@ -14,10 +14,10 @@ class BotHelper {
     lateinit var messageDispatcher: MessageDispatcher1
 
     @SubscribeBotMessage("Bot帮助菜单", "帮助",false)
-    fun flatterer(dto: GroupMessagePacketDTO) {
-        messageDispatcher.handlerBeans.forEach { method, any ->
+    fun helper(dto: GroupMessagePacketDTO) {
+        messageDispatcher.handlerBeans.forEach { (method, _) ->
             method.getAnnotation(SubscribeBotMessage::class.java).let {
-
+                //今天的特别编码行动就到此结束力
             }
         }
     }
