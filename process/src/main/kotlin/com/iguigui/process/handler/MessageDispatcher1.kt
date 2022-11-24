@@ -51,7 +51,17 @@ class MessageDispatcher1 : ApplicationContextAware {
         if (!subscribeBotMessage.isFunction) {
             return
         }
-
+        val parameters = method.parameters
+        if (parameters.size > 1) {
+            return
+        }
+        val parameter = parameters[0]
+        val assignableFrom = DTO::class.java.isAssignableFrom(parameter.type)
+        if (assignableFrom) {
+            val orDefault = messageHandlers.getOrDefault(parameter.type.kotlin as KClass<out DTO>, ArrayList())
+            orDefault.add(method)
+            messageHandlers[parameter.type.kotlin as KClass<out DTO>] = orDefault
+        }
 
     }
 
