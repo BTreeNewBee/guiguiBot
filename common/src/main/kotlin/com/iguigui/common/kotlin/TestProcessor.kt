@@ -78,7 +78,7 @@ class TestProcessor(
         }
 
         file.appendText("\n")
-        file.appendText("@Component\n")
+//        file.appendText("@Component\n")
         file.appendText("class MessageDispatcher : IMessageDispatcher {\n")
         file.appendText("\n")
 
