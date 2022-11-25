@@ -69,6 +69,9 @@ dependencies {
     implementation("com.github.houbb:opencc4j:1.7.2")
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
 
+    //image process
+    implementation("org.bytedeco:javacv-platform:1.5.8")
+
 }
 
 kotlin {
