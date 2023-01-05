@@ -71,7 +71,8 @@ dependencies {
 
     //image process
     implementation("org.bytedeco:javacv-platform:1.5.8")
-
+    implementation("io.github.fanyong920:jvppeteer:1.1.5")
+    implementation("org.freemarker:freemarker:2.3.31")
 }
 
 kotlin {

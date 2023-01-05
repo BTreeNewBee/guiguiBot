@@ -52,3 +52,7 @@ logging:
 macAddress: 123
 
 baseFilePath: /root/qq_bot/img
+
+templateFilePath: /root/qq_bot/template
+
+tmpFilePath: /root/qq_bot/tmpfile
