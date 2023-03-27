@@ -16,7 +16,7 @@ class DailyGroupMessageCount {
     @Autowired
     lateinit var subscriber: Subscriber
 
-    @Scheduled(cron = "5 0 0 * * ?")
+    @Scheduled(cron = "0 0 0 * * ?")
     fun dailyGroupMessageCount() {
         subscriber.dailyGroupMessageCount()
     }

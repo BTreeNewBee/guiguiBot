@@ -17,6 +17,11 @@ import net.mamoe.mirai.data.UserProfile
 @Serializable
 abstract class ContactDTO : DTO {
     abstract val id: Long
+    /**
+     * 头像下载链接
+     */
+    val avatarUrl: String
+        get() = "http://q1.qlogo.cn/g?b=qq&nk=$id&s=100"
 }
 
 @Serializable

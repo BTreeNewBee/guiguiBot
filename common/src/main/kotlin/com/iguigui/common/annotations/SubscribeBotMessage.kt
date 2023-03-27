@@ -8,6 +8,6 @@ package com.iguigui.common.annotations
 annotation class SubscribeBotMessage(
     val name:String, //功能名称
     val desc:String = "", //功能描述
-    val export: Boolean = false,
+    val export: Boolean = true,
     val priority:Int = 10
 )

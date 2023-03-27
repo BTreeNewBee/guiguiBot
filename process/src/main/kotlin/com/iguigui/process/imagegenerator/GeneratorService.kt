@@ -13,6 +13,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.OutputStreamWriter
 import java.util.concurrent.atomic.AtomicInteger
+import javax.annotation.Resource
 
 @Service
 class GeneratorService {
@@ -23,7 +24,7 @@ class GeneratorService {
     @Autowired
     lateinit var browser: Browser
 
-    @Autowired
+    @Resource(name = "freemarkerConfig")
     lateinit var freemarkerConfiguration: Configuration
 
     val index = AtomicInteger(0)
@@ -39,7 +40,7 @@ class GeneratorService {
         val fileIndex = index.incrementAndGet()
         //生成html
         val template: Template = freemarkerConfiguration.getTemplate(templateName)
-        val htmlFile = File(config.tmpFilePath, "tmpFile$fileIndex.html")
+        val htmlFile = File(config.tmpFilePath, "tmpFile${System.currentTimeMillis()}-$fileIndex.html")
         FileOutputStream(htmlFile).use { fos ->
             OutputStreamWriter(fos).use { osw ->
                 template.process(data, osw)
@@ -50,7 +51,7 @@ class GeneratorService {
         page.goTo(htmlFile.absolutePath)
         page.setViewport(Viewport(viewWidth, viewHeight, 4.0, false, false, false))
         //执行截图
-        val image = File(config.tmpFilePath, "tmpFile$fileIndex.png")
+        val image = File(config.tmpFilePath, "tmpFile${System.currentTimeMillis()}-$fileIndex.png")
         val screenshotOptions = ScreenshotOptions()
         val clip = Clip(0.0, 0.0, screenWidth.toDouble(), screenHeight.toDouble())
         screenshotOptions.clip = clip
@@ -59,7 +60,7 @@ class GeneratorService {
         
         //清理资源
         page.close()
-        htmlFile.delete()
+//        htmlFile.delete()
         return image
     }
 

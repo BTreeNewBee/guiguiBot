@@ -1,5 +1,7 @@
 package com.iguigui.process.service
 
+import cn.hutool.core.codec.Base64
+import cn.hutool.core.io.FileUtil
 import cn.hutool.crypto.digest.MD5
 import cn.hutool.http.HttpUtil
 import com.alibaba.fastjson.JSONObject
@@ -16,6 +18,7 @@ import com.iguigui.process.entity.GroupHasQqUser
 import com.iguigui.process.entity.Messages
 import com.iguigui.process.entity.QqGroup
 import com.iguigui.process.express.ExpressUtil
+import com.iguigui.process.imagegenerator.GeneratorService
 import com.iguigui.process.qqbot.MessageAdapter
 import com.iguigui.process.qqbot.dto.*
 import com.iguigui.process.qqbot.dto.response.appDTO.AppEntity
@@ -75,6 +78,12 @@ class Subscriber {
 
     @Autowired
     lateinit var expressUtil: ExpressUtil
+
+    @Autowired
+    lateinit var generatorService: GeneratorService
+
+    @Autowired
+    lateinit var imageService: ImageService
 
     /**
      * Json解析规则，需要注册支持的多态的类
@@ -174,34 +183,46 @@ class Subscriber {
                     return@let
                 }
                 val messageSum = messagesMapper.getDailyGroupMessageSum(startTime.toString(), endTime.toString(), it)
-                var index = 1
-                val stringBuilder = StringBuilder()
-                stringBuilder.append("龙王排行榜\n")
 
-                val now1 = LocalDate.now()
-                stringBuilder.append("今天是${now1.format(DateTimeFormatter.ISO_LOCAL_DATE)}日，今年的第${now1.dayOfYear}天，剩余${now1.lengthOfYear() - now1.dayOfYear}天，您的${now1.year}年使用进度条：\n")
-                val d = now1.dayOfYear * 1.0 / now1.lengthOfYear() / 2.0
-                var string = "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░░░░░"
-                val d1 = (string.length * (0.5 - d)).toInt()
-                stringBuilder.append(
-                    "${string.substring(d1, d1 + 20)} ${
-                        String.format(
-                            "%.2f", now1.dayOfYear * 100.0 / now1.lengthOfYear()
+                val now = LocalDateTime.now()
+                val rate = now.dayOfYear / 365.0
+                val hue = (120 * (1 - rate)).toInt()
+                val color = "hsl($hue, 80%, 45%)"
+
+                val arrayList = ArrayList<RankInfo>()
+                dailyGroupMessageCount.forEachIndexed { index, groupMessageCountEntity ->
+                    val groupHasQqUser =
+                        groupHasQqUserMapper.selectByGroupIdAndQqUserId(it, groupMessageCountEntity.qqUserId)
+
+                    groupHasQqUser.let {
+                        arrayList.add(
+                            RankInfo(
+                                index + 1,
+                                Base64.encode(FileUtil.file(imageService.getAvatarImage(groupMessageCountEntity.qqUserId))),
+                                it.nickName ?: "",
+                                groupMessageCountEntity.messageCount
+                            )
                         )
-                    }% \n"
+                    }
+                }
+
+                val data = MessageRank(
+                    now.year,
+                    now.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE),
+                    yesterday.format(DateTimeFormatter.ISO_LOCAL_DATE),
+                    now.dayOfYear,
+                    now.dayOfYear * 1.0 / now.toLocalDate().lengthOfYear() * 100.0,
+                    color,
+                    messageSum,
+                    arrayList
                 )
 
-                stringBuilder.append(
-                    "本群${yesterday.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE)}日消息总量：${messageSum}条\n"
-                )
-                dailyGroupMessageCount.forEach { entity ->
-                    val groupHasQqUser = groupHasQqUserMapper.selectByGroupIdAndQqUserId(it, entity.qqUserId!!)
-                    stringBuilder.append("第${index}名：${groupHasQqUser.nickName} ，${entity.messageCount}条消息\n")
-                    index++
-                }
-                stringBuilder.append("晚安~")
+                val image =
+                    generatorService.generateImage("messageRank.html", data, screenHeight = 260 + 40 * arrayList.size)
+
                 runBlocking {
-                    messageAdapter.sendGroupMessage(it, stringBuilder.toString())
+                    messageAdapter.sendGroupMessage(it, ImageDTO(image.absolutePath))
+//                    image.delete()
                 }
             }
         }
@@ -369,56 +390,56 @@ class Subscriber {
         }
     }
 
-
-    @SubscribeBotMessage(name = "消息统计", export = false)
-    fun currentGroupMessageCount(dto: GroupMessagePacketDTO) {
-        val group = dto.sender.group
-        if (dto.contentToString() == "实时") {
-            val now = LocalDateTime.now()
-            val startTime = now at 0 hour 0 minute 0 second time
-            val endTime = now at 23 hour 59 minute 59 second time
-            val dailyGroupMessageCount =
-                messagesMapper.getDailyGroupMessageCount(startTime.toString(), endTime.toString(), group.id)
-            if (dailyGroupMessageCount.isEmpty()) {
-                return
-            }
-            val messageSum = messagesMapper.getDailyGroupMessageSum(startTime.toString(), endTime.toString(), group.id)
-            val stringBuilder = StringBuilder()
-            stringBuilder.append("龙王排行榜\n")
-            val now1 = LocalDate.now()
-            stringBuilder.append(
-                "今天是${
-                    now.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE)
-                }日，今年的第${now1.dayOfYear}天，您的${now1.year}年使用进度条：\n"
-            )
-            val d = now1.dayOfYear * 1.0 / now1.lengthOfYear() / 2.0
-            var string = "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░░░░░"
-            val d1 = (string.length * (0.5 - d)).toInt()
-            stringBuilder.append(
-                "${string.substring(d1, d1 + 20)} ${
-                    String.format(
-                        "%.2f", now1.dayOfYear * 100.0 / now1.lengthOfYear()
-                    )
-                }% \n"
-            )
-            stringBuilder.append(
-                "本群${now.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE)}日消息总量：${messageSum}条\n"
-            )
-            dailyGroupMessageCount.forEachIndexed { index, groupMessageCountEntity ->
-                stringBuilder.append(
-                    "第${index + 1}名：${
-                        groupHasQqUserMapper.selectByGroupIdAndQqUserId(
-                            group.id,
-                            groupMessageCountEntity.qqUserId!!
-                        ).nickName
-                    } ，${groupMessageCountEntity.messageCount}条消息\n"
-                )
-            }
-            runBlocking {
-                messageAdapter.sendGroupMessage(group.id, stringBuilder.toString())
-            }
-        }
-    }
+//
+//    @SubscribeBotMessage(name = "消息统计", export = true)
+//    fun currentGroupMessageCount(dto: GroupMessagePacketDTO) {
+//        val group = dto.sender.group
+//        if (dto.contentToString() == "实时") {
+//            val now = LocalDateTime.now()
+//            val startTime = now at 0 hour 0 minute 0 second time
+//            val endTime = now at 23 hour 59 minute 59 second time
+//            val dailyGroupMessageCount =
+//                messagesMapper.getDailyGroupMessageCount(startTime.toString(), endTime.toString(), group.id)
+//            if (dailyGroupMessageCount.isEmpty()) {
+//                return
+//            }
+//            val messageSum = messagesMapper.getDailyGroupMessageSum(startTime.toString(), endTime.toString(), group.id)
+//            val stringBuilder = StringBuilder()
+//            stringBuilder.append("龙王排行榜\n")
+//            val now1 = LocalDate.now()
+//            stringBuilder.append(
+//                "今天是${
+//                    now.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE)
+//                }日，今年的第${now1.dayOfYear}天，您的${now1.year}年使用进度条：\n"
+//            )
+//            val d = now1.dayOfYear * 1.0 / now1.lengthOfYear() / 2.0
+//            var string = "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓░░░░░░░░░░░░░░░░░░░░"
+//            val d1 = (string.length * (0.5 - d)).toInt()
+//            stringBuilder.append(
+//                "${string.substring(d1, d1 + 20)} ${
+//                    String.format(
+//                        "%.2f", now1.dayOfYear * 100.0 / now1.lengthOfYear()
+//                    )
+//                }% \n"
+//            )
+//            stringBuilder.append(
+//                "本群${now.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE)}日消息总量：${messageSum}条\n"
+//            )
+//            dailyGroupMessageCount.forEachIndexed { index, groupMessageCountEntity ->
+//                stringBuilder.append(
+//                    "第${index + 1}名：${
+//                        groupHasQqUserMapper.selectByGroupIdAndQqUserId(
+//                            group.id,
+//                            groupMessageCountEntity.qqUserId!!
+//                        ).nickName
+//                    } ，${groupMessageCountEntity.messageCount}条消息\n"
+//                )
+//            }
+//            runBlocking {
+//                messageAdapter.sendGroupMessage(group.id, stringBuilder.toString())
+//            }
+//        }
+//    }
 
     //一大堆没啥用的搜索辅助
     private val searchHelperMap: Map<String, String> = mapOf(

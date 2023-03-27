@@ -65,12 +65,11 @@ dependencies {
     implementation("org.java-websocket:Java-WebSocket:1.5.3")
     //mongodb
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
-    //opencc4j
+    //opencc4j 简繁体转换
     implementation("com.github.houbb:opencc4j:1.7.2")
     implementation("org.jetbrains.kotlinx:kotlinx-datetime:0.4.0")
 
     //image process
-    implementation("org.bytedeco:javacv-platform:1.5.8")
     implementation("io.github.fanyong920:jvppeteer:1.1.5")
     implementation("org.freemarker:freemarker:2.3.31")
 }

@@ -1,5 +1,7 @@
 package com.iguigui.process.service
 
+import cn.hutool.core.codec.Base64
+import cn.hutool.core.io.FileUtil
 import com.iguigui.common.annotations.SubscribeBotMessage
 import com.iguigui.process.dao.GroupHasQqUserMapper
 import com.iguigui.process.dao.MessagesMapper
@@ -34,11 +36,14 @@ class MessageCount {
     @Autowired
     lateinit var generatorService: GeneratorService
 
+    @Autowired
+    lateinit var imageService: ImageService
 
-    @SubscribeBotMessage(name = "消息统计", export = false)
+
+    @SubscribeBotMessage(name = "实时消息统计", export = false)
     fun currentGroupMessageCount(dto: GroupMessagePacketDTO) {
         val group = dto.sender.group
-        if (dto.contentToString() == "消息统计") {
+        if (dto.contentToString() == "实时") {
             val now = LocalDateTime.now()
             val startTime = now at 0 hour 0 minute 0 second time
             val endTime = now at 23 hour 59 minute 59 second time
@@ -48,35 +53,37 @@ class MessageCount {
                 return
             }
             val messageSum = messagesMapper.getDailyGroupMessageSum(startTime.toString(), endTime.toString(), group.id)
-            val now1 = LocalDate.now()
 
-            val rate = now1.dayOfYear / 365.0
+            val rate = now.dayOfYear / 365.0
             val hue = (120 * (1 - rate)).toInt()
             val color = "hsl($hue, 80%, 45%)"
 
             val arrayList = ArrayList<RankInfo>()
             dailyGroupMessageCount.forEachIndexed { index, groupMessageCountEntity ->
                 val groupHasQqUser =
-                    groupHasQqUserMapper.selectByGroupIdAndQqUserId(group.id, groupMessageCountEntity.qqUserId!!)
+                    groupHasQqUserMapper.selectByGroupIdAndQqUserId(group.id, groupMessageCountEntity.qqUserId)
+
                 groupHasQqUser.let {
-                    arrayList.add(RankInfo(index + 1, "", it.nickName ?: "", it.messageCount ?: 0))
+                    arrayList.add(RankInfo(index + 1, Base64.encode(FileUtil.file(imageService.getAvatarImage(groupMessageCountEntity.qqUserId))), it.nickName ?: "", groupMessageCountEntity.messageCount ?: 0))
                 }
             }
 
             val data = MessageRank(
-                now1.year, now.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE),
-                now1.dayOfYear,
-                now1.dayOfYear * 1.0 / now1.lengthOfYear(),
+                now.year,
+                now.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE),
+                now.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE),
+                now.dayOfYear,
+                now.dayOfYear * 1.0 / now.toLocalDate().lengthOfYear() * 100.0,
                 color,
                 messageSum,
                 arrayList
             )
 
-            val image = generatorService.generateImage("messageRank", data, screenHeight = 260 + 40 * arrayList.size)
+            val image = generatorService.generateImage("messageRank.html", data, screenHeight = 260 + 40 * arrayList.size)
 
             runBlocking {
                 messageAdapter.sendGroupMessage(group.id, ImageDTO(image.absolutePath))
-                image.delete()
+//                image.delete()
             }
         }
     }
@@ -114,8 +121,9 @@ class MessageCount {
 
 data class MessageRank(
     val year: Int,
+    val today: String,
     val date: String,
-    val dayLeft: Int,
+    val dayOfYear: Int,
     val rate: Double,
     val color: String,
     val messageCount: Int,
