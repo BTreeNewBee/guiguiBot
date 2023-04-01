@@ -95,6 +95,7 @@ class WsMessageAdapter : MessageAdapter {
 
     override fun sendMessage(message: BaseRequest) {
         try {
+            println(message.toJson())
             qqBotWsClient.sendMessage(message.toJson())
         } catch (e: Exception) {
             println("$e")

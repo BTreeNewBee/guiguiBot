@@ -32,7 +32,7 @@ class GeneratorService {
     fun generateImage(
         templateName: String,
         data: Any,
-        viewWidth: Int = 800,
+        viewWidth: Int = 500,
         viewHeight: Int = 500,
         screenWidth: Int = viewWidth,
         screenHeight: Int = viewHeight
@@ -40,7 +40,7 @@ class GeneratorService {
         val fileIndex = index.incrementAndGet()
         //生成html
         val template: Template = freemarkerConfiguration.getTemplate(templateName)
-        val htmlFile = File(config.tmpFilePath, "tmpFile${System.currentTimeMillis()}-$fileIndex.html")
+        val htmlFile = File(config.tmpFilePath, "tmpFile${System.currentTimeMillis()}_$fileIndex.html")
         FileOutputStream(htmlFile).use { fos ->
             OutputStreamWriter(fos).use { osw ->
                 template.process(data, osw)
@@ -48,10 +48,11 @@ class GeneratorService {
         }
         //打开HTML
         val page: Page = browser.newPage()
-        page.goTo(htmlFile.absolutePath)
-        page.setViewport(Viewport(viewWidth, viewHeight, 4.0, false, false, false))
+        println(htmlFile.absolutePath)
+        page.goTo("file://" + htmlFile.absolutePath)
+        page.setViewport(Viewport(viewWidth, viewHeight, 2.0, false, false, false))
         //执行截图
-        val image = File(config.tmpFilePath, "tmpFile${System.currentTimeMillis()}-$fileIndex.png")
+        val image = File(config.tmpFilePath, "tmpFile${System.currentTimeMillis()}_$fileIndex.png")
         val screenshotOptions = ScreenshotOptions()
         val clip = Clip(0.0, 0.0, screenWidth.toDouble(), screenHeight.toDouble())
         screenshotOptions.clip = clip

@@ -79,10 +79,10 @@ class MessageCount {
                 arrayList
             )
 
-            val image = generatorService.generateImage("messageRank.html", data, screenHeight = 260 + 40 * arrayList.size)
+            val image = generatorService.generateImage("messageRank.html", data, screenHeight = 280 + 40 * arrayList.size)
 
             runBlocking {
-                messageAdapter.sendGroupMessage(group.id, ImageDTO(image.absolutePath))
+                messageAdapter.sendGroupMessage(group.id, ImageDTO(path = image.absolutePath))
 //                image.delete()
             }
         }
