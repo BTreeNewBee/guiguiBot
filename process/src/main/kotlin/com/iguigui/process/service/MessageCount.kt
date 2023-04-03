@@ -40,7 +40,7 @@ class MessageCount {
     lateinit var imageService: ImageService
 
 
-    @SubscribeBotMessage(name = "实时消息统计", export = false)
+    @SubscribeBotMessage(name = "实时消息统计")
     fun currentGroupMessageCount(dto: GroupMessagePacketDTO) {
         val group = dto.sender.group
         if (dto.contentToString() == "实时") {

@@ -65,21 +65,17 @@ class ExpressService {
     }
 
     //自动快递查询
-    @SubscribeBotMessage(name = "快递订阅", export = true)
+    @SubscribeBotMessage(name = "快递订阅", export = true, description = """
+                    使用方法：
+                    1. 简易模式自动识别快递公司, 例如: 订阅快递 123456789
+                    2. 如果出现"快递公司不能被识别。",请指定快递公司订阅,例如: 订阅快递 中通快递 123456789
+                    3. 取消订阅快递, 例如: 取消快递 123456789
+                """)
     fun expressEvent(dto: GroupMessagePacketDTO) {
         val contentToString = dto.contentToString()
         if (contentToString.startsWith("订阅快递")) {
             var postNumber = contentToString.substring(4).lowercase().trim()
             if (postNumber.isEmpty()) {
-                messageAdapter.sendGroupMessage(
-                    dto.sender.group.id, """
-                    使用方法：
-                    1. 简易模式自动识别快递公司, 例如: 订阅快递 123456789
-                    2. 如果出现"快递公司不能被识别。",请指定快递公司订阅,例如: 订阅快递 中通快递 123456789
-                    3. 取消订阅快递, 例如: 取消快递 123456789
-                    4. 注意参数间需要空格隔开
-                """.trimIndent()
-                )
                 return
             }
             val split = postNumber.split(" ")
