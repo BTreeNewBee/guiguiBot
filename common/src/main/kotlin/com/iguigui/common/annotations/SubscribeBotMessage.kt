@@ -7,7 +7,7 @@ package com.iguigui.common.annotations
 @Retention(AnnotationRetention.RUNTIME)
 annotation class SubscribeBotMessage(
     val name:String, //功能名称
-    val desc:String = "", //功能描述
-    val export: Boolean = true,
+    val description:String = "", //功能描述
+    val export: Boolean = false,
     val priority:Int = 10
 )
