@@ -218,10 +218,10 @@ class Subscriber {
                 )
 
                 val image =
-                    generatorService.generateImage("messageRank.html", data, screenHeight = 260 + 40 * arrayList.size)
+                    generatorService.generateImage("messageRank.html", data, imageHeight = 260 + 40 * arrayList.size)
 
                 runBlocking {
-                    messageAdapter.sendGroupMessage(it, ImageDTO(image.absolutePath))
+                    messageAdapter.sendGroupMessage(it, ImageDTO(path = image.absolutePath))
 //                    image.delete()
                 }
             }

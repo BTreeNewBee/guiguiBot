@@ -32,15 +32,15 @@ class GeneratorService {
     fun generateImage(
         templateName: String,
         data: Any,
-        viewWidth: Int = 800,
-        viewHeight: Int = 500,
-        screenWidth: Int = viewWidth,
-        screenHeight: Int = viewHeight
+        iamgeWidth: Int = 800,
+        imageHeight: Int = 500,
+        viewWidth: Int = iamgeWidth,
+        viewHeight: Int = imageHeight
     ): File {
         val fileIndex = index.incrementAndGet()
         //生成html
         val template: Template = freemarkerConfiguration.getTemplate(templateName)
-        val htmlFile = File(config.tmpFilePath, "tmpFile${System.currentTimeMillis()}-$fileIndex.html")
+        val htmlFile = File(config.tmpFilePath, "tmpFile${System.currentTimeMillis()}_$fileIndex.html")
         FileOutputStream(htmlFile).use { fos ->
             OutputStreamWriter(fos).use { osw ->
                 template.process(data, osw)
@@ -48,12 +48,13 @@ class GeneratorService {
         }
         //打开HTML
         val page: Page = browser.newPage()
-        page.goTo(htmlFile.absolutePath)
-        page.setViewport(Viewport(viewWidth, viewHeight, 4.0, false, false, false))
+        println(htmlFile.absolutePath)
+        page.goTo("file://" + htmlFile.absolutePath)
+        page.setViewport(Viewport(viewWidth, viewHeight, 2.0, false, false, false))
         //执行截图
-        val image = File(config.tmpFilePath, "tmpFile${System.currentTimeMillis()}-$fileIndex.png")
+        val image = File(config.tmpFilePath, "tmpFile${System.currentTimeMillis()}_$fileIndex.png")
         val screenshotOptions = ScreenshotOptions()
-        val clip = Clip(0.0, 0.0, screenWidth.toDouble(), screenHeight.toDouble())
+        val clip = Clip(0.0, 0.0, iamgeWidth.toDouble(), imageHeight.toDouble())
         screenshotOptions.clip = clip
         screenshotOptions.path = image.absolutePath
         page.screenshot(screenshotOptions)
