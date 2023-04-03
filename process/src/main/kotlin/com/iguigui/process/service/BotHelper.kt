@@ -45,7 +45,7 @@ class BotHelper {
         var message = messageDispatcher.handlerBeans
             .map { it.key.getAnnotation(SubscribeBotMessage::class.java) }
             .filter { it.export }
-            .map { it.name }
+            .mapIndexed { index, subscribeBotMessage -> "${index + 1}. ${subscribeBotMessage.name}" }
             .joinToString { "\n" }
 
         message = "请输入序号选择功能详情：\n$message"
@@ -66,7 +66,7 @@ class BotHelper {
             return
         }
         helpCache.remove(dto.sender.id)
-        messageAdapter.sendGroupMessage(dto.sender.group.id, methodList[id].desc)
+        messageAdapter.sendGroupMessage(dto.sender.group.id, methodList[id].description)
     }
 
 
