@@ -32,8 +32,8 @@ class GeneratorService {
     fun generateImage(
         templateName: String,
         data: Any,
-        iamgeWidth: Int = 800,
-        imageHeight: Int = 500,
+        iamgeWidth: Int = 500,
+        imageHeight: Int = 800,
         viewWidth: Int = iamgeWidth,
         viewHeight: Int = imageHeight
     ): File {
