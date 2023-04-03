@@ -13,7 +13,6 @@ import kotlinx.coroutines.runBlocking
 import org.apache.commons.logging.LogFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Period
 import java.time.format.DateTimeFormatter
@@ -40,7 +39,7 @@ class MessageCount {
     lateinit var imageService: ImageService
 
 
-    @SubscribeBotMessage(name = "实时消息统计", export = false)
+    @SubscribeBotMessage(name = "实时消息统计", export = true)
     fun currentGroupMessageCount(dto: GroupMessagePacketDTO) {
         val group = dto.sender.group
         if (dto.contentToString() == "实时") {
@@ -79,7 +78,7 @@ class MessageCount {
                 arrayList
             )
 
-            val image = generatorService.generateImage("messageRank.html", data, screenHeight = 260 + 40 * arrayList.size)
+            val image = generatorService.generateImage("messageRank.html", data, imageHeight = 260 + 40 * arrayList.size)
 
             runBlocking {
                 messageAdapter.sendGroupMessage(group.id, ImageDTO(image.absolutePath))

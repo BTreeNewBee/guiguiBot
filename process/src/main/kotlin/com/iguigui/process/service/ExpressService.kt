@@ -65,7 +65,7 @@ class ExpressService {
     }
 
     //自动快递查询
-    @SubscribeBotMessage(name = "快递订阅")
+    @SubscribeBotMessage(name = "快递订阅", export = true)
     fun expressEvent(dto: GroupMessagePacketDTO) {
         val contentToString = dto.contentToString()
         if (contentToString.startsWith("订阅快递")) {

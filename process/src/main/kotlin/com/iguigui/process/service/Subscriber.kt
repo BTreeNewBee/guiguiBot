@@ -218,7 +218,7 @@ class Subscriber {
                 )
 
                 val image =
-                    generatorService.generateImage("messageRank.html", data, screenHeight = 260 + 40 * arrayList.size)
+                    generatorService.generateImage("messageRank.html", data, imageHeight = 260 + 40 * arrayList.size)
 
                 runBlocking {
                     messageAdapter.sendGroupMessage(it, ImageDTO(image.absolutePath))
@@ -230,20 +230,20 @@ class Subscriber {
 
 
     //进行群成员信息同步
-    @SubscribeBotMessage(name = "", export = false)
+    @SubscribeBotMessage(name = "")
     fun memberListEvent(dto: MemberListData) {
         dto.list.forEach { this::syncMember }
     }
 
 
     //群信息同步
-    @SubscribeBotMessage(name = "", export = false)
+    @SubscribeBotMessage(name = "")
     fun groupListEvent(dto: GroupListData) {
         dto.list.forEach { this::syncGroup }
     }
 
     //常规图片下载
-    @SubscribeBotMessage(name = "", export = false)
+    @SubscribeBotMessage(name = "")
     fun imageDownload(dto: GroupMessagePacketDTO) {
         dto.messageChain.filter { it is ImageDTO }.map { it as ImageDTO }.forEach {
             it.imageId?.let { it1 -> it.url?.let { it2 -> downloadImage(it1, it2) } }
@@ -251,7 +251,7 @@ class Subscriber {
     }
 
     //
-    @SubscribeBotMessage(name = "", export = false)
+    @SubscribeBotMessage(name = "")
     fun groupMessageEventTemplate(dto: GroupMessagePacketDTO) {
         val contentToString = dto.contentToString()
     }
@@ -284,7 +284,7 @@ class Subscriber {
     }
 
     //每次有消息都同步一下
-    @SubscribeBotMessage(name = "", export = false)
+    @SubscribeBotMessage(name = "")
     fun groupEvent(dto: GroupMessagePacketDTO) {
         val group = dto.sender.group
         syncGroup(group)
@@ -292,7 +292,7 @@ class Subscriber {
     }
 
     //有啥都给存数据库
-    @SubscribeBotMessage(name = "", export = false)
+    @SubscribeBotMessage(name = "")
     fun messageLogger(dto: GroupMessagePacketDTO) {
         val sender = dto.sender
         var messages = Messages()
@@ -319,7 +319,7 @@ class Subscriber {
     val musicQuestionRecord: LinkedHashMap<Long, MutableList<Int>> = linkedMapOf()
 
     //点歌台
-    @SubscribeBotMessage(name = "点歌台")
+    @SubscribeBotMessage(name = "点歌台", export = true)
     fun musicEvent(dto: GroupMessagePacketDTO) {
         val contentToString = dto.contentToString()
         if (!contentToString.startsWith("点歌")) {
@@ -351,7 +351,7 @@ class Subscriber {
     }
 
 
-    @SubscribeBotMessage(name = "", export = false)
+    @SubscribeBotMessage(name = "")
     fun musicChoseEvent(dto: GroupMessagePacketDTO) {
         val senderId = dto.sender.id
         val groupId = dto.sender.group.id
@@ -380,7 +380,7 @@ class Subscriber {
 
 
     //歌单分析器
-    @SubscribeBotMessage(name = "", export = false)
+    @SubscribeBotMessage(name = "")
     fun musicShareEvent(dto: GroupMessagePacketDTO) {
         val appDTOMessage = dto.messageChain.filter { e -> e is AppDTO }.map { e -> e as AppDTO }.firstOrNull()
         appDTOMessage?.content?.let {

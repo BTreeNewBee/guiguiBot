@@ -32,10 +32,10 @@ class GeneratorService {
     fun generateImage(
         templateName: String,
         data: Any,
-        viewWidth: Int = 800,
-        viewHeight: Int = 500,
-        screenWidth: Int = viewWidth,
-        screenHeight: Int = viewHeight
+        iamgeWidth: Int = 800,
+        imageHeight: Int = 500,
+        viewWidth: Int = iamgeWidth,
+        viewHeight: Int = imageHeight
     ): File {
         val fileIndex = index.incrementAndGet()
         //生成html
@@ -53,7 +53,7 @@ class GeneratorService {
         //执行截图
         val image = File(config.tmpFilePath, "tmpFile${System.currentTimeMillis()}-$fileIndex.png")
         val screenshotOptions = ScreenshotOptions()
-        val clip = Clip(0.0, 0.0, screenWidth.toDouble(), screenHeight.toDouble())
+        val clip = Clip(0.0, 0.0, iamgeWidth.toDouble(), imageHeight.toDouble())
         screenshotOptions.clip = clip
         screenshotOptions.path = image.absolutePath
         page.screenshot(screenshotOptions)
