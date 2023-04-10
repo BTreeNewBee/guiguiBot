@@ -1,8 +1,7 @@
 package com.iguigui.process.service
 
 import cn.hutool.http.HttpUtil
-import com.iguigui.common.annotations.SubscribeBotMessage
-import com.iguigui.process.controller.WebHook17Tracks
+import com.iguigui.process.annotations.SubscribeBotMessage
 import com.iguigui.process.dto.tracks17.WebHookTracks17
 import com.iguigui.process.dto.tracks17.dto.RegisterRequest
 import com.iguigui.process.dto.tracks17.dto.RegisterResponse
@@ -65,12 +64,11 @@ class ExpressService {
     }
 
     //自动快递查询
-    @SubscribeBotMessage(name = "快递订阅", export = true, description = """
-                    使用方法：
-                    1. 简易模式自动识别快递公司, 例如: 订阅快递 123456789
-                    2. 如果出现"快递公司不能被识别。",请指定快递公司订阅,例如: 订阅快递 中通快递 123456789
-                    3. 取消订阅快递, 例如: 取消快递 123456789
-                """)
+    @SubscribeBotMessage(functionName = "快递订阅", export = true, description = """订阅快递，会自动推送快递更新信息
+使用方法：
+简易模式自动识别快递公司, 如: 订阅快递 123456789
+如识别错误可指定快递公司,如: 订阅快递 中通快递 123456789
+取消订阅快递, 如: 取消快递 123456789""")
     fun expressEvent(dto: GroupMessagePacketDTO) {
         val contentToString = dto.contentToString()
         if (contentToString.startsWith("订阅快递")) {
@@ -151,7 +149,7 @@ class ExpressService {
     }
 
 
-    @SubscribeBotMessage(name = "取消快递")
+    @SubscribeBotMessage(functionName = "取消快递")
     fun expressCancelEvent(dto: GroupMessagePacketDTO) {
         val contentToString = dto.contentToString()
         if (contentToString.startsWith("取消快递")) {

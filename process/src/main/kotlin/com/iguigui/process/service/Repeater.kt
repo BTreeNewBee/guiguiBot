@@ -1,6 +1,6 @@
 package com.iguigui.process.service
 
-import com.iguigui.common.annotations.SubscribeBotMessage
+import com.iguigui.process.annotations.SubscribeBotMessage
 import com.iguigui.process.qqbot.MessageAdapter
 import com.iguigui.process.qqbot.dto.GroupMessagePacketDTO
 import org.springframework.beans.factory.annotation.Autowired
@@ -19,7 +19,7 @@ class Repeater {
 
     private var preMessageCount = ConcurrentHashMap<Long, String>()
 
-    @SubscribeBotMessage(name = "自动复读")
+    @SubscribeBotMessage(functionName = "自动复读")
     fun girl(dto: GroupMessagePacketDTO) {
         val contentToString = dto.contentToString()
 

@@ -1,8 +1,15 @@
 package com.iguigui.process.handler
 
-import com.iguigui.common.annotations.SubscribeBotMessage
+
 import com.iguigui.common.interfaces.DTO
+import com.iguigui.process.annotations.SubscribeBotMessage
+import com.iguigui.process.entity.mongo.GroupPermission
 import com.iguigui.process.qqbot.IMessageDispatcher
+import com.iguigui.process.qqbot.dto.GroupMessagePacketDTO
+import com.iguigui.process.qqbot.dto.GroupRecallEventDTO
+import com.iguigui.process.qqbot.dto.MemberCardChangeEventDTO
+import com.iguigui.process.service.GroupPermissionService
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
 import org.springframework.stereotype.Component
@@ -12,6 +19,10 @@ import kotlin.reflect.KClass
 
 @Component
 class MessageDispatcher1 : ApplicationContextAware, IMessageDispatcher {
+
+    @Autowired
+    private lateinit var groupPermissionService: GroupPermissionService
+
 
     private lateinit var applicationContext: ApplicationContext
 
@@ -61,8 +72,36 @@ class MessageDispatcher1 : ApplicationContextAware, IMessageDispatcher {
 
     //Dispatch the message
     override fun handler(message: DTO) {
+
         messageHandlers[message::class]?.forEach { method ->
 //            method(handlerBeans[method], message)
+            val annotation = method.getAnnotation(SubscribeBotMessage::class.java)
+            if (!annotation.export) {
+                method.invoke(handlerBeans[method], message)
+                return@forEach
+            }
+            when (message) {
+                is GroupMessagePacketDTO -> {
+                    val id = message.sender.group.id
+                    if (!groupPermissionService.checkGroupPermission(id, method.name)) {
+                        return@forEach
+                    }
+                }
+
+                is GroupRecallEventDTO -> {
+                    val id = message.group.id
+                    if (!groupPermissionService.checkGroupPermission(id, method.name)) {
+                        return@forEach
+                    }
+                }
+
+                is MemberCardChangeEventDTO -> {
+                    val id = message.member.group.id
+                    if (!groupPermissionService.checkGroupPermission(id, method.name)) {
+                        return@forEach
+                    }
+                }
+            }
             method.invoke(handlerBeans[method], message)
         }
     }

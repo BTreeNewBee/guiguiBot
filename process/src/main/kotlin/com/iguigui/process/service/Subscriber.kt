@@ -7,7 +7,7 @@ import cn.hutool.http.HttpUtil
 import com.alibaba.fastjson.JSONObject
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper
 import com.github.houbb.opencc4j.util.ZhConverterUtil
-import com.iguigui.common.annotations.SubscribeBotMessage
+import com.iguigui.process.annotations.SubscribeBotMessage
 import com.iguigui.process.dao.GroupHasQqUserMapper
 import com.iguigui.process.dao.MessagesMapper
 import com.iguigui.process.dao.QqGroupMapper
@@ -106,7 +106,7 @@ class Subscriber {
     }
 
 
-    @SubscribeBotMessage(name = "搜索辅助")
+    @SubscribeBotMessage(functionName = "你不会百度吗辅助", export = true, description = "输入: 百度+关键词，如百度Jvav")
     fun searchHelper(dto: GroupMessagePacketDTO) {
         val contentToString = dto.contentToString()
         val lowercase = contentToString.lowercase(Locale.getDefault())
@@ -122,7 +122,7 @@ class Subscriber {
     }
 
     //消息撤回事件，进行撤回重发
-    @SubscribeBotMessage(name = "撤回重发")
+    @SubscribeBotMessage(functionName = "撤回重发", export = true, description = "对所有撤回的消息进行重发")
     fun groupRecallMessageEvent(dto: GroupRecallEventDTO) {
         //非自己撤回的不重发
         dto.operator?.id.takeIf { it != dto.authorId }?.let {
@@ -211,14 +211,14 @@ class Subscriber {
                     now.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE),
                     yesterday.format(DateTimeFormatter.ISO_LOCAL_DATE),
                     now.dayOfYear,
-                    now.dayOfYear * 1.0 / now.toLocalDate().lengthOfYear() * 100.0,
+                    String.format("%.2f", rate * 100.0),
                     color,
                     messageSum,
                     arrayList
                 )
 
                 val image =
-                    generatorService.generateImage("messageRank.html", data, imageHeight = 260 + 40 * arrayList.size)
+                    generatorService.generateImage("messageRank.html", data, imageHeight = 270 + 40 * arrayList.size)
 
                 runBlocking {
                     messageAdapter.sendGroupMessage(it, ImageDTO(path = image.absolutePath))
@@ -230,20 +230,20 @@ class Subscriber {
 
 
     //进行群成员信息同步
-    @SubscribeBotMessage(name = "")
+    @SubscribeBotMessage(functionName = "")
     fun memberListEvent(dto: MemberListData) {
         dto.list.forEach { this::syncMember }
     }
 
 
     //群信息同步
-    @SubscribeBotMessage(name = "")
+    @SubscribeBotMessage(functionName = "")
     fun groupListEvent(dto: GroupListData) {
         dto.list.forEach { this::syncGroup }
     }
 
     //常规图片下载
-    @SubscribeBotMessage(name = "")
+    @SubscribeBotMessage(functionName = "")
     fun imageDownload(dto: GroupMessagePacketDTO) {
         dto.messageChain.filter { it is ImageDTO }.map { it as ImageDTO }.forEach {
             it.imageId?.let { it1 -> it.url?.let { it2 -> downloadImage(it1, it2) } }
@@ -251,14 +251,14 @@ class Subscriber {
     }
 
     //
-    @SubscribeBotMessage(name = "")
+    @SubscribeBotMessage(functionName = "")
     fun groupMessageEventTemplate(dto: GroupMessagePacketDTO) {
         val contentToString = dto.contentToString()
     }
 
 
     //闪照事件监听
-    @SubscribeBotMessage(name = "闪照重发")
+    @SubscribeBotMessage(functionName = "闪照重发", export = true, description = "对所有闪照进行重发(有个蛋用现在都不让发了)")
     fun flashImageEvent(dto: GroupMessagePacketDTO) {
         dto.messageChain.filter { it is FlashImageDTO }.map { it as FlashImageDTO }.forEach {
             it.imageId?.let { it1 -> it.url?.let { it2 -> downloadImage(it1, it2) } }
@@ -277,14 +277,10 @@ class Subscriber {
     }
 
 
-    //改名提醒
-    @SubscribeBotMessage(name = "改名提醒")
-    fun memberCardChangeEvent(dto: MemberCardChangeEventDTO) {
-        messageAdapter.sendGroupMessage(dto.member.group.id, "有人改名字了我不说是谁")
-    }
+
 
     //每次有消息都同步一下
-    @SubscribeBotMessage(name = "")
+    @SubscribeBotMessage(functionName = "")
     fun groupEvent(dto: GroupMessagePacketDTO) {
         val group = dto.sender.group
         syncGroup(group)
@@ -292,7 +288,7 @@ class Subscriber {
     }
 
     //有啥都给存数据库
-    @SubscribeBotMessage(name = "")
+    @SubscribeBotMessage(functionName = "")
     fun messageLogger(dto: GroupMessagePacketDTO) {
         val sender = dto.sender
         var messages = Messages()
@@ -319,7 +315,7 @@ class Subscriber {
     val musicQuestionRecord: LinkedHashMap<Long, MutableList<Int>> = linkedMapOf()
 
     //点歌台
-    @SubscribeBotMessage(name = "点歌台")
+    @SubscribeBotMessage(functionName = "点歌台", export = true , description = "网易云点歌，如：点歌 中森明菜")
     fun musicEvent(dto: GroupMessagePacketDTO) {
         val contentToString = dto.contentToString()
         if (!contentToString.startsWith("点歌")) {
@@ -351,7 +347,7 @@ class Subscriber {
     }
 
 
-    @SubscribeBotMessage(name = "")
+    @SubscribeBotMessage(functionName = "")
     fun musicChoseEvent(dto: GroupMessagePacketDTO) {
         val senderId = dto.sender.id
         val groupId = dto.sender.group.id
@@ -380,7 +376,7 @@ class Subscriber {
 
 
     //歌单分析器
-    @SubscribeBotMessage(name = "")
+    @SubscribeBotMessage(functionName = "")
     fun musicShareEvent(dto: GroupMessagePacketDTO) {
         val appDTOMessage = dto.messageChain.filter { e -> e is AppDTO }.map { e -> e as AppDTO }.firstOrNull()
         appDTOMessage?.content?.let {

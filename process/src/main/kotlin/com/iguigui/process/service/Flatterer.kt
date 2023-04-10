@@ -1,20 +1,16 @@
 package com.iguigui.process.service
 
-import com.iguigui.common.annotations.SubscribeBotMessage
+import com.iguigui.process.annotations.SubscribeBotMessage
 import com.iguigui.process.entity.AngelicBitchInfo
-import com.iguigui.process.entity.ExpressSubscriberInfo
 import com.iguigui.process.entity.FlattererInfo
 import com.iguigui.process.entity.GirlInfo
 import com.iguigui.process.qqbot.MessageAdapter
 import com.iguigui.process.qqbot.dto.GroupMessagePacketDTO
-import kotlinx.coroutines.runBlocking
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.mongodb.core.MongoTemplate
 import org.springframework.data.mongodb.core.query.Criteria
 import org.springframework.data.mongodb.core.query.Query
 import org.springframework.stereotype.Component
-import java.net.URLEncoder
-import java.util.*
 import javax.annotation.PostConstruct
 import kotlin.collections.ArrayList
 
@@ -67,7 +63,7 @@ class Flatterer {
         }
     }
 
-    @SubscribeBotMessage(name = "舔狗语录")
+    @SubscribeBotMessage(functionName = "舔狗语录")
     fun flatterer(dto: GroupMessagePacketDTO) {
         val contentToString = dto.contentToString()
         if (contentToString != "舔狗语录") {
@@ -80,7 +76,7 @@ class Flatterer {
     }
 
 
-    @SubscribeBotMessage(name = "绿茶语录")
+    @SubscribeBotMessage(functionName = "绿茶语录")
     fun angelicBitch(dto: GroupMessagePacketDTO) {
         val contentToString = dto.contentToString()
         if (contentToString != "绿茶语录") {
@@ -92,7 +88,7 @@ class Flatterer {
         messageAdapter.sendGroupMessage(dto.sender.group.id, angelicBitchInfoList.random())
     }
 
-    @SubscribeBotMessage(name = "丫头文学")
+    @SubscribeBotMessage(functionName = "丫头文学")
     fun girl(dto: GroupMessagePacketDTO) {
         val contentToString = dto.contentToString()
         if (contentToString != "丫头文学" && contentToString != "油腻语录") {

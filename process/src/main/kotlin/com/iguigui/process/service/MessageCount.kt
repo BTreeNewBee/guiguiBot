@@ -2,7 +2,7 @@ package com.iguigui.process.service
 
 import cn.hutool.core.codec.Base64
 import cn.hutool.core.io.FileUtil
-import com.iguigui.common.annotations.SubscribeBotMessage
+import com.iguigui.process.annotations.SubscribeBotMessage
 import com.iguigui.process.dao.GroupHasQqUserMapper
 import com.iguigui.process.dao.MessagesMapper
 import com.iguigui.process.imagegenerator.GeneratorService
@@ -13,7 +13,6 @@ import kotlinx.coroutines.runBlocking
 import org.apache.commons.logging.LogFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
-import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Period
 import java.time.format.DateTimeFormatter
@@ -40,7 +39,7 @@ class MessageCount {
     lateinit var imageService: ImageService
 
 
-    @SubscribeBotMessage(name = "实时消息统计")
+    @SubscribeBotMessage(functionName = "实时消息统计", export = true, description = "实时消息统计，发送 实时 查看")
     fun currentGroupMessageCount(dto: GroupMessagePacketDTO) {
         val group = dto.sender.group
         if (dto.contentToString() == "实时") {
@@ -73,13 +72,13 @@ class MessageCount {
                 now.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE),
                 now.toLocalDate().format(DateTimeFormatter.ISO_LOCAL_DATE),
                 now.dayOfYear,
-                now.dayOfYear * 1.0 / now.toLocalDate().lengthOfYear() * 100.0,
+                String.format("%.2f", rate * 100.0),
                 color,
                 messageSum,
                 arrayList
             )
 
-            val image = generatorService.generateImage("messageRank.html", data, imageHeight = 260 + 40 * arrayList.size)
+            val image = generatorService.generateImage("messageRank.html", data, imageHeight = 270 + 40 * arrayList.size)
 
             runBlocking {
                 messageAdapter.sendGroupMessage(group.id, ImageDTO(path = image.absolutePath))
@@ -124,7 +123,7 @@ data class MessageRank(
     val today: String,
     val date: String,
     val dayOfYear: Int,
-    val rate: Double,
+    val rate: String,
     val color: String,
     val messageCount: Int,
     val rankInfos: List<RankInfo>
