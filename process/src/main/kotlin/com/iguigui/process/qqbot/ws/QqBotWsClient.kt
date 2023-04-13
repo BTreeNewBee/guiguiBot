@@ -1,14 +1,14 @@
 package com.iguigui.process.qqbot.ws
 
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import kotlinx.serialization.InternalSerializationApi
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import org.apache.commons.logging.LogFactory
 import org.java_websocket.client.WebSocketClient
 import org.java_websocket.handshake.ServerHandshake
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
-import java.lang.Exception
 import java.lang.Thread.sleep
 import java.net.URI
 
@@ -38,10 +38,6 @@ class QqBotWsClient constructor(serverURI: URI = URI("ws://192.168.50.185:8637/a
 
     val log = LogFactory.getLog(QqBotWsClient::class.java)!!
 
-    val retryConnectionMaxTimes = 5
-
-    var retryConnectionTimes = 0
-
     lateinit var handler: (message: String) -> Unit
 
     /**
@@ -63,7 +59,6 @@ class QqBotWsClient constructor(serverURI: URI = URI("ws://192.168.50.185:8637/a
 
     override fun onOpen(handshakedata: ServerHandshake) {
         log.info("qq bot online ! ")
-        retryConnectionTimes = 0
     }
 
     override fun onMessage(message: String) {
@@ -72,12 +67,10 @@ class QqBotWsClient constructor(serverURI: URI = URI("ws://192.168.50.185:8637/a
 
     override fun onClose(code: Int, reason: String, remote: Boolean) {
         log.warn("Qq bot ws connection closed! code $code ,  reason $reason")
-        retryConnection()
     }
 
     override fun onError(ex: Exception) {
         log.warn(ex)
-        retryConnection()
     }
 
     fun registerHandler(handler: (message: String) -> Unit) {
@@ -86,19 +79,11 @@ class QqBotWsClient constructor(serverURI: URI = URI("ws://192.168.50.185:8637/a
     }
 
 
-    private fun retryConnection() {
-        if (retryConnectionTimes < retryConnectionMaxTimes) {
-            runBlocking {
-                sleep(1000 * 10)
-                reconnect()
-            }
-        }
-    }
-
     @Scheduled(fixedDelay = 10 * 1000)
     fun checkConnection() {
         if (this.isClosed) {
-            retryConnection()
+            reconnect()
+            log.info("try retry connect to qq bot ws server")
         }
     }
 

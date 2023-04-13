@@ -37,11 +37,15 @@ class Config {
 
     @Bean
     fun browser() : Browser{
+        //加大线程数量
+        System.setProperty("jvppeteer_common_thread_number","32")
         BrowserFetcher.downloadIfNotExist(null)
         val arrayList = ArrayList<String>()
         val options: LaunchOptions = LaunchOptionsBuilder().withArgs(arrayList).withHeadless(true).build()
         arrayList.add("--no-sandbox")
         arrayList.add("--disable-setuid-sandbox")
+        //proxy
+        arrayList.add("--proxy-server=http://192.168.50.185:7890")
         val browser: Browser = Puppeteer.launch(options)
         return browser
     }

@@ -20,15 +20,17 @@ class MemberCardChange {
 
     //改名提醒
     @SubscribeBotMessage(functionName = "改名提醒", export = true, description = "群友群名片修改提醒")
-    fun memberCardChangeEvent(dto: MemberCardChangeEventDTO) {
+    suspend fun memberCardChangeEvent(dto: MemberCardChangeEventDTO) {
         groupMemberCardChangeCache[dto.member.group.id] = RandomUtils.nextInt(5,10)
+        println("群名片变更")
     }
 
     @SubscribeBotMessage(functionName = "群名片变更")
-    fun memberCardChange(dto: GroupMessagePacketDTO) {
+    suspend fun memberCardChange(dto: GroupMessagePacketDTO) {
         val groupId = dto.sender.group.id
         val count = groupMemberCardChangeCache[groupId]?.minus(1) ?: 0
-        messageAdapter.sendGroupMessage(dto.sender.group.id, "有人改名字了我不说是谁")
+
+//        messageAdapter.sendGroupMessage(dto.sender.group.id, "有人改名字了我不说是谁")
     }
 
 

@@ -3,12 +3,14 @@ package com.iguigui.process.handler
 
 import com.iguigui.common.interfaces.DTO
 import com.iguigui.process.annotations.SubscribeBotMessage
-import com.iguigui.process.entity.mongo.GroupPermission
 import com.iguigui.process.qqbot.IMessageDispatcher
 import com.iguigui.process.qqbot.dto.GroupMessagePacketDTO
 import com.iguigui.process.qqbot.dto.GroupRecallEventDTO
 import com.iguigui.process.qqbot.dto.MemberCardChangeEventDTO
 import com.iguigui.process.service.GroupPermissionService
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.ApplicationContext
 import org.springframework.context.ApplicationContextAware
@@ -16,6 +18,8 @@ import org.springframework.stereotype.Component
 import java.lang.reflect.Method
 import javax.annotation.PostConstruct
 import kotlin.reflect.KClass
+import kotlin.reflect.full.callSuspend
+import kotlin.reflect.jvm.kotlinFunction
 
 @Component
 class MessageDispatcher1 : ApplicationContextAware, IMessageDispatcher {
@@ -54,12 +58,8 @@ class MessageDispatcher1 : ApplicationContextAware, IMessageDispatcher {
         if (findAnnotations.isEmpty()) {
             return
         }
-        val subscribeBotMessage = findAnnotations.first()
-//        if (!subscribeBotMessage.export) {
-//            return
-//        }
         val parameters = method.parameters
-        if (parameters.size > 1) {
+        if (parameters.isEmpty()) {
             return
         }
         val parameter = parameters[0]
@@ -72,12 +72,16 @@ class MessageDispatcher1 : ApplicationContextAware, IMessageDispatcher {
 
     //Dispatch the message
     override fun handler(message: DTO) {
+        CoroutineScope(Dispatchers.Default).launch {
+            handler0(message)
+        }
+    }
 
+    private suspend fun handler0(message: DTO) {
         messageHandlers[message::class]?.forEach { method ->
-//            method(handlerBeans[method], message)
             val annotation = method.getAnnotation(SubscribeBotMessage::class.java)
             if (!annotation.export) {
-                method.invoke(handlerBeans[method], message)
+                method.kotlinFunction?.callSuspend(handlerBeans[method],message)
                 return@forEach
             }
             when (message) {
@@ -102,7 +106,7 @@ class MessageDispatcher1 : ApplicationContextAware, IMessageDispatcher {
                     }
                 }
             }
-            method.invoke(handlerBeans[method], message)
+            method.kotlinFunction?.callSuspend(handlerBeans[method],message)
         }
     }
 
