@@ -64,7 +64,7 @@ class BotHelper {
 
         helpCache[dto.sender.id] = Any()
 
-        var functionList = configAbleMethodList
+        val functionList = configAbleMethodList.sortedBy { it.name }
             .mapIndexed { index, it ->
                 Triple(
                     index + 1,

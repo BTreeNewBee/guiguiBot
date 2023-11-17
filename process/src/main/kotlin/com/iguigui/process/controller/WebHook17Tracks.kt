@@ -4,6 +4,7 @@ import com.iguigui.process.dto.BaseResponseDto
 import com.iguigui.process.dto.tracks17.WebHookTracks17
 import com.iguigui.process.service.ExpressService
 import kotlinx.serialization.json.Json
+import org.apache.logging.log4j.kotlin.logger
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.web.bind.annotation.PostMapping
@@ -21,7 +22,7 @@ import java.security.NoSuchAlgorithmException
 @RestController
 class WebHook17Tracks {
 
-    val log = org.slf4j.LoggerFactory.getLogger(WebHook17Tracks::class.java)
+    val log = logger()
 
     @Value("\${track17Key}")
     lateinit var track17Key: String

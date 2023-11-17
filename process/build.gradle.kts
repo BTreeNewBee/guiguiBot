@@ -1,5 +1,4 @@
 plugins {
-    id("com.google.devtools.ksp") version "1.6.10-1.0.2"
     kotlin("jvm")
     id("org.springframework.boot")
     id("io.spring.dependency-management")
@@ -17,13 +16,19 @@ version = "0.0.1-SNAPSHOT"
 repositories {
     mavenCentral()
     gradlePluginPortal()
+    maven { url = uri("https://repository.apache.org/snapshots") }
+}
+
+
+configurations {
+    all {
+        exclude("org.springframework.boot","spring-boot-starter-logging")
+    }
 }
 
 dependencies {
     //公共包
     implementation(project(":common"))
-    //Kotlin symbol processing
-    ksp(project(":common"))
     //kotlin
     implementation(kotlin("stdlib"))
     //mysql
@@ -32,10 +37,8 @@ dependencies {
     implementation("top.yumbo.music:yumbo-music-utils:1.2.3")
 
     implementation("org.koin:koin-core:1.0.2")
-    implementation("org.slf4j:jcl-over-slf4j:1.7.20")
-    implementation("ch.qos.logback:logback-classic:1.1.7")
     //mybatis 生成器
-    implementation("com.baomidou:mybatis-plus-boot-starter:3.4.1")
+    implementation("com.baomidou:mybatis-plus-boot-starter:3.5.3.1")
     implementation("com.baomidou:mybatis-plus-generator:3.4.1")
     implementation("org.apache.velocity:velocity-engine-core:2.2")
     implementation("org.freemarker:freemarker:2.3.30")
@@ -46,9 +49,11 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-test")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.springframework.boot:spring-boot-configuration-processor")
+    //spring-boot-starter-log4j2
+    implementation("org.springframework.boot:spring-boot-starter-log4j2")
 
     //百度API
-    implementation("com.baidu.aip:java-sdk:4.15.3")
+//    implementation("com.baidu.aip:java-sdk:4.15.3")
     //hutool
     implementation("cn.hutool:hutool-all:5.5.8")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.1")
@@ -72,6 +77,11 @@ dependencies {
     //image process
     implementation("io.github.fanyong920:jvppeteer:1.1.5")
     implementation("org.freemarker:freemarker:2.3.31")
+    //JCommander
+    implementation("com.beust:jcommander:1.82")
+    //kotlin log4j
+    implementation("org.apache.logging.log4j:log4j-api-kotlin:1.3.0-SNAPSHOT")
+//    implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.12.5")
 }
 
 kotlin {

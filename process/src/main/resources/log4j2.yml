@@ -1,0 +1,60 @@
+## 共有8个级别，按照从低到高为：ALL < TRACE < DEBUG < INFO < WARN < ERROR < FATAL < OFF。
+## status：用于设置log4j2自身内部的信息输出，可以不设置
+## monitorInterval：log4j2监测配置文件的时间间隔，如果文件被修改，则重新加载
+#Configuration:
+#  status: ALL
+#  monitorInterval: 30
+#
+#  Properties: # 定义全局变量
+#    Property:
+#      - name: log.level.console
+#        value: ALL
+#      - name: log.path
+#        # “sys:”表示：如果VM参数中没指定这个变量值，则使用本文件中定义的缺省全局变量值
+#        value: logs
+#      - name: project.name
+#        value: useless_bot
+#      - name: log.pattern
+#        value: "%d{yyyy-MM-dd HH:mm:ss.SSS} -%5p ${PID:-} [%15.15t] %-30.30C{1.} : %m%n"
+#
+#  Appenders:
+#    Console:  # 输出到控制台
+#      name: CONSOLE
+#      target: SYSTEM_OUT
+#      PatternLayout:
+#        pattern: ${log.pattern}
+#    RollingFile: # 打印到文件
+#      - name: ROLLING_FILE
+#        # fileName  指定当前日志文件的位置和文件名称
+#        fileName: useless_bot.log
+#        # filePattern  指定当发生Rolling时，文件的转移和重命名规则
+#        filePattern: "${log.path}/$${date:yyyy-MM}/${project.name}-%d{yyyy-MM-dd}-%i.log.gz"
+#        PatternLayout:
+#          pattern: ${log.pattern}
+#        Filters:
+#          ThresholdFilter:
+#            - level: ${log.level.console}
+#              onMatch: ACCEPT
+#              onMismatch: DENY
+#        Policies:
+#          TimeBasedTriggeringPolicy:  # 按天分类
+#            modulate: true
+#            interval: 1
+#        DefaultRolloverStrategy:     # 文件最多100个
+#          max: 100
+#
+#  # 只有定义了 Loggers，并引入 Appenders，Appenders才会生效
+#  Loggers:
+#    Root:
+#      level: ALL
+#      AppenderRef:
+#        - ref: CONSOLE
+#        - ref: ROLLING_FILE
+#
+#    Logger: # 为com.***包配置特殊的Log级别，方便调试，trace会打印SQL具体结果，debug只打印SQL语句
+#      - name: com.***.mapper
+#        additivity: false
+#        level: trace
+#        AppenderRef:
+#          - ref: CONSOLE
+#          - ref: ROLLING_FILE

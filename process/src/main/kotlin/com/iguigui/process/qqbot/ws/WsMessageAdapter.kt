@@ -10,6 +10,7 @@ import kotlinx.serialization.json.*
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.SerializersModuleBuilder
 import kotlinx.serialization.serializer
+import org.apache.logging.log4j.kotlin.logger
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.config.BeanDefinition
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider
@@ -34,6 +35,8 @@ import kotlin.reflect.full.findAnnotation
 class WsMessageAdapter : MessageAdapter {
 
     var dtoMap = HashMap<String, KClass<out DTO>>()
+
+    val log = logger()
 
     //扫描DTO包寻找class注入map中
     @PostConstruct
@@ -95,10 +98,10 @@ class WsMessageAdapter : MessageAdapter {
 
     override fun sendMessage(message: BaseRequest) {
         try {
-            println(message.toJson())
+            log.info("Send message ${message.toJson()}")
             qqBotWsClient.sendMessage(message.toJson())
         } catch (e: Exception) {
-            println("$e")
+            log.warn("Send message failed,message content ${message.toJson()}", e)
         }
     }
 
@@ -115,12 +118,13 @@ class WsMessageAdapter : MessageAdapter {
             messageConverter(message)?.let(handler)
         } catch (e: Exception) {
             e.printStackTrace()
-            println("Message handle failed,message content $message")
+            log.warn("Message handle failed,message content $message")
         }
     }
 
     //消息转换，从json string转成DTO
     private fun messageConverter(message: String): DTO? {
+        log.info("Receive message $message")
         val parseToJsonElement = json.parseToJsonElement(message)
         val command = parseToJsonElement.jsonObject["command"]?.jsonPrimitive?.content.orEmpty()
         return when (command) {
@@ -129,7 +133,6 @@ class WsMessageAdapter : MessageAdapter {
                 commandMessageConverter(command, parseToJsonElement)
             }
         }
-        return null
     }
 
 

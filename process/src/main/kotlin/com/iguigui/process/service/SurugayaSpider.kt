@@ -3,10 +3,9 @@ package com.iguigui.process.service
 import com.iguigui.process.annotations.SubscribeBotMessage
 import com.iguigui.process.controller.WebHook17Tracks
 import com.iguigui.process.dao.GroupHasQqUserMapper
-import com.iguigui.process.dto.mercari.MercariResponse
-import com.iguigui.process.entity.mongo.MercariSpiderContent
-import com.iguigui.process.entity.mongo.MercariSubscribe
-import com.iguigui.process.entity.mongo.MercariSubscribeInfo
+import com.iguigui.process.entity.mongo.SurugayaSpiderContent
+import com.iguigui.process.entity.mongo.SurugayaSubscribe
+import com.iguigui.process.entity.mongo.SurugayaSubscribeInfo
 import com.iguigui.process.imagegenerator.GeneratorService
 import com.iguigui.process.qqbot.MessageAdapter
 import com.iguigui.process.qqbot.dto.*
@@ -35,7 +34,7 @@ import javax.annotation.Resource
 import kotlin.collections.ArrayList
 import kotlin.time.measureTime
 
-//煤炉爬虫
+//骏河屋爬虫
 @Component
 class SurugayaSpider {
 
@@ -63,7 +62,7 @@ class SurugayaSpider {
 
     //改名提醒
     @SubscribeBotMessage(
-        functionName = "骏河屋订阅", export = true, description = "" +
+        functionName = "骏河屋订阅", export = false, description = "" +
                 "设定关键词，自动监测骏河屋是否有新东西上架\n" +
                 "添加订阅：格式为'骏河屋订阅 关键词 是否全新 价格区间\n" +
                 "如：骏河屋订阅 山口百惠 非全新 200-500\n" +
@@ -79,11 +78,11 @@ class SurugayaSpider {
                     Query.query(
                         Criteria.where("groupId").`is`(dto.sender.group.id)
                     ),
-                    MercariSubscribe::class.java, "mercariSubscribe"
+                    SurugayaSubscribe::class.java, "surugayaSubscribe"
                 )
                 if (find.isEmpty()) {
                     sendSubscribeMessage(
-                        MercariSubscribe(
+                        SurugayaSubscribe(
                             id = null,
                             groupId = dto.sender.group.id,
                             subscribe = arrayListOf()
@@ -102,7 +101,7 @@ class SurugayaSpider {
                     return
                 }
 
-                val mercariSubscribeInfo = MercariSubscribeInfo(
+                val surugayaSubscribeInfo = SurugayaSubscribeInfo(
                     keyword = keyword,
                     condition = condition,
                     priceRange = priceRange,
@@ -112,19 +111,19 @@ class SurugayaSpider {
                     Query.query(
                         Criteria.where("groupId").`is`(dto.sender.group.id)
                     ),
-                    MercariSubscribe::class.java, "mercariSubscribe"
+                    SurugayaSubscribe::class.java, "surugayaSubscribe"
                 )
                 if (find.isEmpty()) {
-                    val mercariSubscribe = MercariSubscribe(
+                    val surugayaSubscribe = SurugayaSubscribe(
                         id = null,
                         groupId = dto.sender.group.id,
                         subscribe = arrayListOf(
-                            mercariSubscribeInfo
+                            surugayaSubscribeInfo
                         )
                     )
-                    mongoTemplate.save(mercariSubscribe, "mercariSubscribe")
+                    mongoTemplate.save(surugayaSubscribe, "surugayaSubscribe")
                     messageAdapter.sendGroupMessage(dto.sender.group.id, "订阅成功")
-                    getLastestGoodInfo(dto.sender.group.id, mercariSubscribeInfo)
+                    getLastestGoodInfo(dto.sender.group.id, surugayaSubscribeInfo)
                 } else {
                     val subscribe = find.first().subscribe
                     if (subscribe.size > 2) {
@@ -132,15 +131,15 @@ class SurugayaSpider {
                         return
                     }
 
-                    if (subscribe.contains(mercariSubscribeInfo)) {
+                    if (subscribe.contains(surugayaSubscribeInfo)) {
                         messageAdapter.sendGroupMessage(dto.sender.group.id, "已经订阅过了")
                     } else {
                         subscribe.add(
-                            mercariSubscribeInfo
+                            surugayaSubscribeInfo
                         )
-                        mongoTemplate.save(find.first(), "mercariSubscribe")
+                        mongoTemplate.save(find.first(), "surugayaSubscribe")
                         messageAdapter.sendGroupMessage(dto.sender.group.id, "订阅成功")
-                        getLastestGoodInfo(dto.sender.group.id, mercariSubscribeInfo)
+                        getLastestGoodInfo(dto.sender.group.id, surugayaSubscribeInfo)
                     }
                 }
             } else {
@@ -149,15 +148,15 @@ class SurugayaSpider {
         }
     }
 
-    @SubscribeBotMessage("取消煤炉", "取消煤炉订阅", false)
+    @SubscribeBotMessage("取消骏河屋", "取消骏河屋订阅", false)
     fun unSubscriber(message: GroupMessagePacketDTO) {
         val contentToString = message.contentToString()
-        if (contentToString.startsWith("取消煤炉")) {
+        if (contentToString.startsWith("取消骏河屋")) {
             val find = mongoTemplate.find(
                 Query.query(
                     Criteria.where("groupId").`is`(message.sender.group.id)
                 ),
-                MercariSubscribe::class.java, "mercariSubscribe"
+                SurugayaSubscribe::class.java, "surugayaSubscribe"
             )
             if (contentToString.length == 4) {
                 find.firstOrNull()?.let {
@@ -179,7 +178,7 @@ class SurugayaSpider {
                         return
                     }
                     val removeAt = it.removeAt(split.toInt() - 1)
-                    mongoTemplate.save(find.first(), "mercariSubscribe")
+                    mongoTemplate.save(find.first(), "surugayaSubscribe")
                     messageAdapter.sendGroupMessage(
                         message.sender.group.id,
                         "取消订阅 ${removeAt.keyword} ${removeAt.condition} ${removeAt.priceRange} 成功"
@@ -190,12 +189,12 @@ class SurugayaSpider {
     }
 
     //发送订阅信息
-    private fun sendSubscribeMessage(mercariSubscribe: MercariSubscribe) {
-        val subscribe = mercariSubscribe.subscribe
+    private fun sendSubscribeMessage(surugayaSubscribe: SurugayaSubscribe) {
+        val subscribe = surugayaSubscribe.subscribe
         val arrayList = ArrayList<Triple<Int, String?, String>>()
         subscribe.forEachIndexed { index, info ->
             val groupHasQqUser =
-                groupHasQqUserMapper.selectByGroupIdAndQqUserId(mercariSubscribe.groupId, info.userId)
+                groupHasQqUserMapper.selectByGroupIdAndQqUserId(surugayaSubscribe.groupId, info.userId)
             groupHasQqUser.let {
                 arrayList.add(
                     Triple(
@@ -207,16 +206,16 @@ class SurugayaSpider {
             }
         }
         val image = generatorService.generateImage(
-            "mercariSubscribeList.html", arrayList,
-            imageHeight = 240 + 40 * mercariSubscribe.subscribe.size
+            "surugayaSubscribeList.html", arrayList,
+            imageHeight = 240 + 40 * surugayaSubscribe.subscribe.size
         )
-        messageAdapter.sendGroupMessage(mercariSubscribe.groupId, ImageDTO(path = image.absolutePath))
+        messageAdapter.sendGroupMessage(surugayaSubscribe.groupId, ImageDTO(path = image.absolutePath))
     }
 
     //每一个小时检查一次
     @Scheduled(cron = "0 0 * * * ?")
-    fun mercariSpider() {
-        val find = mongoTemplate.findAll(MercariSubscribe::class.java, "mercariSubscribe")
+    fun surugayaSpider() {
+        val find = mongoTemplate.findAll(SurugayaSubscribe::class.java, "surugayaSubscribe")
         find.forEach {
             it.subscribe.forEach { info ->
                 CoroutineScope(Dispatchers.Default).launch {
@@ -226,10 +225,10 @@ class SurugayaSpider {
         }
     }
 
-    private suspend fun getLastestGoodInfo(groupId: Long, info: MercariSubscribeInfo) {
+    private suspend fun getLastestGoodInfo(groupId: Long, info: SurugayaSubscribeInfo) {
         val split = info.priceRange.split("-")
         var url =
-            "https://jp.mercari.com/search?keyword=${info.keyword}&sort=created_time&order=desc&status=on_sale&price_min=${split[0]}&price_max=${split[1]}"
+            "https://jp.surugaya.com/search?keyword=${info.keyword}&sort=created_time&order=desc&status=on_sale&price_min=${split[0]}&price_max=${split[1]}"
         if (info.condition == "全新") {
             url += "&item_condition_id=1"
         }
@@ -238,7 +237,7 @@ class SurugayaSpider {
     }
 
 
-    private suspend fun getLastestGoodInfo(url: String, groupId: Long, info: MercariSubscribeInfo) {
+    private suspend fun getLastestGoodInfo(url: String, groupId: Long, info: SurugayaSubscribeInfo) {
         val page: Page = browser.newPage()
         pageLoadOptimize(page)
         log.info("start url: {}", url)
@@ -246,56 +245,8 @@ class SurugayaSpider {
             val xhrUrl = response.url()
             log.info("response url: {}", xhrUrl)
             val text = response.text()
-            if (xhrUrl == "https://api.mercari.jp/v2/entities:search" && text.isNotEmpty()) {
-                try {
-                    val mercariResponse = json.decodeFromString(MercariResponse.serializer(), text)
-                    val items = mercariResponse.items
-                    val find = mongoTemplate.find(
-                        Query.query(
-                            Criteria.where("key").`is`("${info.keyword}${info.condition}${info.priceRange}")
-                        ),
-                        MercariSpiderContent::class.java, "mercariSpiderContent"
-                    )
-                    if (find.isEmpty()) {
-                        MercariSpiderContent(
-                            id = null,
-                            key = "${info.keyword}${info.condition}${info.priceRange}",
-                            items = items
-                        ).let {
-                            mongoTemplate.save(it, "mercariSpiderContent")
-                        }
-                        page.close()
-                        log.info("page close url: {}", url)
-                        return@onResponse
-                    }
-                    find.first().let { content ->
-                        val itemMap = content.items.associateBy { it.id }
-                        val newList = items.subList(0, 50).filter { !itemMap.containsKey(it.id) }.toList()
-                        content.items = items
-                        mongoTemplate.save(content, "mercariSpiderContent")
-                        if (newList.isNotEmpty()) {
-                            val list = mutableListOf(AtDTO(info.userId), PlainDTO("新发现上架${newList.size}个商品"))
-                            messageAdapter.sendGroupMessage(groupId, *list.toTypedArray())
-                            //时间戳转localdatetime
+            if (xhrUrl == "https://api.surugaya.jp/v2/entities:search" && text.isNotEmpty()) {
 
-
-                            newList.forEach {
-                                messageAdapter.sendGroupMessage(
-                                    groupId,
-                                    "名称：${it.name}\n" +
-                                            "状态：${conditionParse(it.itemConditionId)}\n" +
-                                            "价格：￥${it.price}\n" +
-                                            "上架时间：${it.created.asyyyyMMdd()}" +
-                                            "更新时间：${it.updated.asyyyyMMdd()}" +
-                                            "链接：https://jp.mercari.com/item/${it.id}\n"
-                                )
-                            }
-                        }
-                    }
-
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
                 page.close()
                 log.info("page close url: {}", url)
             }

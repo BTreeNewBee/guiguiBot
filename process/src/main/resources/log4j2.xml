@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="OFF">
+    <Appenders>
+        <!-- console -->
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50}.%M %L - %msg%n" />
+        </Console>
+<!--        &lt;!&ndash; file &ndash;&gt;-->
+<!--        <File name="file" fileName="log/useless_bot.log" append="true">-->
+<!--            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />-->
+<!--        </File>-->
+        <!-- rollingFile -->
+        <RollingFile name="RollingFile" fileName="logs/useless_bot.log"
+                     filePattern="logs/$${date:yyyy-MM}/useless_bot-%d{MM-dd-yyyy}-%i.log.gz">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50}.%M %L - %msg%n" />
+            <SizeBasedTriggeringPolicy size="100MB" />
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="Console" />
+            <AppenderRef ref="RollingFile" />
+        </Root>
+    </Loggers>
+</Configuration>
